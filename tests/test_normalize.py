@@ -15,9 +15,20 @@ def test_detect_city_variants():
 def test_detect_country():
     assert detect_country("Utrecht, the Netherlands", None) == "NL"
     assert detect_country("Remote - Netherlands", None) == "NL"
-    assert detect_country("Berlin", None) == "XX"
+    assert detect_country("Berlin", None) == "DE"
+    assert detect_country("Antwerpen, België", None) == "BE"
     assert detect_country("Somewhere", None) is None
-    assert detect_country("Berlin", "nl") == "NL"
+    assert detect_country("Berlin", "nl") == "NL"  # in Europe the board's own country field counts
+    # outside Europe the place wins over a wrong country field (vidaXL's Hyderabad office says "Nederland")
+    assert detect_country("Hyderabad, Nederland, 1st Floor, A-Wing, Purva Summit, Kondapur", "NL") == "IN"
+    assert detect_country("Amsterdam, Netherlands; Hyderabad, India", "NL") == "NL"
+    assert detect_country("Germany; Portugal; France; The Netherlands", None) == "NL"
+
+
+def test_regions_are_not_cities():
+    from radar.normalize import plausible_place
+
+    assert plausible_place("EMEA") is None and plausible_place("DACH") is None and plausible_place("Veghel") == "Veghel"
 
 
 def test_remote_and_title_normalisation():

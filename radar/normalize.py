@@ -58,19 +58,83 @@ NL_CITIES: dict[str, str] = {
 _CITY_RX = {city: re.compile(rx, re.I) for city, rx in NL_CITIES.items()}
 _NL_RX = re.compile(r"netherlands|nederland|\bnl\b|holland", re.I)
 _REMOTE_RX = re.compile(r"\bremote\b|work from home|thuiswerken|anywhere", re.I)
-_OTHER_COUNTRY_RX = re.compile(
-    r"\b(germany|deutschland|berlin|munich|münchen|hamburg|france|paris|belgium|belgi[eë]|brussels|bruxelles|"
-    r"antwerp|united kingdom|\buk\b|london|manchester|spain|madrid|barcelona|portugal|lisbon|lisboa|poland|warsaw|"
-    r"krak[oó]w|italy|milan|ireland|dublin|sweden|stockholm|denmark|copenhagen|norway|oslo|finland|helsinki|"
-    r"switzerland|zurich|z[üu]rich|austria|vienna|wien|usa|united states|new york|san francisco|seattle|austin|"
-    r"boston|chicago|canada|toronto|vancouver|india|bangalore|bengaluru|hyderabad|pune|singapore|australia|sydney|"
-    r"brazil|s[ãa]o paulo|mexico|japan|tokyo|china|shanghai|beijing|hong kong|dubai|israel|tel aviv|romania|"
-    r"bucharest|czech|prague|hungary|budapest|greece|athens|turkey|istanbul|ukraine|kyiv|lithuania|vilnius|"
-    r"latvia|riga|estonia|tallinn|serbia|belgrade|bulgaria|sofia|croatia|zagreb|slovakia|bratislava|slovenia|"
-    r"ljubljana|luxembourg|malta|cyprus|philippines|manila|vietnam|indonesia|jakarta|malaysia|kuala lumpur|"
-    r"thailand|bangkok|south africa|nigeria|kenya|egypt|argentina|colombia|chile|peru|new zealand|auckland)\b",
-    re.I,
-)
+# places abroad in a location text -> ISO country code; the cities are the ones boards actually list
+_PLACES = {
+    "DE": r"germany|deutschland|berlin|munich|münchen|hamburg|frankfurt|cologne|köln|düsseldorf|dusseldorf|"
+          r"stuttgart|münster|aachen|eschborn|hannover|hanover|dresden|leipzig|bremen|essen|dortmund|nuremberg|nürnberg",
+    "BE": r"belgium|belgi[eë]|belgique|brussels|bruxelles|brussel|antwerp|antwerpen|ghent|gent|leuven|li[eè]ge|"
+          r"mechelen|hasselt",
+    "FR": r"france|paris|lyon|toulouse|marseille|grenoble|lille|nantes|sophia antipolis",
+    "GB": r"united kingdom|\buk\b|england|scotland|london|manchester|cambridge|oxford|edinburgh|bristol|belfast",
+    "IE": r"ireland|dublin|cork",
+    "LU": r"luxembourg",
+    "ES": r"spain|españa|madrid|barcelona|valencia|malaga|málaga",
+    "PT": r"portugal|lisbon|lisboa|porto",
+    "IT": r"italy|italia|milan|milano|rome|roma|turin|torino",
+    "CH": r"switzerland|zurich|z[üu]rich|geneva|gen[eè]ve|basel|lausanne",
+    "AT": r"austria|vienna|wien|graz",
+    "PL": r"poland|warsaw|warszawa|krak[oó]w|wroc[lł]aw|gda[nń]sk|pozna[nń]",
+    "CZ": r"czech|czechia|prague|praha|brno",
+    "SK": r"slovakia|bratislava",
+    "HU": r"hungary|budapest",
+    "RO": r"romania|bucharest|cluj",
+    "BG": r"bulgaria|sofia",
+    "GR": r"greece|athens",
+    "HR": r"croatia|zagreb",
+    "SI": r"slovenia|ljubljana",
+    "RS": r"serbia|belgrade|novi sad",
+    "BA": r"bosnia|sarajevo",
+    "UA": r"ukraine|kyiv|kiev|lviv",
+    "LT": r"lithuania|vilnius",
+    "LV": r"latvia|riga",
+    "EE": r"estonia|tallinn",
+    "DK": r"denmark|copenhagen|aarhus",
+    "SE": r"sweden|stockholm|gothenburg|g[öo]teborg|malm[öo]",
+    "NO": r"norway|oslo",
+    "FI": r"finland|helsinki",
+    "MT": r"malta",
+    "CY": r"cyprus|limassol|nicosia",
+    "TR": r"turkey|türkiye|istanbul|ankara",
+    "IL": r"israel|tel aviv",
+    "AE": r"united arab emirates|dubai|abu dhabi",
+    "US": r"\busa\b|united states|new york|san francisco|seattle|austin|boston|chicago|los angeles|denver|atlanta",
+    "CA": r"canada|toronto|vancouver|montreal|montréal",
+    "MX": r"mexico|m[ée]xico",
+    "BR": r"brazil|brasil|s[ãa]o paulo",
+    "AR": r"argentina|buenos aires",
+    "CO": r"colombia|bogot[áa]",
+    "CL": r"chile|santiago",
+    "PE": r"peru|lima",
+    "IN": r"india|bangalore|bengaluru|hyderabad|pune|chennai|mumbai|delhi|noida|gurgaon|gurugram|kolkata|kondapur",
+    "SG": r"singapore",
+    "MY": r"malaysia|kuala lumpur",
+    "TH": r"thailand|bangkok",
+    "VN": r"vietnam|ho chi minh|hanoi",
+    "ID": r"indonesia|jakarta",
+    "PH": r"philippines|manila|cebu",
+    "CN": r"china|shanghai|beijing|shenzhen",
+    "HK": r"hong kong",
+    "JP": r"japan|tokyo",
+    "KR": r"korea|seoul",
+    "AU": r"australia|sydney|melbourne",
+    "NZ": r"new zealand|auckland",
+    "ZA": r"south africa|cape town|johannesburg",
+    "NG": r"nigeria|lagos",
+    "KE": r"kenya|nairobi",
+    "EG": r"egypt|cairo",
+}
+_PLACE_RX = [(code, re.compile(r"\b(?:" + rx + r")\b", re.I)) for code, rx in _PLACES.items()]
+# Europe (EU, EEA, UK, Switzerland and the Western Balkans): a board's own "Netherlands" is not second-guessed here
+EUROPE = {"NL", "DE", "BE", "FR", "GB", "IE", "LU", "ES", "PT", "IT", "CH", "AT", "PL", "CZ", "SK", "HU", "RO", "BG",
+          "GR", "HR", "SI", "RS", "BA", "UA", "LT", "LV", "EE", "DK", "SE", "NO", "FI", "MT", "CY"}
+
+
+def place_country(text: str | None) -> str | None:
+    """The country of the first place abroad named in a location text, as an ISO code, or None."""
+    if not text:
+        return None
+    hits = [(m.start(), code) for code, rx in _PLACE_RX if (m := rx.search(text))]
+    return min(hits)[1] if hits else None
 
 
 def detect_city(location: str | None) -> str | None:
@@ -101,7 +165,8 @@ def is_generic_location(location: str | None) -> bool:
 
 
 _NOT_A_PLACE = re.compile(
-    r"\d|locations?$|remote|hybrid|netherlands|nederland|holland|europe|benelux|^nl$|office|"
+    r"\d|locations?$|remote|hybrid|netherlands|nederland|holland|europe|benelux|^nl$|office|\bemea\b|\bdach\b|"
+    r"\beu\b|worldwide|global|"
     r"kantoor|thuis|home|multiple|various|diverse|flexible|anywhere",
     re.I,
 )
@@ -138,16 +203,20 @@ def city_from_text(title: str | None, description: str | None) -> str | None:
 
 
 def detect_country(location: str | None, country: str | None) -> str | None:
-    """Return 'NL' if the posting is in the Netherlands, 'XX' for another country, None if unknown."""
+    """The posting's country as an ISO code ('NL', 'DE', 'IN'), None if unknown. The board's own country field
+    counts, except when the place it lists first is outside Europe and no Dutch city is named: vidaXL gives its
+    Hyderabad office the country "Nederland"."""
+    first = re.split(r"[;|]", location)[0] if location else ""
+    abroad = place_country(first)
     if country:
+        if abroad and abroad not in EUROPE and not detect_city(location):
+            return abroad
         return country.upper()
     if not location:
         return None
     if detect_city(location) or _NL_RX.search(location):
         return "NL"
-    if _OTHER_COUNTRY_RX.search(location):
-        return "XX"
-    return None
+    return abroad or place_country(location)
 
 
 def is_remote(location: str | None, remote_flag: bool | None) -> bool:

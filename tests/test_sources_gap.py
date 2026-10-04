@@ -46,3 +46,16 @@ def test_tracker_ignores_spelling_of_the_name():
 
     assert _matches("basic-fit", "Basicfit") and _matches("ballast nedam", "Ballastnedam")
     assert not _matches("basic-fit", "Basic Electronics")
+
+
+def test_seeded_names_survive_rename(fresh_db, tmp_path):
+    from radar.db import session_scope
+    from radar.models import Source
+    from radar.registry import rename_employers, seed_from_yaml
+
+    y = tmp_path / "s.yaml"
+    y.write_text("- company: Vinted\n  ats: greenhouse\n  slug: vinteden\n", encoding="utf-8")
+    with session_scope() as s:
+        seed_from_yaml(s, y)
+        rename_employers(s)
+        assert s.query(Source).filter_by(slug="vinteden").one().company == "Vinted"

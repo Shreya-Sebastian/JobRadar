@@ -49,6 +49,8 @@ def seed_from_yaml(session: Session, path: str | Path) -> int:
     for e in entries:
         src, new = upsert_source(session, e["company"], e["ats"], str(e["slug"]), e.get("url"),
                                  discovered_by="seed", kind=e.get("kind"))
+        if not new and e["company"] != src.company and not str(e["company"]).startswith("ASML (old site"):
+            src.company = e["company"]  # the hand-written name in sources.yaml is the one to show
         if e.get("default_country"):
             src.default_country = str(e["default_country"]).upper()
         if e.get("active") is not None:
@@ -223,7 +225,8 @@ def rename_employers(session: Session) -> int:
 
     # UPDATE statements, not loaded postings: a posting row carries its whole description
     renamed = 0
-    for src in session.scalars(select(Source).where(Source.kind == "employer")):
+    # names from slugs only for discovered boards: a source entered by hand (sources.yaml) keeps its name
+    for src in session.scalars(select(Source).where(Source.kind == "employer", Source.discovered_by != "seed")):
         new = pretty_company(src.slug, src.company)
         if new and new != src.company:
             session.execute(update(Posting).where(Posting.source_id == src.id).values(company=new))

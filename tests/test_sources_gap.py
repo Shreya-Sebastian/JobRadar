@@ -31,3 +31,18 @@ def test_source_default_country(fresh_db):
                                    location="Tokyo, Japan", description_text="Python. " * 50)])
         assert s.query(Posting).filter_by(external_id="1").one().country == "NL"
         assert s.query(Posting).filter_by(external_id="2").count() == 0  # a stated place abroad still counts
+
+
+def test_test_boards_name_a_board_not_an_employer():
+    from radar.registry import classify_source
+
+    kinds = {"board": [], "aggregator": [], "agency": [], "test": ["ey"]}
+    assert classify_source("EY", "ey", kinds) == "test"  # the demo tenant on Recruitee
+    assert classify_source("EY", "https://careers.ey.com/sitemap.xml", kinds) == "employer"
+
+
+def test_tracker_ignores_spelling_of_the_name():
+    from radar.tracker import _matches
+
+    assert _matches("basic-fit", "Basicfit") and _matches("ballast nedam", "Ballastnedam")
+    assert not _matches("basic-fit", "Basic Electronics")

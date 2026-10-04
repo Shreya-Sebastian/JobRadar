@@ -51,6 +51,8 @@ def _matches(needle: str, *texts: str) -> bool:
                 return True
         elif needle in t or needle in t.replace(" ", ""):
             return True
+        elif len(needle) >= 5 and re.sub(r"[^a-z0-9]", "", needle) in re.sub(r"[^a-z0-9]", "", t):
+            return True  # "basic-fit" in "Basicfit", "ballast nedam" in "Ballastnedam"
     return False
 
 

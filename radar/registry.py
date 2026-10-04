@@ -87,7 +87,8 @@ def classify_source(company: str, slug: str, kinds: dict[str, list[str]] | None 
     kinds = kinds or load_source_kinds()
     slug_l, name_l = slug.lower(), company.lower()
     for kind in ("board", "aggregator", "agency", "test"):
-        if slug_l in kinds[kind] or name_l in kinds[kind]:
+        # a test entry names a board ("ey" is EY's demo tenant on Recruitee), never every source of that employer
+        if slug_l in kinds[kind] or (kind != "test" and name_l in kinds[kind]):
             return kind
     if looks_like_test_board(company, slug):
         return "test"

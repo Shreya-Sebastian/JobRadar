@@ -129,6 +129,34 @@ EUROPE = {"NL", "DE", "BE", "FR", "GB", "IE", "LU", "ES", "PT", "IT", "CH", "AT"
           "GR", "HR", "SI", "RS", "BA", "UA", "LT", "LV", "EE", "DK", "SE", "NO", "FI", "MT", "CY"}
 
 
+# a whole list item that is just a country or region: "The Netherlands", "Remote: United States", "Germany (Remote)"
+_COUNTRY_ITEM = re.compile(
+    r"(?:the\s+)?(?:netherlands|nederland|holland|germany|deutschland|belgium|belgi[eë]|france|united kingdom|uk|"
+    r"ireland|spain|portugal|italy|switzerland|austria|poland|czech republic|czechia|denmark|sweden|norway|finland|"
+    r"estonia|latvia|lithuania|hungary|romania|bulgaria|greece|croatia|slovenia|slovakia|serbia|bosnia|ukraine|"
+    r"cyprus|malta|luxembourg|united states|usa|canada|mexico|brazil|argentina|colombia|chile|peru|india|singapore|"
+    r"japan|china|hong kong|south korea|korea|australia|new zealand|israel|turkey|united arab emirates|uae|"
+    r"south africa|egypt|kenya|nigeria|philippines|indonesia|malaysia|thailand|vietnam|europe|emea)",
+    re.I,
+)
+_DUTCH_REGION = re.compile(
+    r"\b(?:noord-holland|zuid-holland|north holland|south holland|noord-brabant|north brabant|gelderland|overijssel|"
+    r"limburg|friesland|frysl[aâ]n|drenthe|flevoland|zeeland|randstad)\b",
+    re.I,
+)
+
+
+def _country_items(location: str) -> list[str]:
+    """The items of a location text that are only a country or region name."""
+    items = []
+    for part in re.split(r"[;|,]", location):
+        p = re.sub(r"\((?:remote|hybrid|on-?site)\)|\b(?:remote|hybrid|on-?site)\b|[:\-]", " ", part, flags=re.I)
+        p = " ".join(p.split())
+        if p and _COUNTRY_ITEM.fullmatch(p):
+            items.append(p.lower())
+    return items
+
+
 def place_country(text: str | None) -> str | None:
     """The country of the first place abroad named in a location text, as an ISO code, or None."""
     if not text:
@@ -209,8 +237,11 @@ def detect_country(location: str | None, country: str | None) -> str | None:
     first = re.split(r"[;|]", location)[0] if location else ""
     abroad = place_country(first)
     if country:
-        if abroad and abroad not in EUROPE and not detect_city(location):
-            return abroad
+        if abroad and abroad not in EUROPE and not detect_city(location) and not _DUTCH_REGION.search(location):
+            items = _country_items(location)
+            if len(items) >= 2 and any(_NL_RX.search(i) for i in items):
+                return country.upper()  # a list of countries that includes the Netherlands ("Japan, The Netherlands")
+            return abroad  # one address abroad ("Hyderabad, Nederland, 1st Floor ...")
         return country.upper()
     if not location:
         return None

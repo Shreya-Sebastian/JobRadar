@@ -23,6 +23,15 @@ def test_detect_country():
     assert detect_country("Hyderabad, Nederland, 1st Floor, A-Wing, Purva Summit, Kondapur", "NL") == "IN"
     assert detect_country("Amsterdam, Netherlands; Hyderabad, India", "NL") == "NL"
     assert detect_country("Germany; Portugal; France; The Netherlands", None) == "NL"
+    # lists of countries that include the Netherlands stay; a Dutch province is Dutch
+    assert detect_country("United States; Canada; United Kingdom; Germany; The Netherlands", "NL") == "NL"
+    assert detect_country("Remote: United States | Canada | The Netherlands | Denmark", "NL") == "NL"
+    assert detect_country("Japan, The Netherlands", "NL") == "NL"
+    assert detect_country("Zuid-Holland, United States", "NL") == "NL"
+    # one address abroad is abroad, whatever the country field says
+    assert detect_country("Monterrey, NL 64640, Mexico", "NL") == "MX"
+    assert detect_country("Salisbury, Nederland, 2085 Harrison Road 28147 Salisbury USA", "NL") == "US"
+    assert detect_country("Lima, NL", "NL") == "PE"
 
 
 def test_regions_are_not_cities():

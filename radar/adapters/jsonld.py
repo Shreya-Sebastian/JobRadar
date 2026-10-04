@@ -57,6 +57,13 @@ def _url_key(url: str) -> str:
 
 
 class JsonLdAdapter(Adapter):
+    @property
+    def client(self):
+        # these are web pages: ask for HTML, or a site that honours Accept answers with JSON (Nouryon)
+        c = super().client
+        c.headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        return c
+
     """Incremental: the crawler may set `known_urls` (page URL key -> external id of a live posting). Pages that
     are still listed in the sitemap are then not fetched again; their ids are reported in `still_listed` so the
     crawler keeps them open. About one in twenty known pages is refetched each crawl, so content changes are
@@ -249,6 +256,7 @@ def _lenient_json(text: str) -> list[Any]:
     (Defensie ends its object with "},"). A strict parser silently drops those postings."""
     decoder = json.JSONDecoder(strict=False)
     out: list[Any] = []
+    text = re.sub(r"(?:/\*|//)?\s*<!\[CDATA\[\s*(?:\*/)?|(?:/\*|//)?\s*\]\]>\s*(?:\*/)?", "", text)  # AFAS
     i, n = 0, len(text)
     while i < n:
         while i < n and text[i] in " \t\r\n,;":

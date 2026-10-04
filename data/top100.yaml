@@ -477,7 +477,7 @@
   name: Alstom Nederland
   platform: unknown
 - group: logistics
-  match: [=dpd]
+  match: [=dpd, dpd nederland]
   name: DPD Nederland
   platform: unknown
 - group: logistics

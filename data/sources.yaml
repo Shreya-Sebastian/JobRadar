@@ -292,3 +292,63 @@
   ats: lever
   slug: "eu/tomtom"
   url: "https://jobs.eu.lever.co/tomtom"
+
+# --- 4 Oct 2026, second round: tracked employers whose source found nothing
+- company: Rabobank
+  ats: jsonld
+  slug: "https://rabobank.jobs/api/sitemap/"
+  url: "https://rabobank.jobs"
+  active: true  # was switched off as blocked; answers the crawler again
+- company: bol.com
+  ats: jsonld
+  slug: "https://careers.bol.com/api/sitemap/"
+  url: "https://careers.bol.com"
+- company: Microsoft
+  ats: jsonld
+  slug: "https://apply.careers.microsoft.com/careers/sitemap.xml"
+  url: "https://careers.microsoft.com"
+- company: FedEx
+  ats: jsonld
+  slug: "https://careers.fedex.com/sitemap-c84076ce-nl-nl.xml"
+  url: "https://careers.fedex.com"
+- company: BDR Thermea
+  ats: workday
+  slug: "bdrthermea.wd103/External"
+- company: Kyndryl
+  ats: workday
+  slug: "kyndryl.wd5/KyndrylProfessionalCareers"
+- company: Triodos Bank
+  ats: jsonld
+  slug: "https://careers.triodos.com/go/Vacancies-NLD/9580555/"
+  url: "https://careers.triodos.com"
+  default_country: NL  # its JobPosting data names no place; this listing holds only the Dutch vacancies
+# Dutch-only employers whose postings name no place the radar recognises
+- company: Technolution
+  ats: jsonld
+  slug: "https://www.technolution.com/nl/job-sitemap.xml"
+  default_country: NL
+- company: Frisius MC (MCL)
+  ats: jsonld
+  slug: "https://www.werkenbijfrisiusmc.nl/robots.txt/sitemap"
+  default_country: NL
+- company: Waterschap Zuiderzeeland
+  ats: jsonld
+  slug: "https://www.zuiderzeeland.nl/ub-ats-job-sitemap1.xml"
+  default_country: NL
+- company: Hogeschool Rotterdam
+  ats: jsonld
+  slug: "https://www.rotterdamuas.com/sitemap.xml"
+  default_country: NL
+- company: Philadelphia Zorg
+  ats: jsonld
+  slug: "https://www.werkenvoorphiladelphia.nl/vacatures"
+  default_country: NL
+- company: Bitvavo
+  ats: ashby
+  slug: bitvavo
+  default_country: NL  # nine of its ten postings say only "Headquarters" (Amsterdam)
+# a different, North American company called Bird, not MessageBird
+- company: Bird
+  ats: greenhouse
+  slug: bird
+  active: false

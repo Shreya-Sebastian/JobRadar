@@ -22,6 +22,8 @@ class Source(Base):
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     discovered_by: Mapped[str] = mapped_column(String(40), default="seed")
     kind: Mapped[str] = mapped_column(String(20), default="employer")  # employer | agency | aggregator
+    # the country of postings that name no location at all (Canon Production Printing's and Triodos' boards)
+    default_country: Mapped[str | None] = mapped_column(String(2), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     last_run_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     first_success_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

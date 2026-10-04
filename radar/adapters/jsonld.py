@@ -24,7 +24,9 @@ from radar import robots
 from radar.adapters.base import Adapter, AdapterError, RawPosting, parse_dt
 from radar.htmlclean import clean_html
 
-_JOB_LINK = re.compile(r"(job|jobs|career|careers|vacature|vacatures|vacancy|vacancies|position|opening)", re.I)
+_JOB_LINK = re.compile(
+    r"(job|jobs|career|careers|vacature|vacatures|vacancy|vacancies|position|opening|banen|baan)", re.I
+)  # "banen": Radancy sites (DNB, Stedin, CAK)
 
 
 _APPLY_PAGE = re.compile(r"/(?:[a-z]{2}/)?(?:apply|solliciteer|solliciteren|application(?:-form)?)/?(?:\?.*)?$", re.I)
@@ -37,7 +39,9 @@ def _nl_url() -> re.Pattern:
     if _NL_URL_CACHE is None:
         from radar.normalize import NL_CITIES
 
-        parts = list(NL_CITIES.values()) + [r"netherlands", r"nederland", r"[-_/]nl[-_/]", r"[-_/]nl$"]
+        # a Dutch postcode in the address counts too: SuccessFactors sites end the slug in "-2411NL"
+        parts = list(NL_CITIES.values()) + [r"netherlands", r"nederland", r"[-_/]nl[-_/]", r"[-_/]nl$",
+                                            r"[-_/]\d{4}\s?nl(?=[-_/]|$)"]
         _NL_URL_CACHE = re.compile("|".join(parts), re.I)
     return _NL_URL_CACHE
 

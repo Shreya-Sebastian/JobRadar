@@ -6,9 +6,13 @@ class LeverAdapter(Adapter):
 
     ats = "lever"
     BASE = "https://api.lever.co/v0/postings/{slug}"
+    BASE_EU = "https://api.eu.lever.co/v0/postings/{slug}"  # boards on jobs.eu.lever.co: slug "eu/<board>"
+
+    def _url(self, slug: str) -> str:
+        return self.BASE_EU.format(slug=slug[3:]) if slug.startswith("eu/") else self.BASE.format(slug=slug)
 
     def fetch(self, slug: str) -> list[RawPosting]:
-        data = self._get_json(self.BASE.format(slug=slug), mode="json")
+        data = self._get_json(self._url(slug), mode="json")
         if not isinstance(data, list):
             return []
         out: list[RawPosting] = []
@@ -32,7 +36,7 @@ class LeverAdapter(Adapter):
         return out
 
     def probe(self, slug: str) -> bool:
-        resp = self.client.get(self.BASE.format(slug=slug), params={"mode": "json", "limit": 1})
+        resp = self.client.get(self._url(slug), params={"mode": "json", "limit": 1})
         return resp.status_code == 200
 
 

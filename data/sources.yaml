@@ -10,7 +10,7 @@
   slug: https://www.werkenvoornederland.nl/sitemap-vacatures.xml
   url: https://www.werkenvoornederland.nl/vacatures
   kind: board
-- company: ASML (old site, inactive: jobs moved to Workday asml.wd3/ASMLEXT1)
+- company: "ASML (old site, inactive: jobs moved to Workday asml.wd3/ASMLEXT1)"
   ats: jsonld
   slug: https://www.asml.com/en/job_posting-sitemap.xml
   url: https://www.asml.com/en/careers
@@ -81,3 +81,214 @@
   slug: asml.wd3/ASMLEXT1
   url: https://asml.wd3.myworkdayjobs.com/ASMLEXT1
   kind: employer
+
+# --- 4 Oct 2026: tracked employers that had no source (careers sites researched, each tested to keep NL
+# postings). Recruitee, Greenhouse, Ashby and Workday boards, and sitemaps or listing pages with JobPosting data.
+- company: "Optiver"
+  ats: greenhouse
+  slug: "optiverus"
+  url: "https://www.optiver.com/join-us/jobs/"
+- company: "Trengo"
+  ats: ashby
+  slug: "careerstrengo"
+  url: "https://trengo.com/careers"
+- company: "EY"
+  ats: jsonld
+  slug: "https://careers.ey.com/sitemap.xml"
+  url: "https://careers.ey.com/ey/search/?locationsearch=Netherlands"
+- company: "KLM"
+  ats: jsonld
+  slug: "https://vacancy.klm.com/sitemap.xml"
+  url: "https://careers.klm.com/en/"
+- company: "UWV"
+  ats: jsonld
+  slug: "https://www.werkenbijuwvinit.nl/sitemap.vacancy.xml"
+  url: "https://www.werkenbijuwvinit.nl/vacatures"
+- company: "Nixxes"
+  ats: jsonld
+  slug: "https://www.nixxes.com/jobs/"
+  url: "https://www.nixxes.com/jobs/"
+- company: "Airbus"
+  ats: workday
+  slug: "ag.wd3/Airbus"
+  url: "https://ag.wd3.myworkdayjobs.com/Airbus"
+- company: "Siemens Healthineers"
+  ats: workday
+  slug: "onehealthineers.wd3/SHSJB"
+  url: "https://www.siemens-healthineers.com/careers"
+- company: "NIBC"
+  ats: workday
+  slug: "nibcatwork.wd3/External"
+  url: "https://nibc.com/careers/vacancies"
+- company: "Robeco"
+  ats: workday
+  slug: "robeco.wd3/robecoexternalcareers"
+  url: "https://www.robeco.com/nl-nl/carriere/vacatures"
+- company: "Univé"
+  ats: recruitee
+  slug: "univeit"
+  url: "https://vacaturesbijunive.nl/"
+- company: "IKEA"
+  ats: jsonld
+  slug: "https://jobs.ikea.com/sitemap.xml"
+  url: "https://jobs.ikea.com/en"
+- company: "G-Star RAW"
+  ats: jsonld
+  slug: "https://careers.g-star.com/vacancy-sitemap.xml"
+  url: "https://careers.g-star.com"
+- company: "Basic-Fit"
+  ats: workday
+  slug: "basicfit.wd103/BasicFit_Career_Site_NL"
+  url: "https://jobs.basic-fit.com/nl-nl/home"
+- company: "ENGIE"
+  ats: jsonld
+  slug: "https://jobs.engie.com/sitemap.xml"
+  url: "https://jobs.engie.com/search/?locationsearch=Nederland&locale=nl_NL"
+- company: "ExxonMobil"
+  ats: jsonld
+  slug: "https://jobs.exxonmobil.com/search/?q=&locationsearch=Netherlands"
+  url: "https://jobs.exxonmobil.com/"
+- company: "Louwman Group"
+  ats: recruitee
+  slug: "louwman"
+  url: "https://www.werkenbijlouwman.nl/vacatures/"
+- company: "Alstom"
+  ats: jsonld
+  slug: "https://jobsearch.alstom.com/search/?q=&locationsearch=Netherlands"
+  url: "https://jobsearch.alstom.com/"
+- company: "GLS Netherlands"
+  ats: recruitee
+  slug: "glsnetherlands"
+  url: "https://werkenbij.gls.nl/vacatures"
+- company: "UPS"
+  ats: jsonld
+  slug: "https://www.jobs-ups.com/frbx/nl/sitemap.xml"
+  url: "https://www.jobs-ups.com/global/en"
+- company: "Kuehne+Nagel"
+  ats: jsonld
+  slug: "https://jobs.kuehne-nagel.com/nl/nl/sitemap_index.xml"
+  url: "https://jobs.kuehne-nagel.com/global/en"
+- company: "Maersk"
+  ats: workday
+  slug: "maersk.wd3/Maersk_Careers"
+  url: "https://www.apmterminals.com/careers/vacancies"
+- company: "BAM"
+  ats: jsonld
+  slug: "https://www.bamcareers.com/nl/nl/sitemap.xml"
+  url: "https://www.bamcareers.com/nl/nl"
+- company: "Ballast Nedam"
+  ats: recruitee
+  slug: "ballastnedam"
+  url: "https://werkenbij.ballast-nedam.nl/vacatureoverzicht"
+- company: "Equans"
+  ats: jsonld
+  slug: "https://www.werkenbijequans.nl/sitemap.vacancy.xml"
+  url: "https://www.werkenbijequans.nl/vacatures"
+- company: "DNV"
+  ats: jsonld
+  slug: "https://jobs.dnv.com/sitemap.xml"
+  url: "https://jobs.dnv.com/"
+- company: "Smart Photonics"
+  ats: recruitee
+  slug: "smartphotonicsbv"
+  url: "https://smartphotonics.nl/careers"
+- company: "TKH Airport Solutions"
+  ats: jsonld
+  slug: "https://careers.tkh-airportsolutions.com/sitemap.xml"
+  url: "https://careers.tkh-airportsolutions.com/jobs"
+- company: "Dow"
+  ats: workday
+  slug: "dow.wd1/ExternalCareers"
+  url: "https://dow.wd1.myworkdayjobs.com/ExternalCareers"
+- company: "Chemours"
+  ats: workday
+  slug: "chemours.wd103/Chemours"
+  url: "https://chemours.wd103.myworkdayjobs.com/Chemours"
+- company: "OCI"
+  ats: jsonld
+  slug: "https://oci-global.com/jobs/"
+  url: "https://oci-global.com/jobs/"
+- company: "Yara"
+  ats: jsonld
+  slug: "https://jobs.yara.com/sitemap.xml"
+  url: "https://jobs.yara.com"
+- company: "ForFarmers"
+  ats: jsonld
+  slug: "https://www.werkenbijforfarmers.nl/vacatures"
+  url: "https://www.werkenbijforfarmers.nl/vacatures"
+- company: "Coca-Cola Europacific Partners"
+  ats: jsonld
+  slug: "https://www.ccep.jobs/en/location/netherlands-jobs/1299/2750405/2"
+  url: "https://www.ccep.jobs/en/location/netherlands-jobs/1299/2750405/2"
+- company: "Organon"
+  ats: workday
+  slug: "organon.wd5/search_jobs"
+  url: "https://organon.wd5.myworkdayjobs.com/en-US/search_jobs"
+- company: "MSD"
+  ats: workday
+  slug: "msd.wd5/SearchJobs"
+  url: "https://jobs.msd.com/netherlands-dutch"
+- company: "Johnson & Johnson"
+  ats: workday
+  slug: "jj.wd5/JJ"
+  url: "https://jj.wd5.myworkdayjobs.com/JJ"
+- company: "Sanquin"
+  ats: jsonld
+  slug: "https://www.sanquin.nl/werken-bij/vacatures"
+  url: "https://www.sanquin.nl/werken-bij/vacatures"
+- company: "Máxima MC"
+  ats: jsonld
+  slug: "https://www.werkenbijmmc.nl/sitemap.xml"
+  url: "https://www.werkenbijmmc.nl"
+- company: "ETZ"
+  ats: jsonld
+  slug: "https://werkenbij.etz.nl/vacancy-sitemap.xml"
+  url: "https://werkenbij.etz.nl/"
+- company: "GGZ Oost Brabant"
+  ats: recruitee
+  slug: "ggzoostbrabant"
+  url: "https://werkenbij.ggzoostbrabant.nl"
+- company: "Gemeente Nijmegen"
+  ats: jsonld
+  slug: "https://vacatures.nijmegen.nl/vacatures"
+  url: "https://vacatures.nijmegen.nl"
+- company: "Provincie Noord-Brabant"
+  ats: jsonld
+  slug: "https://werkenvoor.brabant.nl/sitemap.xml"
+  url: "https://werkenvoor.brabant.nl/"
+- company: "Waterschap Rijn en IJssel"
+  ats: jsonld
+  slug: "https://www.wrij.nl/vacatures"
+  url: "https://www.wrij.nl/vacatures"
+- company: "Waterschap Scheldestromen"
+  ats: recruitee
+  slug: "waterschapscheldestromen"
+  url: "https://scheldestromen.nl/werken-bij"
+- company: "HAN"
+  ats: jsonld
+  slug: "https://han.jobs.hr.cloud.sap/sitemap.xml"
+  url: "https://han.jobs.hr.cloud.sap/"
+- company: "Wolters Kluwer"
+  ats: workday
+  slug: "wk.wd3/External"
+  url: "https://careers.wolterskluwer.com"
+- company: "Wipro"
+  ats: jsonld
+  slug: "https://careers.wipro.com/sitemap.xml"
+  url: "https://careers.wipro.com"
+- company: "Planon"
+  ats: jsonld
+  slug: "https://planonsoftware.com/nl/carriere/vacatures/"
+  url: "https://planonsoftware.com/nl/carriere/vacatures/"
+- company: "Vinted"
+  ats: greenhouse
+  slug: "vinteden"
+  url: "https://careers.vinted.com/"
+- company: "Goede Doelen Loterijen"
+  ats: jsonld
+  slug: "https://www.werkendoejebij.nl/vacatures"
+  url: "https://www.werkendoejebij.nl/vacatures"
+- company: TomTom
+  ats: lever
+  slug: "eu/tomtom"
+  url: "https://jobs.eu.lever.co/tomtom"

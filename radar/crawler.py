@@ -131,6 +131,8 @@ def ingest(session: Session, source: Source, raws: list[RawPosting], extractor_n
         # hiring organisation it names; an employer's own board is always attributed to that employer.
         company = raw.company if (source.kind == "board" and raw.company) else source.company
         fields = normalize(raw, company)
+        if fields["country"] is None and not raw.location and source.default_country:
+            fields["country"] = source.default_country
         country = fields["country"]
         if keep is not None:
             if country not in keep:

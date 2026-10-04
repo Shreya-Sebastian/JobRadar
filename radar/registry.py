@@ -43,12 +43,16 @@ def seed_from_probe(session: Session, path: str | Path, min_total: int = 1) -> i
 
 
 def seed_from_yaml(session: Session, path: str | Path) -> int:
-    """YAML format: a list of {company, ats, slug, url?} mappings."""
+    """YAML format: a list of {company, ats, slug, url?, kind?, default_country?, active?} mappings."""
     entries = yaml.safe_load(Path(path).read_text(encoding="utf-8")) or []
     created = 0
     for e in entries:
-        _, new = upsert_source(session, e["company"], e["ats"], str(e["slug"]), e.get("url"), discovered_by="seed",
-                               kind=e.get("kind"))
+        src, new = upsert_source(session, e["company"], e["ats"], str(e["slug"]), e.get("url"),
+                                 discovered_by="seed", kind=e.get("kind"))
+        if e.get("default_country"):
+            src.default_country = str(e["default_country"]).upper()
+        if e.get("active") is not None:
+            src.active = bool(e["active"])
         created += int(new)
     return created
 

@@ -29,7 +29,7 @@
       "f.sort": "Sort", "f.sort.newest": "Newest", "f.sort.match": "Best match", "f.role": "Role", "f.level": "Level", "f.remote": "Remote",
       "f.cities": "Cities", "f.visa": "Visa sponsorship mentioned", "f.agencies": "Hide agencies", 
       "f.saved": "Saved only", "f.skill": "Skill", "f.reset": "Reset filters", "f.profile": "Use my profile",
-      "th.age": "Age", "th.title": "Title", "th.company": "Company", "th.city": "City", "th.level": "Level", "th.skills": "Skills",
+      "th.age": "Age", "th.title": "Title", "th.company": "Company", "th.city": "City", "th.level": "Level", "th.exp": "Experience", "expcell.none": "None asked", "th.skills": "Skills",
       "th.match": "Match", "th.lang": "Language", "th.visa": "Visa", "th.employer": "Employer", "th.open": "Open tech roles", "th.share": "Share",
       "th.sector": "Sector", "th.status": "Status", "th.livetech": "Live tech postings", "th.platform": "Platform", "th.kind": "Kind", "th.postings": "Postings",
       "pager.prev": "‹ Prev", "pager.next": "Next ›",
@@ -137,7 +137,7 @@
       "f.sort": "Sorteren", "f.sort.newest": "Nieuwste", "f.sort.match": "Beste match", "f.role": "Rol", "f.level": "Niveau", "f.remote": "Thuiswerken",
       "f.cities": "Steden", "f.visa": "Visumsponsoring genoemd", "f.agencies": "Bureaus verbergen", 
       "f.saved": "Alleen bewaard", "f.skill": "Skill", "f.reset": "Filters wissen", "f.profile": "Mijn profiel gebruiken",
-      "th.age": "Leeftijd", "th.title": "Functie", "th.company": "Werkgever", "th.city": "Plaats", "th.level": "Niveau", "th.skills": "Skills",
+      "th.age": "Leeftijd", "th.title": "Functie", "th.company": "Werkgever", "th.city": "Plaats", "th.level": "Niveau", "th.exp": "Ervaring", "expcell.none": "Geen gevraagd", "th.skills": "Skills",
       "th.match": "Match", "th.lang": "Taal", "th.visa": "Visum", "th.employer": "Werkgever", "th.open": "Open techvacatures", "th.share": "Aandeel",
       "th.sector": "Sector", "th.status": "Status", "th.livetech": "Open techvacatures", "th.platform": "Platform", "th.kind": "Soort", "th.postings": "Vacatures",
       "pager.prev": "‹ Vorige", "pager.next": "Volgende ›",
@@ -315,10 +315,16 @@
   const langCell = (i) => `<span class="lang-${langKey(i)}" title="${t("lang." + langKey(i) + ".title")}">${t("lang." + langKey(i))}</span>`;
   const levelCell = (i) => {
     const lvl = i.seniority === "unknown" || !i.seniority ? "" : levelLabel(i.seniority);
-    const yrs = i.years_text ? `${i.years_text.replace("-", "–")} ${t("yrs")}` : i.years != null ? `${i.years}+ ${t("yrs")}` : "";
     const enrol = i.seniority === "intern" && i.enrollment_required === true ? t("enrol.required")
       : i.seniority === "intern" && i.enrollment_required === false ? t("enrol.open") : "";
-    return esc([lvl, yrs, enrol].filter(Boolean).join(" · "));
+    return esc([lvl, enrol].filter(Boolean).join(" · "));
+  };
+  // the experience the posting asks for, as worded ("2–5 yrs", "3+ yrs"), "None asked" for entry-level postings
+  const expCell = (i) => {
+    if (i.years_text) return esc(`${i.years_text.replace("-", "–")} ${t("yrs")}`);
+    if (i.years != null) return esc(`${i.years}+ ${t("yrs")}`);
+    if (i.experience === "none") return esc(t("expcell.none"));
+    return '<span class="muted">-</span>';
   };
   function applyI18n() {
     document.documentElement.lang = LANG;
@@ -612,10 +618,11 @@
       <td><a href="${jobPath(i)}" data-pid="${i.id}" target="_blank">${esc(i.title)}</a></td>
       <td>${esc(i.city ? cityLabel(i.city) : (i.remote ? "Remote" : ""))}${i.also_in && i.also_in.length ? ` <span class="more-cities" title="${esc(t("also.in", { c: i.also_in.map(cityLabel).join(", ") }))}">+${i.also_in.length}</span>` : ""}</td>
       <td>${levelCell(i)}</td>
+      <td>${expCell(i)}</td>
       <td><div class="chips">${i.skills.slice(0, 6).map((sk) => `<span class="chip${have.has(sk) ? " have" : ""}">${esc(sk)}</span>`).join("")}</div></td>
       <td>${langCell(i)}</td>
       <td>${i.visa === true ? `<span class="ok">${t("visa.yes")}</span>` : i.visa === false ? `<span class="bad">${t("visa.no")}</span>` : `<span class="muted">${t("visa.unknown")}</span>`}</td>
-    </tr>`).join("") : `<tr><td colspan="7" class="muted">${t("co.none")}</td></tr>`;
+    </tr>`).join("") : `<tr><td colspan="8" class="muted">${t("co.none")}</td></tr>`;
   }
 
   // ---------- JOBS ----------
@@ -742,6 +749,7 @@
       <td>${companyLink(i.company)}${i.via_agency ? ` <span class="chip more">${t("agency")}</span>` : ""}</td>
       <td>${esc(i.city ? cityLabel(i.city) : (i.remote ? "Remote" : ""))}${i.also_in && i.also_in.length ? ` <span class="more-cities" title="${esc(t("also.in", { c: i.also_in.map(cityLabel).join(", ") }))}">+${i.also_in.length}</span>` : ""}</td>
       <td>${levelCell(i)}</td>
+      <td>${expCell(i)}</td>
       <td><div class="chips">${i.skills.slice(0, 6).map((s) => `<span class="chip${have.includes(s) ? " have" : ""}">${esc(s)}</span>`).join("")}${i.skills.length > 6 ? `<span class="chip more">+${i.skills.length - 6}</span>` : ""}</div></td>
       <td>${i.match != null ? `<span class="match-bar" title="${Math.round(i.match * 100)}%"><i style="width:${Math.round(i.match * 100)}%"></i></span>` : '<span class="muted">-</span>'}</td>
       <td>${langCell(i)}</td>

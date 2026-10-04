@@ -1077,7 +1077,7 @@
   name: CAK
   platform: unknown
 - group: government
-  match: [=aivd]
+  match: [=aivd, algemene inlichtingen]
   name: AIVD
   platform: unknown
 - group: government

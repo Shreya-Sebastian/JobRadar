@@ -352,3 +352,7 @@
   ats: greenhouse
   slug: bird
   active: false
+- company: FrieslandCampina
+  ats: jsonld
+  slug: "https://mycareers.frieslandcampina.com/sitemap.xml"
+  url: "https://mycareers.frieslandcampina.com"  # SuccessFactors microdata without a title property

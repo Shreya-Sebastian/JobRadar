@@ -311,6 +311,14 @@ def _microdata_jobpostings(soup: BeautifulSoup) -> list[dict[str, Any]]:
             name = org.find(attrs={"itemprop": "name"})
             obj["hiringOrganization"] = {"name": (name.get("content") or name.get_text(" ", strip=True))
                                          if name is not None else org.get("content") or org.get_text(" ", strip=True)}
+        if not (obj.get("title") or obj.get("name")):
+            # some SuccessFactors sites (FrieslandCampina) mark the posting up without a title property: the
+            # page's own heading is the job title
+            h1 = soup.find("h1")
+            og = soup.find("meta", attrs={"property": "og:title"})
+            title = (h1.get_text(" ", strip=True) if h1 else "") or (og.get("content", "") if og else "")
+            if title:
+                obj["title"] = title
         if obj.get("title") or obj.get("name"):
             out.append(obj)
     return out

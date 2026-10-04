@@ -59,3 +59,14 @@ def test_seeded_names_survive_rename(fresh_db, tmp_path):
         seed_from_yaml(s, y)
         rename_employers(s)
         assert s.query(Source).filter_by(slug="vinteden").one().company == "Vinted"
+
+
+def test_microdata_posting_without_a_title_property():
+    from bs4 import BeautifulSoup
+
+    from radar.adapters.jsonld import _jobpostings
+
+    html = ('<html><body><h1>Senior Project Manager (all genders)</h1><div itemscope itemtype="http://schema.org/JobPosting">'
+            '<div itemprop="description"><p>Lead projects in Amersfoort.</p></div></div></body></html>')
+    found = _jobpostings(BeautifulSoup(html, "lxml"))
+    assert found and found[0]["title"] == "Senior Project Manager (all genders)"

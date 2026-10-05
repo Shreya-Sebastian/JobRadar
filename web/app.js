@@ -1106,6 +1106,7 @@
     finally { clearTimeout(slow); bar.hidden = true; $("#boot").hidden = true; }
   }
   window.addEventListener("hashchange", route);
+  window.addEventListener("themechange", () => { const r = renderers[state.tab]; if (r && state.tab !== "jobs") Promise.resolve(r()).catch(() => {}); });
   $("#brand").addEventListener("click", (e) => {
     e.preventDefault();
     const target = LANG === "nl" ? "/nl/" : "/";

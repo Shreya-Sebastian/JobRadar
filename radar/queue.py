@@ -18,7 +18,9 @@ HEAVY_ATS = {"jsonld"}
 
 
 def crawl_queue_for(ats: str | None) -> str:
-    return CRAWL_QUEUE if ats in HEAVY_ATS else LIGHT_QUEUE
+    """The quick queue for a known ATS; sitemaps, and a source whose platform is unknown, go to the main queue
+    (served by the main worker, which also takes quick jobs)."""
+    return LIGHT_QUEUE if ats and ats not in HEAVY_ATS else CRAWL_QUEUE
 
 
 @lru_cache(maxsize=1)
@@ -40,9 +42,12 @@ def _ats_of(source_id: int) -> str | None:
     from radar.db import session_scope
     from radar.models import Source
 
-    with session_scope() as s:
-        src = s.get(Source, source_id)
-        return src.ats if src else None
+    try:
+        with session_scope() as s:
+            src = s.get(Source, source_id)
+            return src.ats if src else None
+    except Exception:
+        return None  # no database at hand: the main queue takes it
 
 
 def enqueue_crawl(source_id: int, ats: str | None = None):

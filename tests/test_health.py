@@ -85,3 +85,4 @@ def test_crawls_go_to_the_queue_for_their_platform(monkeypatch):
     assert q.enqueue_crawl(11, "jsonld").origin == q.CRAWL_QUEUE
     assert q.enqueue_crawl(12, "greenhouse").origin == q.LIGHT_QUEUE
     assert q.get_queue(q.CRAWL_QUEUE).count == 1 and q.get_queue(q.LIGHT_QUEUE).count == 1
+    assert q.crawl_queue_for(None) == q.CRAWL_QUEUE  # platform unknown: the main worker takes it

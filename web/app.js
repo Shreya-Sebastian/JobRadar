@@ -850,10 +850,10 @@
     const policy = i.remote_policy && i.remote_policy !== "onsite" && i.remote_policy !== "unknown" ? remoteLabel(i.remote_policy) : "";
     const exp = expCell(i), salary = salaryText(i);
     const asks = [
-      levelCell(i) && `<span>${cap(levelCell(i))}</span>`,
-      i.experience === "none" && !i.years_text && i.years == null ? `<span>${t("fact.noexp")}</span>` : !exp.includes('class="muted"') && `<span>${exp}</span>`,
-      policy && `<span>${esc(policy)}</span>`,
-      salary && `<span class="sal" title="${t("sal.title")}">${esc(salary)}</span>`,
+      levelCell(i) && `<span class="tag c-sky">${cap(levelCell(i))}</span>`,
+      i.experience === "none" && !i.years_text && i.years == null ? `<span class="tag c-indigo">${t("fact.noexp")}</span>` : !exp.includes('class="muted"') && `<span class="tag c-indigo">${exp}</span>`,
+      policy && `<span class="tag c-teal">${esc(policy)}</span>`,
+      salary && `<span class="tag c-emerald sal" title="${t("sal.title")}">${esc(salary)}</span>`,
     ].filter(Boolean).join("");
     const tags = [
       i.english_only ? `<span class="tag lang" title="${t("lang.en.title")}">${t("fact.nodutch")}</span>`

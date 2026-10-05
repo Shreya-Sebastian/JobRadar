@@ -248,6 +248,23 @@ def logo(slug: str, session: Session = Depends(db)):
     return Response(row.data, media_type=row.content_type, headers=headers)
 
 
+@app.get("/feed.xml", include_in_schema=False)
+@app.get("/nl/feed.xml", include_in_schema=False)
+def feed(request: Request, f: stats.Filters = Depends(filters), session: Session = Depends(db)):
+    """The newest 50 jobs of a search as RSS (radar/feeds.py)."""
+    from radar import feeds
+
+    lang = "nl" if request.url.path.startswith("/nl/") else "en"
+    params = {k: v for k, v in request.query_params.items() if v}
+
+    def build():
+        items = stats.posting_dicts(_rows(session, f), 1, 50, "newest", set())["items"]
+        return feeds.render(items, params, lang)
+
+    return Response(cached(_key(request), build, ttl=900), media_type="application/rss+xml; charset=utf-8",
+                    headers={"Cache-Control": "public, max-age=900"})
+
+
 @app.get("/api/skills/canonical")
 def canonical_skills(names: str):
     """Map typed skill names to the tracked canonical names: LLM -> LLMs, ml -> Machine Learning, k8s -> Kubernetes."""
@@ -672,6 +689,7 @@ def _render_index(session: Session | None = None, lang: str = "en") -> str:
                 .replace("{{SITE_JSONLD}}", _json.dumps(ld))
                 .replace("{{HTML_LANG}}", lang)
                 .replace("{{HOME_PATH}}", "/nl/" if lang == "nl" else "/")
+                .replace("{{FEED_PATH}}", "/nl/feed.xml" if lang == "nl" else "/feed.xml")
                 .replace("{{H1_SUFFIX}}",
                          " in Nederland" if lang == "nl" else " in the Netherlands")
                 .replace("{{PAGE_TITLE}}", title)

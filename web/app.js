@@ -20,7 +20,7 @@
       
       
       "ov.skills": "Most requested skills", "hero.title": "Tech jobs in the Netherlands, filtered by what they ask", "hero.sub": "{n} live jobs from {c} employers · updated {d}", "foot.tag": "Tech jobs in the Netherlands, read straight from employers' own career sites and updated every day.",
-      "jobs.none": "No jobs match these filters. Try removing one.", "pill.lang": "Language", "pill.visa": "Visa sponsorship", "pill.exp": "Experience", "pill.level": "Level", "pill.role": "Role", "pill.degree": "Degree", "pill.remote": "Remote", "pill.company": "Company", "pill.posted": "Date posted", "pill.more": "More", "remote.label": "Remote", "sal.from": "from {v}", "fact.noexp": "No experience asked", "sal.upto": "up to {v}", "sal.title": "Salary stated in the posting (per year, gross)", "fact.visa": "Visa sponsorship", "fact.nodutch": "No Dutch needed",
+      "jobs.none": "No jobs match these filters. Try removing one.", "rss.title": "RSS feed of this search: new jobs in your feed reader", "pill.lang": "Language", "pill.visa": "Visa sponsorship", "pill.exp": "Experience", "pill.level": "Level", "pill.role": "Role", "pill.degree": "Degree", "pill.remote": "Remote", "pill.company": "Company", "pill.posted": "Date posted", "pill.more": "More", "remote.label": "Remote", "sal.from": "from {v}", "fact.noexp": "No experience asked", "sal.upto": "up to {v}", "sal.title": "Salary stated in the posting (per year, gross)", "fact.visa": "Visa sponsorship", "fact.nodutch": "No Dutch needed",
       "ov.graph": "Skills asked for together",
       "kpi.week": "new in the last 7 days", "kpi.week.vs": "the 7 days before: {m}", "kpi.week.title": "Jobs posted in the last 7 days, by the date employers posted them, against the 7 days before",
       "ov.matches": "Best matches for you",
@@ -130,7 +130,7 @@
       
       
       "ov.skills": "Meest gevraagde skills", "hero.title": "Techvacatures in Nederland, gefilterd op wat ze vragen", "hero.sub": "{n} open vacatures bij {c} werkgevers · bijgewerkt {d}", "foot.tag": "Techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers en elke dag bijgewerkt.",
-      "jobs.none": "Geen vacatures met deze filters. Haal er een weg.", "pill.lang": "Taal", "pill.visa": "Visumsponsoring", "pill.exp": "Ervaring", "pill.level": "Niveau", "pill.role": "Functie", "pill.degree": "Opleiding", "pill.remote": "Thuiswerken", "pill.company": "Werkgever", "pill.posted": "Geplaatst", "pill.more": "Meer", "remote.label": "Thuiswerken", "sal.from": "vanaf {v}", "fact.noexp": "Geen ervaring gevraagd", "sal.upto": "tot {v}", "sal.title": "Salaris volgens de vacature (per jaar, bruto)", "fact.visa": "Visumsponsoring", "fact.nodutch": "Geen Nederlands nodig",
+      "jobs.none": "Geen vacatures met deze filters. Haal er een weg.", "rss.title": "RSS-feed van deze zoekopdracht: nieuwe vacatures in je feedlezer", "pill.lang": "Taal", "pill.visa": "Visumsponsoring", "pill.exp": "Ervaring", "pill.level": "Niveau", "pill.role": "Functie", "pill.degree": "Opleiding", "pill.remote": "Thuiswerken", "pill.company": "Werkgever", "pill.posted": "Geplaatst", "pill.more": "Meer", "remote.label": "Thuiswerken", "sal.from": "vanaf {v}", "fact.noexp": "Geen ervaring gevraagd", "sal.upto": "tot {v}", "sal.title": "Salaris volgens de vacature (per jaar, bruto)", "fact.visa": "Visumsponsoring", "fact.nodutch": "Geen Nederlands nodig",
       "ov.graph": "Skills die samen gevraagd worden",
       "kpi.week": "nieuw in de laatste 7 dagen", "kpi.week.vs": "de 7 dagen daarvoor: {m}", "kpi.week.title": "Vacatures geplaatst in de laatste 7 dagen, op de datum van de werkgever, tegenover de 7 dagen daarvoor",
       "ov.matches": "Beste matches voor jou",
@@ -685,6 +685,8 @@
     if (state.sort !== "newest") q.set("sort", state.sort);
     const s = q.toString().replace(/%2C/g, ",");
     const want = "#jobs" + (s ? "?" + s : "");
+    const feed = new URLSearchParams(q); feed.delete("saved"); feed.delete("sort");  // the feed: same search, newest first
+    $("#f-rss").href = (LANG === "nl" ? "/nl/feed.xml" : "/feed.xml") + (feed.toString() ? "?" + feed.toString().replace(/%2C/g, ",") : "");
     if (location.hash !== want) history.replaceState(null, "", location.pathname + location.search + want);
   }
   function jobParams() {

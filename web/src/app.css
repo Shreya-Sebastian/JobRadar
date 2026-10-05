@@ -254,6 +254,8 @@
   .results-head { @apply mt-5 mb-2.5 flex flex-wrap items-center gap-x-3 gap-y-2; }
   .results-head .count { @apply mr-auto ml-0 text-sm font-semibold text-ink; }
   .sort { @apply flex items-center gap-2 text-sm text-muted; }
+  .rss-link { @apply inline-flex items-center gap-1 text-sm font-medium text-muted no-underline hover:text-accent-2; }
+  .rss-link svg { @apply size-4; }
   .sort select { @apply py-1.5; }
   .jobs { @apply m-0 flex list-none flex-col gap-2.5 p-0; }
   .jobs-empty { @apply rounded-2xl border border-dashed border-line p-8 text-center; }

@@ -80,6 +80,16 @@ THEMES = {  # key: (filter kwargs, nl slug, en slug, nl title, en title)
 CITY_NL = {"The Hague": "Den Haag", "'s-Hertogenbosch": "Den Bosch"}
 
 
+def feed_path(page: Page, lang: str) -> str:
+    """The RSS feed of a search page: the same filters on /feed.xml."""
+    from urllib.parse import urlencode
+
+    params = {k: ("true" if v is True else v) for k, v in page.filters.items() if v not in (None, False, "")}
+    if page.city:
+        params["city"] = page.city
+    return ("/nl/feed.xml" if lang == "nl" else "/feed.xml") + (f"?{urlencode(params)}" if params else "")
+
+
 def doc_title(title: str) -> str:
     """The <title>: the page title, then the site name, unless the title already says "tech jobs" (it is the name)."""
     return title if "tech jobs" in title.lower() else f"{title} | {settings.site_name}"
@@ -427,6 +437,7 @@ def render(page: Page, lang: str, rows: list[stats.Row], pages: list[Page]) -> s
         "{{SITE_URL}}": base,
         "{{PATH}}": path,
         "{{NL_PATH}}": page.nl_path,
+        "{{FEED}}": escape(feed_path(page, lang)),
         "{{EN_PATH}}": page.en_path,
         "{{OTHER_PATH}}": other,
         "{{OTHER_LANG}}": T["lang_other"],

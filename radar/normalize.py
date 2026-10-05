@@ -334,6 +334,11 @@ def _valid_through(raw: RawPosting):
     return dt
 
 
+# a site template that puts its own field label in the title: "Titel Industrial Automation Engineer" (MCFLY & BROWN)
+# ("Title Insurance Analyst" is a job, so the English label only counts with a colon)
+_TITLE_LABEL = re.compile(r"^(?:(?i:titel|vacaturetitel)\s*:?|(?i:job title|title)\s*:)\s+(?=[A-Z0-9])")
+
+
 def normalize(raw: RawPosting, company: str) -> dict:
     from radar.htmlclean import clean_html
 
@@ -352,7 +357,7 @@ def normalize(raw: RawPosting, company: str) -> dict:
         country = "NL"
     return {
         "external_id": raw.external_id,
-        "title": raw.title.strip()[:500],
+        "title": _TITLE_LABEL.sub("", raw.title.strip())[:500],
         "company": norm_company(company)[:200],
         "location_raw": (raw.location or "")[:500] or None,
         "city": city,

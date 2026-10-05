@@ -9,7 +9,7 @@ from radar.extract.schema import Extraction
 from radar.extract.sections import job_text
 from radar.taxonomy import find_skills
 
-RULES_VERSION = "rules-v18"  # bump whenever the taxonomy or the rules change, so `radar extract` re-runs
+RULES_VERSION = "rules-v19"  # bump whenever the taxonomy or the rules change, so `radar extract` re-runs
 
 # words only one of the languages uses: "in", "is", "we", "team", "over" and "of" are both Dutch and English,
 # "die" and "er" are also German
@@ -439,6 +439,15 @@ _ENROL_REQ = re.compile(_ENROL_REQ.pattern + "|" + "|".join([
     r"absolvierst (?:derzeit |aktuell )?ein\w* \w*studium|immatrikuliert|eingeschrieben",
     # an allowance paid per school level: "De stagevergoeding bedraagt voor een mbo-, hbo- of wo stage € 750"
     r"stagevergoeding\b[^.]{0,40}?\b(?:mbo|hbo|wo)\b[^.]{0,25}?\bstage\b",
+    # found in the 5 Oct 2026 audit: "een stagevergoeding van maximaal € 400 (met een MBO-opleiding)", "een MBO 3 of
+    # 4 student", "een lopende mbo-4-opleiding", "Penultimate-year student", "Student working toward a Master's
+    # degree", "plek voor jouw meewerkstage"
+    r"stagevergoeding\b[^.]{0,80}?\b(?:mbo|hbo|wo)[- ]?(?:\d[- ])?opleiding",
+    r"\b(?:mbo|hbo|wo)[- ]?\d?(?:\s*(?:of|or|en|/)\s*\d)?\s+stud(?:ent|enten|ents)\b",
+    r"\blopende [\w/-]*\s?(?:opleiding|studie)",
+    r"\bpenultimate[- ]year (?:[\w-]+ )?students?\b",
+    r"\bstudents? (?:working|studying) (?:toward|towards|for) (?:a|an|your)\b",
+    r"\bmee(?:werk|loop)stage",
 ]), re.I)
 _ENROL_NOT = re.compile(_ENROL_NOT.pattern + "|" + "|".join([
     # "If you have recently graduated in Computer Science"
@@ -452,6 +461,8 @@ _ENROL_NOT = re.compile(_ENROL_NOT.pattern + "|" + "|".join([
     # "currently in the final stages of a master's, or already holding a master's"
     r"\b(?:or|and/or)\s+(?:you\s+)?(?:are\s+|have\s+)?already\s+(?:hold(?:ing)?|ha(?:ve|ving)|completed|"
     r"obtained|finished|in possession of)\s+(?:a\s+|an\s+|your\s+)?(?:master|bachelor|msc|bsc|degree|diploma)",
+    # "You have completed or are in the midst or at the end of a Master's degree"
+    r"\b(?:have )?completed,? or (?:are )?(?:in the midst|currently|still|at the end)",
 ]), re.I)
 # a title that says thesis, afstudeer or werkstudent is evidence even when the text is empty
 _TITLE_REQ = re.compile(
@@ -1187,10 +1198,19 @@ def dutch_requirement(text: str, lang: str = "en") -> bool | None:
     return False if found or _DUTCH_PLUS.search(text) else None
 
 
+# A title that names Dutch is a Dutch-speaking job ("IT Support Technician | Dutch", "AI Training Contributor - Dutch",
+# "(Dutch language)"), unless Dutch is one of two languages to choose from ("German or Dutch speaking").
+_TITLE_DUTCH = re.compile(r"\bdutch\b|nederlandstalig\w*|nederlands ?sprekend\w*", re.I)
+_TITLE_DUTCH_ALT = re.compile(r"\b(?:german|french|english|flemish)\s*(?:or|/)\s*dutch\b|"
+                              r"\bdutch\s*(?:or|/)\s*(?:german|french|english|flemish)\b", re.I)
+
+
 def language_fields(title: str, text: str) -> tuple[str, bool, bool, bool]:
     """(posting_language, dutch_required, english_only, english_required)."""
     lang = detect_language(text) if text else "en"
     said = dutch_requirement(title + "\n" + text, lang)
+    if _TITLE_DUTCH.search(title or "") and not _TITLE_DUTCH_ALT.search(title or ""):
+        said = True
     # written in Dutch means you work in Dutch, unless the posting says Dutch is not needed or only a plus
     dutch_required = said if said is not None else lang == "nl"
     # a posting with no readable text (empty, a bare link, "x", a salary line) does not tell whether Dutch is needed
@@ -1204,7 +1224,13 @@ def language_fields(title: str, text: str) -> tuple[str, bool, bool, bool]:
     return lang, dutch_required, english_only, english_required
 
 
+_INTERN_INHOUSE = re.compile(r"\(\s*intern\s*\)", re.I)
+
+
 def detect_seniority(title: str, text: str = "") -> str:
+    if text and _INTERN_INHOUSE.search(title) and detect_language(text) == "nl":
+        # in a Dutch posting "(intern)" means in-house: "Technisch Information Security Officer (intern)"
+        title = _INTERN_INHOUSE.sub(" ", title)
     m = _LEVEL_RANGE.search(title)
     if m and not _SENIORITY_RX[0][1].search(title) and not _SENIORITY_RX[1][1].search(title):
         a, b = (_RANGE_LEVEL[g.lower().rstrip(".")] for g in m.groups())

@@ -110,6 +110,14 @@ def _has_jobposting(client: httpx.Client, url: str) -> bool:
     return r.status_code == 200 and ("JobPosting" in r.text)
 
 
+def _locale_rank(url: str) -> int:
+    """English first, then no locale in the path, then Dutch, then any other locale: /global/en/, /nl-nl/, /ca/fr/."""
+    segs = [s.lower() for s in urlparse(url).path.split("/") if s][:2]
+    langs = [m.group(1) for m in (re.fullmatch(r"([a-z]{2})(?:[-_][a-z]{2})?", s) for s in segs) if m]
+    lang = langs[-1] if langs else None  # "/ca/fr/": the second segment is the language
+    return {"en": 0, None: 1, "nl": 2}.get(lang, 3)
+
+
 def find_job_sitemap(domain: str, client: httpx.Client | None = None, max_sitemaps: int = 12) -> dict | None:
     """{'sitemap': url, 'jobs': n job-detail URLs, 'sample': url} for the best sitemap, or None."""
     own = client is None
@@ -125,7 +133,10 @@ def find_job_sitemap(domain: str, client: httpx.Client | None = None, max_sitema
                 listed = re.findall(r"(?im)^\s*sitemap:\s*(\S+)", r.text) if r.status_code < 400 else []
             except Exception:
                 continue  # host does not exist
-            for sm in listed or [f"https://{host}/sitemap.xml", f"https://{host}/sitemap_index.xml"]:
+            # a site with one sitemap per locale lists the same jobs in each ("ca/fr", "global/en", "jp/ja"); a tie
+            # keeps the first, so the English and Dutch copies go first and visitors are not sent to a French page
+            for sm in sorted(listed, key=_locale_rank) or [f"https://{host}/sitemap.xml",
+                                                          f"https://{host}/sitemap_index.xml"]:
                 if sm not in sitemaps:
                     sitemaps.append(sm)
         best: dict | None = None

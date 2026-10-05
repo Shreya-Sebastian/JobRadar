@@ -241,6 +241,56 @@ _NON_TECH_ROLE = re.compile(
     r"\w*verpleegkundig\w*|nurse|physician)\b",
     re.I,
 )
+# Jobs in other trades whose titles borrow tech words ("CNC Programmeur", "Electrical Datacenter Engineer", "AI
+# Training Contributor - Dutch", "IT Inkoper", "Medewerker Facilitaire Servicedesk"): non-tech unless what is left of
+# the title still names real tech work. Found in the 5 Oct 2026 audit of the live listings.
+_NON_TECH_TRADE = re.compile(
+    # machining and production programming
+    r"\bcnc\b|\bcam[- ](?:programm\w*|engineer)|cad/cam|lasersnij\w*|verspan\w*|frezer|draaier|machining|"
+    r"metaalindustrie|"
+    # installation, lifts and power networks
+    r"\blift(?:en)?\b|elevator|escalator|autoruit\w*|\w*monteur\b|high voltage|hoogspanning|middenspanning|"
+    r"laagspanning|\bhv\s*/\s*mv\b|transmissie|"
+    # building data centres rather than running them
+    r"\bm&(?:amp;)?e\b|\bmep\b|liquid cooling|site (?:acquisition|selection)|colocation manager|"
+    # (an "Electrical Automation Engineer" or "Electrical and Controls Engineer" programs PLCs: tech)
+    r"electrical\b(?![\w\s&/-]{0,30}(?:automation|control|software|embedded|firmware|plc))[\w\s/-]{0,25}engineer|"
+    r"\bconstruction\b|orderpicker|"
+    # language work for AI models: rating, annotation, transcript checking
+    r"training contributor|quality evaluator|text validation|\brater\b|annotat\w*|online data analyst|"
+    r"\bdata (?:associate|quality specialist)\b.*\b(?:dutch|german|french|agi)\b|"
+    r"quality control specialist for ai|generative ai (?:analyst|artist)|mapping (?:city|country) expert|"
+    # buying, contracts, recruiting, facilities, secretarial, legal, translation, insurance, bookkeeping
+    r"\binkop\w*|inkoopadvis\w*|contract ?manag\w*|vendor manag\w*|sourcing (?:&|and) category|"
+    r"werving|\bw&s\b|facilit\w*|servicedesk\s+(?:hr|vve|inkoop)|\bvve\b|vastgoedbeheer|\w*secretar\w*|"
+    r"jurist\w*|juridisch\w*|ondernemingsrecht|\btolk\b|vertaler|translator|interpreter|underwrit\w*|"
+    r"boekhoud\w*|"
+    # marketing and creative
+    # (a "Technical SEO Specialist" or a game studio's "3D Technical Artist" does web or engine work: tech)
+    r"marketeer|google ads|(?<!technical )\bseo\b|e-?commerce manager|campagne\w*|\bcampaign\b|art director|"
+    r"creative director|(?<!technical )\bartist\b|creative specialist|"
+    # military engineering corps (construction and combat support): "Genie", "Constructiegenie"
+    r"genie\b|"
+    # research fields far from computing
+    r"hydrodynamic\w*|naval|corrosion|molten salt|ammonia|lipid|microbial|food web|agrochemical|pharmacolog\w*|"
+    r"leukodystroph\w*|timber|creep behaviou?r",
+    re.I,
+)
+# words a trade title shares with IT titles ("CNC Programmeur", "Inkoper ICT", "Facilitair Servicedesk", "Force Support
+# Engineer", "Underwriter Cyber", "Netwerkarchitect laagspanning"): they cannot rescue it
+_TRADE_GENERIC = re.compile(r"programm\w*|\bict\b|\bit\b|service ?desk|helpdesk|support engineer|technical support|"
+                            r"cyber\w*|netwerk\w*|network\w*", re.I)
+# Quality assurance of food, medicines or production (GMP, HACCP, batch release): "QA Officer" at a meat processor or
+# a drug maker is not software QA. Decided on the text, since the title alone says nothing.
+_QA_TITLE = re.compile(r"\bq[ac]\b|quality (?:assurance|control)|kwaliteit", re.I)
+_QA_SOFTWARE_TITLE = re.compile(r"software|test|automat\w*|\bit\b|\bict\b|data|cloud|devops|platform|game", re.I)
+_GMP_TEXT = re.compile(
+    r"\bgmp\b|haccp|\bbrc\b|\bifs\b|batch (?:release|record)|food safety|voedselveiligheid|levensmiddel\w*|"
+    r"voedingsmiddel\w*|\bgdp\b|pharmaceutic\w*|farmaceut\w*|\bcapa\b|deviations?|afwijkingen|iso 13485|"
+    r"medical devices?|cleanroom|productielijn|production line|slachterij|vlees|meat|poultry|laborator\w*",
+    re.I,
+)
+
 # role nouns that keep a commercial title technical ("Sales Engineer", "Marketing Data Analyst")
 _TECH_ROLE_NOUN = re.compile(
     r"engineer|architect|scientist|analyst|analist|product owner|beheerder|programmeur|"
@@ -432,9 +482,18 @@ def _title_score(title: str, description: str = "") -> float:
     if re.search(r"open (?:application|sollicitatie)|\[test\]|spontan\w* (?:application|sollicitatie)|"
                  r"talent ?pool|talent community|future opportunit\w*|general application|expression of interest|"
                  r"interest list|reservelijst|aanmelden (?:voor )?(?:de |onze )?talent|"
-                 r"\btest ?vacature|\btest ?template|\bdummy\b|do not apply|niet (?:op )?reageren", t, re.I):
+                 r"\btest ?vacature|\btest ?template|\bdummy\b|do not apply|niet (?:op )?reageren|"
+                 # recruitment events and courses, not jobs: Deloitte's in-house and padel days, a networking lunch
+                 r"in-?house ?(?:da[gy]|workshop)|padeldag|contract in (?:a|1|één) da[gy]|career week|"
+                 r"networking (?:lunch|event|dinner)|business course|\bsubmissions\b", t, re.I):
         return 0.05  # not a vacancy (open application, talent pool), whatever the domain words say
     excluded = bool(_EXCLUDE.search(t))
+    if _NON_TECH_TRADE.search(t) and not _RESCUE_STRONG.search(_TRADE_GENERIC.sub(" ", _NON_TECH_TRADE.sub(" ", t))):
+        return 0.1
+    if _QA_TITLE.search(t) and not _QA_SOFTWARE_TITLE.search(t) and \
+            len({m.group(0).lower() for m in _GMP_TEXT.finditer(description or "")}) >= 2 and \
+            len(software_signals(description or "")) < 3:
+        return 0.1
     m = _NON_TECH_ROLE.search(t)
     if m and not _TECH_ROLE_NOUN.search(t[:m.start()] + " " + t[m.end():]):
         return 0.1

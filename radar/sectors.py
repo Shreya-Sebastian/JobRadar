@@ -170,7 +170,7 @@ def _curated() -> dict[str, str]:
             if line.strip() and not line.startswith("#"):
                 company, sector = line.split("\t")[:2]
                 if sector in SECTORS:
-                    out[company] = sector
+                    out[_norm(company)] = sector  # "Quantware" and "QuantWare" are one employer
     except FileNotFoundError:
         pass
     return out
@@ -202,7 +202,7 @@ def text_sector(company: str, text: str) -> str | None:
 
 def sector_for(company: str, intro: str, kind: str = "employer") -> tuple[str, str]:
     """(sector, how it was found) for one employer: the curated table, the lists, the agency flag, its own words."""
-    curated = _curated().get(company)
+    curated = _curated().get(_norm(company))
     if curated:
         return curated, "curated"
     listed = listed_sector(company)

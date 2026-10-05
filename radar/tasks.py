@@ -12,7 +12,7 @@ from sqlalchemy import func, select
 from radar.adapters import get_adapter
 from radar.adapters.base import AdapterError, RawPosting, SourceNotFound
 from radar.config import settings
-from radar.crawler import ingest, known_urls_for, mark_duplicates
+from radar.crawler import close_expired, deactivate, ingest, known_urls_for, mark_duplicates
 from radar.db import init_db, session_scope
 from radar.metrics import FETCH_SECONDS, FETCHES, LIVE_POSTINGS, POSTINGS_CLOSED, POSTINGS_NEW, POSTINGS_SEEN, SOURCES
 from radar.models import CrawlRun, Posting, Source
@@ -55,7 +55,7 @@ def crawl_source(source_id: int, extractor_name: str | None = None) -> dict:
             src.last_error = error
             src.consecutive_failures += 1
             if error == "not_found" or src.consecutive_failures >= 5:
-                src.active = False
+                deactivate(s, src)
             FETCHES.labels(ats, src.last_status).inc()
             log.warning("%s/%s failed: %s", ats, slug, error)
             return {"source_id": source_id, "error": error}
@@ -117,6 +117,7 @@ def finalize() -> dict:
     """Dedup, refresh gauges and bump the data version so API processes reload. Runs as a CronJob."""
     init_db()
     with session_scope() as s:
+        expired = close_expired(s)
         dups = mark_duplicates(s)
         from radar import auth, feedback
 
@@ -145,8 +146,8 @@ def finalize() -> dict:
     from radar.cache import bump_data_version
 
     bump_data_version()
-    log.info("finalize: live=%s tech=%s duplicates=%s", live, tech, dups)
-    return {"live": live, "tech": tech, "duplicates_marked": dups}
+    log.info("finalize: live=%s tech=%s duplicates=%s expired=%s", live, tech, dups, expired)
+    return {"live": live, "tech": tech, "duplicates_marked": dups, "expired_closed": expired}
 
 
 def linkcheck() -> dict:

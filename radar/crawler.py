@@ -11,7 +11,7 @@ import re
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.parse import urlparse
 
 from sqlalchemy import func, select
@@ -96,6 +96,54 @@ def fetch_source(source: Source, throttle: _DomainThrottle,
         return source, None, f"exception: {type(e).__name__}: {e}"[:500]
 
 
+def is_expired(valid_through: datetime | None, now: datetime) -> bool:
+    """Whether an employer's own expiry date has passed. A date without a time ("validThrough": "2026-10-08") means
+    the vacancy is open all of that day."""
+    if valid_through is None:
+        return False
+    if (valid_through.hour, valid_through.minute, valid_through.second) == (0, 0, 0):
+        valid_through += timedelta(days=1)
+    return valid_through < now
+
+
+def expiry_trusted(dates: list[datetime], now: datetime) -> bool:
+    """False when nearly every dated posting of a source looks expired: then the field is a broken template value,
+    not information."""
+    return not (len(dates) >= 5 and sum(1 for v in dates if is_expired(v, now)) / len(dates) > 0.8)
+
+
+def close_expired(session: Session) -> int:
+    """Close live postings whose expiry date has passed. Crawls do this too, but a source is read every few hours
+    and an incremental sitemap crawl does not re-read pages it already knows, so a government vacancy that closed
+    at midnight stayed listed until much later."""
+    now = datetime.utcnow()
+    by_source: dict[int, list[Posting]] = {}
+    for p in session.scalars(select(Posting).where(Posting.closed_at.is_(None), Posting.valid_through.is_not(None))):
+        by_source.setdefault(p.source_id, []).append(p)
+    closed = 0
+    for postings in by_source.values():
+        if not expiry_trusted([p.valid_through for p in postings], now):
+            continue
+        for p in postings:
+            if is_expired(p.valid_through, now):
+                p.closed_at = now
+                closed += 1
+    session.flush()
+    return closed
+
+
+def deactivate(session: Session, source: Source) -> int:
+    """Switch a source off and close its live postings: nothing re-reads them any more, so they would otherwise stay
+    listed with links nobody checks."""
+    source.active = False
+    now = datetime.utcnow()
+    closed = 0
+    for p in session.scalars(select(Posting).where(Posting.source_id == source.id, Posting.closed_at.is_(None))):
+        p.closed_at = now
+        closed += 1
+    return closed
+
+
 def ingest(session: Session, source: Source, raws: list[RawPosting], extractor_name: str = "rules") -> dict:
     """Upsert one source's postings. Returns counters."""
     now = datetime.utcnow()
@@ -114,11 +162,22 @@ def ingest(session: Session, source: Source, raws: list[RawPosting], extractor_n
     from radar.normalize import _valid_through
 
     dated = [v for v in (_valid_through(r) for r in raws if not r.raw.get("still_listed")) if v is not None]
-    trust_expiry = not (len(dated) >= 5 and sum(1 for v in dated if v < now) / len(dated) > 0.8)
+    # pages an incremental crawl did not re-read keep the expiry date stored when they were last read
+    dated += [p.valid_through for r in raws if r.raw.get("still_listed")
+              for p in [existing.get(r.external_id)] if p is not None and p.valid_through is not None]
+    trust_expiry = expiry_trusted(dated, now)
     for raw in raws:
         if raw.raw.get("still_listed"):
             # an incremental crawl confirmed this page is still in the sitemap without re-reading it
             p = existing.get(raw.external_id)
+            # the page was not re-read, so check what is stored: a posting abroad (a country fixed after it was
+            # first read) or past its expiry date is closed below like any posting that disappeared
+            if p is not None and keep is not None and p.country not in keep:
+                skipped_foreign += 1
+                continue
+            if p is not None and trust_expiry and is_expired(p.valid_through, now):
+                expired += 1
+                continue
             if p is not None:
                 seen_ids.add(raw.external_id)
                 p.last_seen = now
@@ -141,7 +200,7 @@ def ingest(session: Session, source: Source, raws: list[RawPosting], extractor_n
         elif not country or country == "XX":
             skipped_foreign += 1
             continue
-        if trust_expiry and fields.get("valid_through") and fields["valid_through"] < now:
+        if trust_expiry and is_expired(fields.get("valid_through"), now):
             expired += 1
             continue  # not seen: an existing copy is closed below like any posting that disappeared
         seen_ids.add(fields["external_id"])
@@ -172,6 +231,8 @@ def ingest(session: Session, source: Source, raws: list[RawPosting], extractor_n
             p.last_seen = now
             if p.closed_at is not None:
                 p.closed_at = None  # reopened
+            if fields["url"] and p.url != fields["url"]:
+                p.url = fields["url"]  # the content hash covers title and text only: a moved page must still update
             # a response without the text (a failed detail request, an empty field this time) is not a change:
             # keep the text already stored rather than wiping it
             lost_text = len((fields.get("description") or "").strip()) < 50 <= len((p.description or "").strip())
@@ -555,7 +616,7 @@ def crawl(source_ids: list[int] | None = None, ats: str | None = None, limit: in
                 src.consecutive_failures += 1
                 run.sources_failed += 1
                 if error == "not_found" or src.consecutive_failures >= 5:
-                    src.active = False
+                    deactivate(session, src)
                 log.warning("%s/%s failed: %s", src.ats, src.slug, error)
                 session.commit()
                 continue

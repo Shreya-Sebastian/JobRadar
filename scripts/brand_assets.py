@@ -19,25 +19,29 @@ BG = (248, 250, 252)
 WHITE = (255, 255, 255)
 
 
-def logo(size: int) -> Image.Image:
-    """The logo of web/favicon.svg (a 32-unit square), drawn at `size` pixels with 4x supersampling."""
+def logo(size: int, small: bool = False) -> Image.Image:
+    """The logo of web/favicon.svg (a 32-unit square), drawn at `size` pixels with 4x supersampling. `small` is the
+    16-pixel cut: no faint outer ring, a brighter ring and thicker strokes, so it stays legible in a browser tab."""
     s = size * 4
     u = s / 32
     img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    d.rounded_rectangle((0, 0, s - 1, s - 1), radius=9 * u, fill=ACCENT)
-    w = max(1, round(2 * u))
-    for r, alpha in ((10, 0.35), (5.5, 0.6)):
+    d.rounded_rectangle((0, 0, s - 1, s - 1), radius=(7 if small else 9) * u, fill=ACCENT)
+    w = max(1, round((2.4 if small else 2) * u))
+    for r, alpha in (((8.5, 0.85),) if small else ((10, 0.35), (5.5, 0.6))):
         ring = Image.new("RGBA", (s, s), (0, 0, 0, 0))
         ImageDraw.Draw(ring).ellipse((16 * u - r * u, 16 * u - r * u, 16 * u + r * u, 16 * u + r * u),
                                      outline=WHITE + (round(255 * alpha),), width=w)
         img = Image.alpha_composite(img, ring)
     d = ImageDraw.Draw(img)
+    if small:  # a thicker needle: at 16 px it is the shape that makes the ring read as a radar, not a target
+        w = round(3.4 * u)
     d.line((16 * u, 16 * u, 23 * u, 9 * u), fill=WHITE, width=w)
     for cx, cy in ((23, 9), (16, 16)):
         d.ellipse((cx * u - w / 2, cy * u - w / 2, cx * u + w / 2, cy * u + w / 2), fill=WHITE)  # round line caps
-    for cx, cy in ((16, 16), (10.5, 20)):
-        d.ellipse((cx * u - 1.8 * u, cy * u - 1.8 * u, cx * u + 1.8 * u, cy * u + 1.8 * u), fill=WHITE)
+    dot = 2.2 if small else 1.8
+    for cx, cy in (((16, 16),) if small else ((16, 16), (10.5, 20))):  # no blip at 16 px: it merges with the ring
+        d.ellipse((cx * u - dot * u, cy * u - dot * u, cx * u + dot * u, cy * u + dot * u), fill=WHITE)
     return img.resize((size, size), Image.LANCZOS)
 
 
@@ -67,13 +71,18 @@ def card() -> Image.Image:
 
 
 def main() -> None:
-    logo(256).save(WEB / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)])
+    # one hand-made image per size: Pillow would otherwise shrink the 48-pixel one for 16
+    logo(48).save(WEB / "favicon.ico", format="ICO", sizes=[(48, 48), (32, 32), (16, 16)],
+                  append_images=[logo(32), logo(16, small=True)])
+    logo(32).save(WEB / "favicon-32.png")
+    logo(16, small=True).save(WEB / "favicon-16.png")
     logo(512).save(WEB / "icon-512.png")
     apple = Image.new("RGB", (180, 180), ACCENT)  # iOS draws its own rounded corners on a full square
     apple.paste(logo(180), (0, 0), logo(180))
     apple.save(WEB / "apple-touch-icon.png")
     card().save(WEB / "og-card.png", optimize=True)
-    for name in ("favicon.ico", "icon-512.png", "apple-touch-icon.png", "og-card.png"):
+    for name in ("favicon.ico", "favicon-16.png", "favicon-32.png", "icon-512.png", "apple-touch-icon.png",
+                 "og-card.png"):
         print(name, (WEB / name).stat().st_size, "bytes")
 
 

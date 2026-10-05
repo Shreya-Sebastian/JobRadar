@@ -84,7 +84,7 @@ _TEXT = {
         "language": "Language", "all": "All employers", "overview": "Overview", "jobs": "Jobs", "market": "Market",
         "employers": "Employers", "empty": "No open tech roles right now.",
         "footer": "lists tech vacancies in the Netherlands read directly from employers' career sites.",
-        "desc": "{n} open tech jobs at {c} in the Netherlands", "desc_in": ", in {x}",
+        "desc": "Open tech jobs at {c} in the Netherlands", "desc_in": ", in {x}",
         "desc_skills": ". Most asked skills: {x}",
         "desc_end": ". Read from the employer's own career site; every listing links to the original page.",
         "today": "today", "yesterday": "yesterday", "days": "{d}d ago",
@@ -100,7 +100,7 @@ _TEXT = {
         "market": "Markt", "employers": "Werkgevers",
         "empty": "Op dit moment geen open techvacatures.",
         "footer": "toont techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers.",
-        "desc": "{n} open techvacatures bij {c} in Nederland", "desc_in": ", in {x}",
+        "desc": "Openstaande techvacatures bij {c} in Nederland", "desc_in": ", in {x}",
         "desc_skills": ". Meest gevraagde skills: {x}",
         "desc_end": ". Rechtstreeks van de carrièresite van de werkgever; elke vacature linkt naar de "
                     "originele pagina.",
@@ -145,7 +145,7 @@ def render_company(name: str, rows: list[Row], lang: str = "en") -> str:
         f"<td>{'EN' if r.ex.get('english_only') else 'NL'}</td></tr>"
         for r in mine
     )
-    desc = (t["desc"].format(n=len(mine), c=name)
+    desc = (t["desc"].format(c=name)
             + (t["desc_in"].format(x=", ".join(c for c, _ in cities.most_common(3))) if cities else "")
             + (t["desc_skills"].format(x=", ".join(s for s, _ in skills.most_common(5))) if skills else "")
             + t["desc_end"])
@@ -445,8 +445,8 @@ def render_companies(rows: list[Row]) -> str:
     base = settings.site_url.rstrip("/")
     lis = "".join(f"<li><a href=\"/company/{slug}\">{escape(name)}</a> <span class=\"muted\">{n}</span></li>"
                   for name, slug, n in items)
-    desc = (f"{len(items)} employers with open tech jobs in the Netherlands, read from their own career sites. "
-            f"{sum(n for _, _, n in items)} live postings.")
+    desc = ("Employers with open tech jobs in the Netherlands, read from their own career sites and "
+            "updated daily.")
     ld = {"@context": "https://schema.org", "@type": "CollectionPage",
           "name": "Employers hiring for tech in the Netherlands", "url": f"{base}/companies", "description": desc,
           "isPartOf": {"@type": "WebSite", "name": settings.site_name, "url": base}}

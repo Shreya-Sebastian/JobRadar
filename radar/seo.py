@@ -367,15 +367,16 @@ def render(page: Page, lang: str, rows: list[stats.Row], pages: list[Page]) -> s
         for p in related
     )
     top = ", ".join(s for s, _ in skills.most_common(4))
+    # no counts in the snippet: they go stale between crawls and read as clickbait in search results
     if lang == "nl":
         desc = (
-            f"{title}: {n} vacatures bij {len(employers)} werkgevers, rechtstreeks van hun eigen sites. "
-            f"{pct(no_dutch)} zonder Nederlands{f', gevraagd: {top}' if top else ''}. Dagelijks bijgewerkt."
+            f"{title}, rechtstreeks van de eigen vacaturesites van werkgevers"
+            f"{f'. Gevraagd: {top}' if top else ''}. Filter op Engelstalig, visum en niveau. Dagelijks bijgewerkt."
         )
     else:
         desc = (
-            f"{title}: {n} open roles at {len(employers)} employers, straight from their own career sites. "
-            f"{pct(no_dutch)} need no Dutch{f'; top skills {top}' if top else ''}. Updated daily."
+            f"{title}, straight from the employers' own career sites"
+            f"{f'. Top skills: {top}' if top else ''}. Filter on English-speaking, visa and level. Updated daily."
         )
     ld = {
         "@context": "https://schema.org",

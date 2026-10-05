@@ -24,7 +24,7 @@
       "rep.new": "new jobs", "rep.before": "the week before: {n}", "rep.nodutch": "need no Dutch", "rep.visa": "mention visa sponsorship",
       "rep.salary": "median stated salary", "rep.skills": "Skills asked for", "rep.positions": "Most posted positions", "rep.change": "change in share against the week before",
       "tab.tracker": "Tracker", "tr.title": "Your applications", "tr.hint": "Star a job to collect it under Saved, then move it along as you go.", "col.saved": "Saved", "col.interested": "Interested", "col.applied": "Applied", "col.archived": "Archived", "tr.move": "Move to", "tr.delete": "Remove from the tracker", "tr.removed": "Removed from your tracker.", "tr.undo": "Undo", "tr.empty": "Nothing here yet. Star a job in the Jobs tab to start tracking it.", "tr.col.empty": "Drag a job here", "tr.applied.on": "applied {d}", "tr.moved.on": "since {d}", "tr.closed": "closed", "hero.title": "Tech jobs in the Netherlands, filtered by what they ask", "hero.sub": "{n} live jobs from {c} employers · updated {d}", "foot.tag": "Tech jobs in the Netherlands, read straight from employers' own career sites and updated every day.",
-      "jobs.none": "No jobs match these filters. Try removing one.", "rss.title": "RSS feed of this search: new jobs in your feed reader", "pill.lang": "Language", "pill.visa": "Visa sponsorship", "pill.exp": "Experience", "pill.level": "Level", "pill.role": "Role", "pill.degree": "Degree", "pill.remote": "Remote", "pill.company": "Company", "pill.posted": "Date posted", "pill.more": "More", "remote.label": "Remote", "sal.from": "from {v}", "fact.noexp": "No experience asked", "sal.upto": "up to {v}", "sal.title": "Salary stated in the posting (per year, gross)", "fact.visa": "Visa sponsorship", "fact.nodutch": "No Dutch needed",
+      "jobs.none": "No jobs match these filters. Try removing one.", "rss.title": "Your current Jobs search as an RSS feed: new jobs in your feed reader", "rss.label": "RSS feed of your search", "pill.lang": "Language", "pill.visa": "Visa sponsorship", "pill.exp": "Experience", "pill.level": "Level", "pill.role": "Role", "pill.degree": "Degree", "pill.remote": "Remote", "pill.company": "Company", "pill.posted": "Date posted", "pill.more": "More", "remote.label": "Remote", "sal.from": "from {v}", "fact.noexp": "No experience asked", "sal.upto": "up to {v}", "sal.title": "Salary stated in the posting (per year, gross)", "fact.visa": "Visa sponsorship", "fact.nodutch": "No Dutch needed",
       "ov.graph": "Skills asked for together",
       "kpi.week": "new in the last 7 days", "kpi.week.vs": "the 7 days before: {m}", "kpi.week.title": "Jobs posted in the last 7 days, by the date employers posted them, against the 7 days before",
       "ov.matches": "Best matches for you",
@@ -138,7 +138,7 @@
       "rep.new": "nieuwe vacatures", "rep.before": "de week ervoor: {n}", "rep.nodutch": "zonder Nederlands", "rep.visa": "noemen visumsponsoring",
       "rep.salary": "mediaan vermeld salaris", "rep.skills": "Gevraagde skills", "rep.positions": "Meest geplaatste functies", "rep.change": "verschil in aandeel met de week ervoor",
       "tab.tracker": "Sollicitaties", "tr.title": "Je sollicitaties", "tr.hint": "Geef een vacature een ster om hem onder Bewaard te zetten, en schuif hem door terwijl je solliciteert.", "col.saved": "Bewaard", "col.interested": "Interessant", "col.applied": "Gesolliciteerd", "col.archived": "Gearchiveerd", "tr.move": "Verplaats naar", "tr.delete": "Uit het overzicht halen", "tr.removed": "Uit je overzicht gehaald.", "tr.undo": "Ongedaan maken", "tr.empty": "Nog niets. Geef een vacature in het tabblad Vacatures een ster om hem te volgen.", "tr.col.empty": "Sleep een vacature hierheen", "tr.applied.on": "gesolliciteerd {d}", "tr.moved.on": "sinds {d}", "tr.closed": "gesloten", "hero.title": "Techvacatures in Nederland, gefilterd op wat ze vragen", "hero.sub": "{n} open vacatures bij {c} werkgevers · bijgewerkt {d}", "foot.tag": "Techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers en elke dag bijgewerkt.",
-      "jobs.none": "Geen vacatures met deze filters. Haal er een weg.", "rss.title": "RSS-feed van deze zoekopdracht: nieuwe vacatures in je feedlezer", "pill.lang": "Taal", "pill.visa": "Visumsponsoring", "pill.exp": "Ervaring", "pill.level": "Niveau", "pill.role": "Functie", "pill.degree": "Opleiding", "pill.remote": "Thuiswerken", "pill.company": "Werkgever", "pill.posted": "Geplaatst", "pill.more": "Meer", "remote.label": "Thuiswerken", "sal.from": "vanaf {v}", "fact.noexp": "Geen ervaring gevraagd", "sal.upto": "tot {v}", "sal.title": "Salaris volgens de vacature (per jaar, bruto)", "fact.visa": "Visumsponsoring", "fact.nodutch": "Geen Nederlands nodig",
+      "jobs.none": "Geen vacatures met deze filters. Haal er een weg.", "rss.title": "Je huidige zoekopdracht als RSS-feed: nieuwe vacatures in je feedlezer", "rss.label": "RSS-feed van je zoekopdracht", "pill.lang": "Taal", "pill.visa": "Visumsponsoring", "pill.exp": "Ervaring", "pill.level": "Niveau", "pill.role": "Functie", "pill.degree": "Opleiding", "pill.remote": "Thuiswerken", "pill.company": "Werkgever", "pill.posted": "Geplaatst", "pill.more": "Meer", "remote.label": "Thuiswerken", "sal.from": "vanaf {v}", "fact.noexp": "Geen ervaring gevraagd", "sal.upto": "tot {v}", "sal.title": "Salaris volgens de vacature (per jaar, bruto)", "fact.visa": "Visumsponsoring", "fact.nodutch": "Geen Nederlands nodig",
       "ov.graph": "Skills die samen gevraagd worden",
       "kpi.week": "nieuw in de laatste 7 dagen", "kpi.week.vs": "de 7 dagen daarvoor: {m}", "kpi.week.title": "Vacatures geplaatst in de laatste 7 dagen, op de datum van de werkgever, tegenover de 7 dagen daarvoor",
       "ov.matches": "Beste matches voor jou",
@@ -699,9 +699,13 @@
     if (state.sort !== "size_large") q.set("sort", state.sort);
     const s = q.toString().replace(/%2C/g, ",");
     const want = "#jobs" + (s ? "?" + s : "");
-    const feed = new URLSearchParams(q); feed.delete("saved"); feed.delete("sort");  // the feed: same search, newest first
-    $("#f-rss").href = (LANG === "nl" ? "/nl/feed.xml" : "/feed.xml") + (feed.toString() ? "?" + feed.toString().replace(/%2C/g, ",") : "");
+    paintFeedLink();
     if (location.hash !== want) history.replaceState(null, "", location.pathname + location.search + want);
+  }
+  // the tracker's RSS link: the current Jobs search as a feed, newest first (all jobs when there is no search)
+  function paintFeedLink() {
+    const feed = jobParams(); feed.delete("ids");
+    $("#f-rss").href = (LANG === "nl" ? "/nl/feed.xml" : "/feed.xml") + (feed.toString() ? "?" + feed.toString().replace(/%2C/g, ",") : "");
   }
   function jobParams() {
     const f = currentJobFilters();
@@ -884,6 +888,7 @@
   let boardItems = {};  // job id -> posting, from the last load
   const columnOf = (id) => (state.board[id] && COLUMNS.includes(state.board[id].col) ? state.board[id].col : "saved");
   async function renderTracker() {
+    paintFeedLink();
     const batches = [];
     for (let k = 0; k < state.saved.length; k += 200) batches.push(state.saved.slice(k, k + 200));  // the API's page size
     const pages = await Promise.all(batches.map((ids) => api("/api/postings", new URLSearchParams({ ids: ids.join(","), size: 200, include_closed: "true", sort: "newest" }))));

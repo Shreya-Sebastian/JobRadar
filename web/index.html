@@ -71,6 +71,7 @@
   <div class="board-head">
     <h2 class="m-0 text-lg" data-i18n="tr.title">Your applications</h2>
     <p class="m-0 text-sm text-muted" data-i18n="tr.hint">Star a job to collect it under Saved, then move it along as you go.</p>
+    <a class="rss-link" id="f-rss" href="/feed.xml" target="_blank" rel="noopener" data-i18n-title="rss.title" title="RSS feed of this search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1.2" fill="currentColor"/></svg><span data-i18n="rss.label">RSS feed of your search</span></a>
   </div>
   <div class="board" id="board"></div>
 </section>
@@ -123,7 +124,6 @@
     <div class="active-skill" id="active-skill" hidden><span data-i18n="f.skill">Skill</span>: <b id="active-skill-name"></b> <button id="clear-skill" title="clear">×</button></div>
     <button class="link" id="f-profile" data-i18n="f.profile" hidden>Use my profile</button>
     <button class="link" id="f-reset" data-i18n="f.reset">Reset filters</button>
-    <a class="rss-link" id="f-rss" href="/feed.xml" target="_blank" rel="noopener" data-i18n-title="rss.title" title="RSS feed of this search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1.2" fill="currentColor"/></svg>RSS</a>
     <label class="sort"><span data-i18n="f.sort">Sort</span> <select id="f-sort"><option value="size_large" data-i18n="f.sort.large">Larger organisations first</option><option value="newest" data-i18n="f.sort.newest">Newest</option><option value="match" data-i18n="f.sort.match">Best match</option><option value="size_small" data-i18n="f.sort.small">Smaller organisations first</option></select></label>
   </div>
   <ol class="jobs" id="postings">
@@ -307,6 +307,6 @@
   <p class="foot-bottom"><a href="{{PRIVACY_PATH}}" data-i18n="privacy">Privacy</a> · <a href="{{FEEDBACK_PATH}}" data-i18n="feedback">Feedback</a>{{SOURCE_LINK}}</p>
  </div>
 </footer>
-<script src="/static/app.js?v=99"></script>
+<script src="/static/app.js?v=100"></script>
 </body>
 </html>

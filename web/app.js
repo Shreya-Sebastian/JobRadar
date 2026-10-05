@@ -22,8 +22,7 @@
       "ov.skills": "Most requested skills", "hero.title": "Tech jobs in the Netherlands, filtered by what they ask", "hero.sub": "{n} live jobs from {c} employers · updated {d}", "foot.tag": "Tech jobs in the Netherlands, read straight from employers' own career sites and updated every day.",
       "jobs.none": "No jobs match these filters. Try removing one.", "pill.lang": "Language", "pill.visa": "Visa sponsorship", "pill.exp": "Experience", "pill.level": "Level", "pill.role": "Role", "pill.degree": "Degree", "pill.remote": "Remote", "pill.company": "Company", "pill.posted": "Date posted", "pill.more": "More", "remote.label": "Remote", "sal.from": "from {v}", "fact.noexp": "No experience asked", "sal.upto": "up to {v}", "sal.title": "Salary stated in the posting (per year, gross)", "fact.visa": "Visa sponsorship", "fact.nodutch": "No Dutch needed",
       "ov.graph": "Skills asked for together",
-      "ov.weekly": "New jobs per week", "ov.weekly.now": "This week so far: {n} · last week by now: {m}", "ov.weekly.sofar": "so far",
-      "ov.weekly.note": "Counted by the date employers posted them, closed jobs included. Tracking began on {d}; a bar is added every week.",
+      "kpi.week": "new this week", "kpi.week.vs": "last week by now: {m}", "kpi.week.title": "Jobs posted since Monday, by the date employers posted them, against the same point last week",
       "ov.matches": "Best matches for you",
       "ov.matches.empty": 'Add your skills under <a href="#profile">Profile</a> to see matches.',
       "f.search": "Search", "f.search.ph": "title or company", "f.window": "Window", "f.window.all": "All live", "f.window.1": "Last 24 h",
@@ -133,8 +132,7 @@
       "ov.skills": "Meest gevraagde skills", "hero.title": "Techvacatures in Nederland, gefilterd op wat ze vragen", "hero.sub": "{n} open vacatures bij {c} werkgevers · bijgewerkt {d}", "foot.tag": "Techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers en elke dag bijgewerkt.",
       "jobs.none": "Geen vacatures met deze filters. Haal er een weg.", "pill.lang": "Taal", "pill.visa": "Visumsponsoring", "pill.exp": "Ervaring", "pill.level": "Niveau", "pill.role": "Functie", "pill.degree": "Opleiding", "pill.remote": "Thuiswerken", "pill.company": "Werkgever", "pill.posted": "Geplaatst", "pill.more": "Meer", "remote.label": "Thuiswerken", "sal.from": "vanaf {v}", "fact.noexp": "Geen ervaring gevraagd", "sal.upto": "tot {v}", "sal.title": "Salaris volgens de vacature (per jaar, bruto)", "fact.visa": "Visumsponsoring", "fact.nodutch": "Geen Nederlands nodig",
       "ov.graph": "Skills die samen gevraagd worden",
-      "ov.weekly": "Nieuwe vacatures per week", "ov.weekly.now": "Deze week tot nu toe: {n} · vorige week op dit moment: {m}", "ov.weekly.sofar": "tot nu toe",
-      "ov.weekly.note": "Geteld op de datum waarop werkgevers ze plaatsten, gesloten vacatures meegeteld. Bijgehouden sinds {d}; elke week komt er een staaf bij.",
+      "kpi.week": "nieuw deze week", "kpi.week.vs": "vorige week op dit moment: {m}", "kpi.week.title": "Vacatures geplaatst sinds maandag, op de datum van de werkgever, tegenover hetzelfde moment vorige week",
       "ov.matches": "Beste matches voor jou",
       "ov.matches.empty": 'Voeg je skills toe onder <a href="#profile">Profiel</a> om matches te zien.',
       "f.search": "Zoeken", "f.search.ph": "functietitel of werkgever", "f.window": "Periode", "f.window.all": "Alle open", "f.window.1": "Laatste 24 uur",
@@ -557,8 +555,9 @@
     const last = o.last_crawl_at ? fmtDate(o.last_crawl_at + "Z") : "-";
     $("#kpis").innerHTML = [
       [fmt(o.live_tech_postings), t("kpi.live")], [fmt(o.companies), t("kpi.employers")],
+      ...(o.week ? [[fmt(o.week.this_week), t("kpi.week"), t("kpi.week.vs", { m: fmt(o.week.last_week_so_far) }), t("kpi.week.title")]] : []),
       [last, t("kpi.crawl")],
-    ].map(([v, l]) => `<div class="kpi"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join("");
+    ].map(([v, l, sub, title]) => `<div class="kpi"${title ? ` title="${esc(title)}"` : ""}><b>${esc(v)}</b><span>${esc(l)}</span>${sub ? `<span class="kpi-sub">${esc(sub)}</span>` : ""}</div>`).join("");
     document.title = t("title");
     $("#hero-sub").textContent = t("hero.sub", { n: fmt(o.live_tech_postings), c: fmt(o.companies), d: last });
   }
@@ -566,12 +565,7 @@
   // ---------- OVERVIEW ----------
   async function renderOverview() {
     const p = new URLSearchParams();
-    const [skills, co, wk] = await Promise.all([api("/api/skills", withParams(p, { top: 30 })), api("/api/cooccurrence", withParams(p, { top: 28 })), api("/api/trend/weekly")]);
-    const dateFmt = (iso, o) => new Date(iso + "T12:00:00Z").toLocaleDateString(LANG === "nl" ? "nl-NL" : "en-GB", o);
-    barChart("ov-weekly", wk.weeks.map((w) => dateFmt(w.week, { day: "numeric", month: "short" }) + (w.partial ? ` (${t("ov.weekly.sofar")})` : "")),
-      wk.weeks.map((w) => w.count), { horizontal: false, color: wk.weeks.map((w) => w.partial ? palette[0] + "66" : palette[0]) });
-    $("#ov-weekly-now").textContent = t("ov.weekly.now", { n: fmt(wk.this_week), m: fmt(wk.last_week_so_far) });
-    $("#ov-weekly-note").textContent = wk.since ? t("ov.weekly.note", { d: dateFmt(wk.since, { day: "numeric", month: "long", year: "numeric" }) }) : "";
+    const [skills, co] = await Promise.all([api("/api/skills", withParams(p, { top: 30 })), api("/api/cooccurrence", withParams(p, { top: 28 }))]);
     const have = new Set(state.profile.skills);
     barChart("ov-skills", skills.skills.map((s) => s.skill), skills.skills.map((s) => Math.round(s.share * 100)),
       { pct: true, onClick: (s) => openJobsWithSkill(s), color: skills.skills.map((s) => have.has(s.skill) ? palette[1] : palette[0]) });

@@ -126,6 +126,7 @@
   .card .kpi { @apply bg-bg shadow-none; }
   .kpi b { @apply block text-xl leading-tight font-semibold tracking-tight tabular-nums; }
   .kpi span { @apply mt-0.5 block text-xs text-muted; }
+  .kpi .kpi-sub { @apply mt-0 text-[11px] opacity-80; }
   .kpi.bad b { @apply text-bad; }
   .kpi.skel b, .kpi.skel span { @apply animate-pulse rounded bg-chip text-transparent; }
   .kpi.skel b { @apply h-6 w-16; }

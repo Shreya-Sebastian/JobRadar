@@ -161,13 +161,11 @@ def _key(request: Request) -> str:
 
 @app.get("/api/overview")
 def overview(request: Request, session: Session = Depends(db)):
-    return cached(_key(request), lambda: stats.overview(session), ttl=60)
+    def compute():
+        week = stats.weekly_new(session, weeks=2)  # the "new this week" figure
+        return {**stats.overview(session), "week": {k: week[k] for k in ("this_week", "last_week_so_far")}}
 
-
-@app.get("/api/trend/weekly")
-def trend_weekly(request: Request, session: Session = Depends(db)):
-    """New tech jobs per week since tracking began (the Overview chart)."""
-    return cached(_key(request), lambda: stats.weekly_new(session), ttl=600)
+    return cached(_key(request), compute, ttl=60)
 
 
 @app.get("/api/skills")

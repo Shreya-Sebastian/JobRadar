@@ -2,7 +2,7 @@
 #   radar-db (RADAR_DATABASE_URL), radar-admin (RADAR_ADMIN_TOKEN), radar-smtp (RADAR_SMTP_USER, RADAR_SMTP_PASSWORD),
 #   ghcr (image pull secret for the private GitHub package).
 image:
-  repository: ghcr.io/shreya-sebastian/jobradarnl
+  repository: ghcr.io/shreya-sebastian/jobradar  # follows the GitHub repository's name (deploy.yml pushes there)
   tag: latest
   pullPolicy: Always
   pullSecrets: [ghcr]

@@ -600,6 +600,20 @@ def match_score(r: Row, have: set[str]) -> float:
     return len(sk & have) / max(len(sk), 3)
 
 
+def _largest_first(newest: list[Row]) -> list[Row]:
+    """Larger organisations first (headcount where known, then how many roles they have open), taking turns: each
+    organisation's newest job, then each one's next, so one big employer does not fill the whole first page."""
+    by_org: dict[str, list[Row]] = {}
+    for r in newest:
+        by_org.setdefault(r.company, []).append(r)
+    orgs = sorted(by_org.values(), key=lambda rs: (rs[0].employees is None, -(rs[0].employees or 0), -rs[0].org_roles))
+    out: list[Row] = []
+    depth = max((len(rs) for rs in orgs), default=0)
+    for i in range(depth):
+        out.extend(rs[i] for rs in orgs if i < len(rs))
+    return out
+
+
 def posting_dicts(
     rows: list[Row], page: int = 1, size: int = 50, sort: str = "newest", have_skills: set[str] | None = None
 ) -> dict[str, Any]:
@@ -611,7 +625,7 @@ def posting_dicts(
         # by headcount where known, unknown sizes after them; stable: newest first within an organisation
         rows = sorted(newest, key=lambda r: (r.employees is None, r.employees or 0, r.org_roles))
     elif sort == "size_large":
-        rows = sorted(newest, key=lambda r: (r.employees is None, -(r.employees or 0), -r.org_roles))
+        rows = _largest_first(newest)
     else:
         rows = newest
     total = len(rows)

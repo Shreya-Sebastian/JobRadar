@@ -203,7 +203,9 @@ _JOB_TEXT = {
         "back": "← All jobs", "apply": "View and apply on", "more_at": "More jobs at",
         "description": "Job description",
         "credit": "From {c}'s job posting, as published on {h}. The text belongs to {c}; read the original at {u}.",
-        "closed": "This vacancy is no longer open.", "posted": "posted {d}", "remote": "Remote",
+        "closed": "This vacancy is no longer open.", "open_days": "Open for {n} days", "open_new": "New on the radar",
+        "reposted": "posted before: {n}× since {d}", "similar": "Similar jobs",
+        "posted": "posted {d}", "remote": "Remote",
         "footer": "lists tech vacancies in the Netherlands read directly from employers' career sites.",
         "title": "{t} at {c}", "in": " in {x}",
         "no_text": "The employer's page has no description that could be read. See the original posting.",
@@ -227,7 +229,9 @@ _JOB_TEXT = {
         "back": "← Alle vacatures", "apply": "Bekijk en solliciteer op", "more_at": "Meer vacatures bij",
         "description": "Vacaturetekst",
         "credit": "Uit de vacature van {c}, zoals gepubliceerd op {h}. De tekst is van {c}; lees het origineel op {u}.",
-        "closed": "Deze vacature is niet meer open.", "posted": "geplaatst {d}", "remote": "Op afstand",
+        "closed": "Deze vacature is niet meer open.", "open_days": "{n} dagen open", "open_new": "Nieuw op de radar",
+        "reposted": "eerder geplaatst: {n}× sinds {d}", "similar": "Vergelijkbare vacatures",
+        "posted": "geplaatst {d}", "remote": "Op afstand",
         "footer": "toont techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers.",
         "title": "{t} bij {c}", "in": " in {x}",
         "no_text": "De pagina van de werkgever heeft geen leesbare vacaturetekst. Bekijk de originele vacature.",
@@ -270,8 +274,11 @@ def employment_type(ex: dict, text: str) -> list[str] | None:
     return kinds or None
 
 
-def render_job(p, lang: str = "en", sector: str | None = None, related: list[tuple[str, str]] | None = None) -> str:
-    """`related`: (path, title) of the landing pages this job appears on, most specific first."""
+def render_job(p, lang: str = "en", sector: str | None = None, related: list[tuple[str, str]] | None = None,
+               history: dict | None = None, similar: list | None = None) -> str:
+    """`related`: (path, title) of the landing pages this job appears on, most specific first. `history`: how long
+    it has been open and whether the employer listed the same title before (job_history); `similar`: open jobs of
+    the same kind elsewhere (similar_jobs)."""
     """The listing page: what the radar read from the posting, then the employer's own text with credit and links
     back to the original. `p` is a radar.models.Posting."""
     from urllib.parse import urlparse
@@ -399,6 +406,23 @@ def render_job(p, lang: str = "en", sector: str | None = None, related: list[tup
         "itemListElement": [{"@type": "ListItem", "position": i + 1, "name": n, "item": u}
                             for i, (n, u) in enumerate(crumbs)]}, ensure_ascii=False).replace("</", "<\\/")
            + "</script>")
+    history_html = ""
+    if history:
+        bits = [t["open_days"].format(n=history["open_days"]) if history["open_days"] > 1 else t["open_new"]]
+        if history.get("earlier"):
+            bits.append(t["reposted"].format(n=history["earlier"], d=history["first"].strftime("%d-%m-%Y")))
+        history_html = f'<p class="small muted job-history">{escape(" · ".join(bits))}</p>'
+    similar_html = ""
+    if similar:
+        from radar.seo import city_nl
+
+        items = "".join(
+            f'<li><a href="{job_path(r.id, r.title, lang)}">{escape(r.title)}</a>'
+            f'<span class="muted"> · {escape(r.company)}'
+            f'{" · " + escape(city_nl(r.city) if lang == "nl" else r.city) if r.city else ""}</span></li>'
+            for r in similar)
+        similar_html = (f'<section class="card job-similar"><h2>{escape(t["similar"])}</h2>'
+                        f'<ul class="similar-list">{items}</ul></section>')
     related_html = ""
     if related:
         related_html = (f'<p class="small job-related"><b>{escape(t["related"])}:</b> '
@@ -422,6 +446,8 @@ def render_job(p, lang: str = "en", sector: str | None = None, related: list[tup
         .replace("{{CLOSED}}", f'<p class="card bad">{escape(t["closed"])}</p>' if closed else "") \
         .replace("{{JOB_TITLE}}", escape(p.title)) \
         .replace("{{META}}", meta) \
+        .replace("{{HISTORY}}", history_html) \
+        .replace("{{SIMILAR}}", similar_html) \
         .replace("{{FACTS}}", facts_html) \
         .replace("{{SKILLS}}", skills_html) \
         .replace("{{URL}}", escape(p.url)) \
@@ -431,6 +457,46 @@ def render_job(p, lang: str = "en", sector: str | None = None, related: list[tup
         .replace("{{CREDIT}}", credit) \
         .replace("{{RELATED}}", related_html) \
         .replace("{{TEXT}}", _body(p) or f'<p class="muted">{escape(t["no_text"])}</p>')
+
+
+def job_history(session, p) -> dict:
+    """How long the vacancy has been open, and how often the employer listed the same title before (a repost:
+    an earlier posting with that title, now closed or merged away)."""
+    import re
+    from datetime import datetime
+
+    from sqlalchemy import func, select
+
+    from radar.models import Posting
+
+    start = p.posted_at or p.first_seen
+    end = p.closed_at or datetime.utcnow()
+    norm = re.sub(r"\s*\((?:m|f|v|x|d)(?:/[mfvxd])*\)\s*$", "", p.title.strip(), flags=re.I).lower()
+    earlier = session.execute(
+        select(func.count(), func.min(func.coalesce(Posting.posted_at, Posting.first_seen)))
+        .where(Posting.company == p.company, Posting.id != p.id, Posting.duplicate_of.is_(None),
+               func.lower(Posting.title).startswith(norm, autoescape=True), Posting.first_seen < p.first_seen,
+               Posting.closed_at.is_not(None))).one()
+    return {"open_days": max(0, (end - start).days), "earlier": earlier[0] or 0, "first": earlier[1]}
+
+
+def similar_jobs(rows: list[Row], p, limit: int = 5) -> list[Row]:
+    """Open jobs of the same position type at other employers, the same city first, newest first."""
+    from radar.positions import position
+
+    kind = position(p.title)
+    if kind == "other":
+        return []
+    same = [r for r in rows if r.closed_at is None and r.id != p.id and r.company != p.company and r.position == kind]
+    same.sort(key=lambda r: (r.city != p.city, -(r.posted_at or r.first_seen).timestamp()))
+    seen, out = set(), []
+    for r in same:
+        if r.company not in seen:  # one job per employer, for variety
+            seen.add(r.company)
+            out.append(r)
+        if len(out) == limit:
+            break
+    return out
 
 
 def _sector_label(rows: list[Row], lang: str) -> str:

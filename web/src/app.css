@@ -401,7 +401,10 @@
 @layer components {
   /* ---------- one listing: /job/<id>/<slug> ---------- */
   .job-page .job-title { @apply mt-0 mb-2 text-2xl font-semibold text-ink; }
-  .job-page .job-meta { @apply mt-0 mb-4 text-muted; }
+  .job-page .job-meta { @apply mt-0 mb-1 text-muted; }
+  .job-page .job-history { @apply mt-0 mb-4; }
+  .similar-list { @apply m-0 flex list-none flex-col gap-2 p-0 text-sm; }
+  .similar-list a { @apply font-medium; }
   .job-page .job-meta a { @apply text-ink; }
   .job-page .job-facts { @apply mb-4; }
   .job-page .job-actions { @apply mt-5 mb-0 flex flex-wrap gap-2; }

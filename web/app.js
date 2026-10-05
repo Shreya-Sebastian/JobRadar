@@ -367,7 +367,7 @@
   const emptyProfile = () => ({ roles: [], positions: [], levels: [], exp: [], degrees: [], emps: [], sectors: [], sizes: [], remote: [], cities: [], exclude: [], skills: [],
     language: "", visa: false, agencies: false, noenrol: false });
   const state = {
-    tab: "jobs", page: 1, size: 40, sort: "newest", skill: null,
+    tab: "jobs", page: 1, size: 40, sort: "size_large", skill: null,  // larger organisations first, by default
     profile: Object.assign(emptyProfile(), store.get("profile", {})),
     saved: store.get("saved", []),
     options: { roles: [], positions: [], cities: [], skills: [] },
@@ -682,7 +682,7 @@
     const q = jobParams();
     q.delete("ids");
     if (currentJobFilters().savedOnly) q.set("saved", "1");
-    if (state.sort !== "newest") q.set("sort", state.sort);
+    if (state.sort !== "size_large") q.set("sort", state.sort);
     const s = q.toString().replace(/%2C/g, ",");
     const want = "#jobs" + (s ? "?" + s : "");
     const feed = new URLSearchParams(q); feed.delete("saved"); feed.delete("sort");  // the feed: same search, newest first
@@ -775,7 +775,7 @@
       $("#f-sort").addEventListener("change", (e) => { state.sort = e.target.value; refreshJobs(true); });
       let tm; $("#f-q").addEventListener("input", (e) => { clearTimeout(tm); tm = setTimeout(() => { currentJobFilters().q = e.target.value.trim(); refreshJobs(true); }, 350); });
       $("#clear-skill").addEventListener("click", () => { state.skill = null; refreshJobs(true); });
-      $("#f-reset").addEventListener("click", () => { store.set("jobsUseProfile", false); jobFilters = emptyJobFilters(); state.skill = null; state.sort = "newest"; buildJobsFilters(); refreshJobs(true); });
+      $("#f-reset").addEventListener("click", () => { store.set("jobsUseProfile", false); jobFilters = emptyJobFilters(); state.skill = null; state.sort = "size_large"; buildJobsFilters(); refreshJobs(true); });
       $("#f-profile").addEventListener("click", () => { store.set("jobsUseProfile", true); jobFilters = profileJobFilters(); state.skill = null; buildJobsFilters(); refreshJobs(true); });
       $("#prev").addEventListener("click", () => { state.page--; refreshJobs(); });
       $("#next").addEventListener("click", () => { state.page++; refreshJobs(); });

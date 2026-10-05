@@ -587,7 +587,9 @@ def job_page(posting_id: int, slug: str = "", session: Session = Depends(db), la
     sector = emp.sector if emp else None
 
     def render():
-        return pages.render_job(p, lang, sector, _related_pages(session, p.id, lang))
+        similar = pages.similar_jobs(stats.CACHE.rows(session), p) if p.closed_at is None else []
+        return pages.render_job(p, lang, sector, _related_pages(session, p.id, lang), pages.job_history(session, p),
+                                similar)
 
     html = cached(f"page:job:{lang}:{p.id}:{p.content_hash}:{p.closed_at is None}:{sector}:{stats.CACHE.loads}",
                   render, ttl=3600)

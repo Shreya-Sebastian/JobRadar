@@ -1,6 +1,7 @@
 # Flux watches this repository's `deploy` branch (main's last tested commit plus the image tag, written by
 # .github/workflows/deploy.yml) and applies deploy/flux, itself included. The cluster pulls; nothing outside it
-# needs access to the Kubernetes API.
+# needs access to the Kubernetes API. The repository is private: Flux reads it over SSH with a read-only deploy key
+# (Secret flux-deploy-key: identity, identity.pub, known_hosts; the public half is under the repo's Deploy keys).
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
@@ -8,7 +9,9 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1m
-  url: https://github.com/Shreya-Sebastian/JobRadarNL
+  url: ssh://git@github.com/Shreya-Sebastian/JobRadar
+  secretRef:
+    name: flux-deploy-key
   ref:
     branch: deploy
   # only the deployment files and the chart: a small artifact, and app-only commits do not touch the cluster

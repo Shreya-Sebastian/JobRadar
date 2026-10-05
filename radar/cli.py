@@ -561,7 +561,7 @@ def cmd_logos(args: argparse.Namespace) -> None:
 
     init_db()
     with session_scope() as s:
-        print(logos.refresh(s, limit=args.limit))
+        print(logos.refresh(s, limit=args.limit, retry_missing=args.retry_missing))
 
 
 def cmd_index_jobs(args: argparse.Namespace) -> None:
@@ -784,6 +784,7 @@ def main(argv: list[str] | None = None) -> None:
     sub.add_parser("sectors", help="recompute every employer's sector").set_defaults(fn=cmd_sectors)
     p = sub.add_parser("logos", help="look up employer logos for the job cards")
     p.add_argument("--limit", type=int, default=120)
+    p.add_argument("--retry-missing", action="store_true", help="look again for employers that have none")
     p.set_defaults(fn=cmd_logos)
     p = sub.add_parser("index-jobs", help="tell Google's Indexing API about new and closed job pages")
     p.add_argument("--dry-run", action="store_true", help="list what would be sent")

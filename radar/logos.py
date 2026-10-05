@@ -192,6 +192,14 @@ def find_logo(page_url: str, client: httpx.Client, depth: int = 0) -> tuple[str,
         return None
     page = _read(page_url, client, PAGE_BYTES)
     if page is None or page[0] != 200 or "html" not in page[1]:
+        # a site that turns automated page reads away often still serves its icons at the standard addresses
+        u = urlparse(page_url)
+        if ATS_HOSTS.search(u.netloc):
+            return None
+        for path in ("/apple-touch-icon.png", "/apple-touch-icon-precomposed.png", "/favicon.ico"):
+            got = download(f"{u.scheme}://{u.netloc}{path}", client)
+            if got:
+                return f"{u.scheme}://{u.netloc}{path}", got[0], got[1]
         return None
     html, final = page[2].decode("utf-8", "replace"), page[3]
     del page
@@ -211,8 +219,10 @@ def _client() -> httpx.Client:
                         event_hooks={"request": [throttle_request]})
 
 
-def refresh(session, limit: int = 120, now: datetime | None = None, client: httpx.Client | None = None) -> dict:
-    """Look up logos for employers with live postings that have none yet (or whose lookup is due again)."""
+def refresh(session, limit: int = 120, now: datetime | None = None, client: httpx.Client | None = None,
+            retry_missing: bool = False) -> dict:
+    """Look up logos for employers with live postings that have none yet (or whose lookup is due again).
+    `retry_missing`: look again now for employers looked up before without a result."""
     from sqlalchemy import func, select
     from sqlalchemy.orm import defer
 
@@ -220,21 +230,31 @@ def refresh(session, limit: int = 120, now: datetime | None = None, client: http
 
     now = now or datetime.utcnow()
     rows = session.execute(
-        select(Posting.company, Source.ats, Source.slug, Source.url, func.count(Posting.id).label("n"))
+        select(Posting.company, Source.ats, Source.slug, Source.url, Source.kind, Source.company,
+               func.count(Posting.id).label("n"))
         .join(Source, Source.id == Posting.source_id)
-        # only an employer's own source shows that employer's logo (an aggregator's page shows many, or its own)
-        .where(Posting.closed_at.is_(None), Posting.is_tech.is_(True), Source.kind == "employer")
-        .group_by(Posting.company, Source.ats, Source.slug, Source.url)
+        .where(Posting.closed_at.is_(None), Posting.is_tech.is_(True))
+        .group_by(Posting.company, Source.ats, Source.slug, Source.url, Source.kind, Source.company)
     ).all()
+    # a source's page shows the logo of the posting's employer only when it is that employer's own: an employer's
+    # board, or an agency or job board posting under its own name. Others (a board listing many employers) give no
+    # page; those employers can still get a logo through data/company_domains.tsv.
     best: dict[str, tuple] = {}
-    for company, ats, slug, url, n in rows:
-        if company and (company not in best or n > best[company][3]):
-            best[company] = (ats, slug, url, n)
+    total: dict[str, int] = {}
+    for company, ats, slug, url, kind, source_company, n in rows:
+        if not company:
+            continue
+        total[company] = total.get(company, 0) + n
+        own = kind == "employer" or slug_of(source_company or "") == slug_of(company)
+        cand = (ats, slug, url, n) if own else (None, None, None, 0)
+        if company not in best or cand[3] > best[company][3]:
+            best[company] = cand
     # without the image data: only which employers are done, and when
     known = {c.company: c for c in session.scalars(select(CompanyLogo).options(defer(CompanyLogo.data)))}
-    due = [c for c in sorted(best, key=lambda c: -best[c][3])
-           if c not in known or known[c].fetched_at < now - timedelta(days=REFRESH_DAYS if known[c].status == "ok"
-                                                                         else RETRY_DAYS)][:limit]
+    due = [c for c in sorted(best, key=lambda c: -total[c])
+           if c not in known or (retry_missing and known[c].status != "ok")
+           or known[c].fetched_at < now - timedelta(days=REFRESH_DAYS if known[c].status == "ok" else RETRY_DAYS)]
+    due = due[:limit]
     client = client or _client()
     found = missing = 0
     domains = known_domains()
@@ -242,7 +262,7 @@ def refresh(session, limit: int = 120, now: datetime | None = None, client: http
     errors = 0
     for company in due:
         ats, slug, url, _ = best[company]
-        page = board_url(ats, slug, url)
+        page = board_url(ats, slug, url) if ats else None
         try:
             got = find_logo(page, client) if page else None
             if not got and company in domains:  # boards built entirely in JavaScript (Workday): the employer's site

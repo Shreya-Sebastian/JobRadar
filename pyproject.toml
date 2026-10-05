@@ -2,7 +2,7 @@
 name = "nl-tech-job-radar"
 version = "0.1.0"
 description = "Tech jobs in the Netherlands read from employers' own career sites, with skills, language and visa facts extracted."
-license = {text = "MIT"}
+license = {text = "AGPL-3.0-or-later"}
 authors = [{name = "Shreya Sebastian"}]
 requires-python = ">=3.11"
 dependencies = [

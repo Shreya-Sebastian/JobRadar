@@ -61,4 +61,4 @@ details are removed from posting text before it is stored. The privacy statement
 
 ## License
 
-MIT, see LICENSE. Posting content belongs to the employers who wrote it.
+Copyright (C) 2026 Shreya Sebastian. GNU Affero General Public License v3.0 or later, see LICENSE: anyone running a modified copy as a service must publish its source. Versions up to commit 9725b38 were released under the MIT licence. Posting content belongs to the employers who wrote it.

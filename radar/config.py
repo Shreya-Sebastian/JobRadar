@@ -32,8 +32,8 @@ class Settings(BaseSettings):
     # Google Search Console verification token (the content of its <meta name="google-site-verification">)
     google_site_verification: str | None = None
     # the brand line: page titles, search snippets and the share card (no counts, nothing that dates)
-    site_slogan: str = "Tech jobs straight from Dutch employers"
-    site_slogan_nl: str = "Techvacatures rechtstreeks van Nederlandse werkgevers"
+    site_slogan: str = "Straight from Dutch employers"  # the name already says "tech jobs"
+    site_slogan_nl: str = "Rechtstreeks van Nederlandse werkgevers"
     site_tagline: str = ("Tech jobs from Dutch employers' own career sites, with the skills, language and visa "
                          "details of every listing.")
     # The crawler names itself, with a page explaining it and a contact address; robots.txt rules for

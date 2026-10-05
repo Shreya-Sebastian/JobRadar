@@ -49,7 +49,7 @@
      
       // dynamic strings
       "kpi.live": "live tech postings", "kpi.employers": "employers", "kpi.crawl": "last crawl",
-      "title": "Tech jobs straight from Dutch employers",
+      "title": "Straight from Dutch employers",
      
       
      
@@ -156,7 +156,7 @@
      
      
       "kpi.live": "open techvacatures", "kpi.employers": "werkgevers", "kpi.crawl": "laatste crawl",
-      "title": "Techvacatures rechtstreeks van Nederlandse werkgevers",
+      "title": "Rechtstreeks van Nederlandse werkgevers",
      
       
      

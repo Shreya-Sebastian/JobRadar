@@ -646,6 +646,7 @@ def _render_index(session: Session | None = None, lang: str = "en") -> str:
                 .replace("{{SITE_JSONLD}}", _json.dumps(ld))
                 .replace("{{HTML_LANG}}", lang)
                 .replace("{{HOME_PATH}}", "/nl/" if lang == "nl" else "/")
+                .replace("{{H1_SUFFIX}}", ": techvacatures in Nederland" if lang == "nl" else ": tech jobs in the Netherlands")
                 .replace("{{PAGE_TITLE}}", title)
                 .replace("{{META_DESCRIPTION}}", desc)
                 .replace("{{VERIFY}}", seo.verification_meta())

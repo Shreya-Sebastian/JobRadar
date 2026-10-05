@@ -6,6 +6,8 @@
   // the first two follow the stylesheet's accent colours (they differ in dark mode)
   const palette = [css("--accent") || "#047857", css("--accent-2") || "#f97316", "#2a6f97", "#8e44ad", "#c0392b", "#16a085", "#f39c12", "#34495e",
     "#7f8c8d", "#27ae60", "#d35400", "#2980b9"];
+  // the site's colour set, for charts that show one colour per item (the same tokens as the tags and tabs)
+  const SPREAD = ["--accent", "--c-sky", "--c-violet", "--c-teal", "--c-indigo", "--c-rose"].map((v) => css(v));
   const LEVELS = ["intern", "trainee", "junior", "medior", "senior", "lead", "staff", "manager"];
   const REMOTE = ["remote", "hybrid", "onsite"];
   const EXP = ["none", "1", "2-3", "4-5", "6+", "unspecified"];
@@ -606,7 +608,7 @@
     const [skills, co] = await Promise.all([api("/api/skills", withParams(p, { top: 30 })), api("/api/cooccurrence", withParams(p, { top: 28 }))]);
     const have = new Set(state.profile.skills);
     barChart("ov-skills", skills.skills.map((s) => s.skill), skills.skills.map((s) => Math.round(s.share * 100)),
-      { pct: true, onClick: (s) => openJobsWithSkill(s), color: skills.skills.map((s) => have.has(s.skill) ? palette[1] : palette[0]) });
+      { pct: true, onClick: (s) => openJobsWithSkill(s), color: skills.skills.map((s, k) => have.has(s.skill) ? palette[1] : SPREAD[k % SPREAD.length]) });
     graph($("#ov-graph"), co, (s) => openJobsWithSkill(s));
     const mine = profileParams();
     const hasProfile = [...mine.keys()].length > 0;
@@ -864,7 +866,7 @@
     const shown = i.skills.slice(0, 6);
     const skills = shown.length ? `<div class="job-skills">${shown.map((s) => `<span${have.includes(s) ? ' class="have"' : ""}>${esc(s)}</span>`).join("")}${i.skills.length > 6 ? `<span class="more">+${i.skills.length - 6}</span>` : ""}</div>` : "";
     const old = i.age_days > 365 ? `<span class="badge stale" title="${t("old.year.title")}">${t("old.year")}</span>` : i.age_days > 90 ? `<span class="badge stale">${t("old")}</span>` : "";
-    return `<li class="job">
+    return `<li class="job" style="--sc:${sectorColour(i.sector)}">
       ${logoTile(i)}
       <div class="job-body">
         <div class="job-top"><a class="job-title" href="${jobPath(i)}" data-pid="${i.id}" target="_blank" title="${esc(trustText(i))}">${esc(i.title)}</a>

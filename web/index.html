@@ -66,14 +66,6 @@
 
 <!-- ============ OVERVIEW ============ -->
 <section class="tab" data-tab="overview">
-  <div class="card">
-    <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-      <h2 class="m-0" data-i18n="ov.weekly">New jobs per week</h2>
-      <p class="m-0 text-sm text-muted" id="ov-weekly-now"></p>
-    </div>
-    <div class="chart short mt-3"><canvas id="ov-weekly"></canvas></div>
-    <p class="small muted mb-0" id="ov-weekly-note"></p>
-  </div>
   <div class="grid two">
     <div class="card">
       <h2><span data-i18n="ov.skills">Most requested skills</span></h2>
@@ -88,6 +80,14 @@
     <h2 data-i18n="ov.matches">Best matches for you</h2>
     <ol class="matches" id="ov-matches"></ol>
     <p class="muted small" id="ov-match-empty" hidden data-i18n-html="ov.matches.empty">Add your skills under <a href="#profile">Profile</a> to see matches.</p>
+  </div>
+  <div class="card">
+    <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+      <h2 class="m-0" data-i18n="ov.weekly">New jobs per week</h2>
+      <p class="m-0 text-sm text-muted" id="ov-weekly-now"></p>
+    </div>
+    <div class="chart short mt-3"><canvas id="ov-weekly"></canvas></div>
+    <p class="small muted mb-0" id="ov-weekly-note"></p>
   </div>
 </section>
 
@@ -292,6 +292,6 @@
   <p class="foot-bottom"><a href="{{PRIVACY_PATH}}" data-i18n="privacy">Privacy</a> · <a href="{{FEEDBACK_PATH}}" data-i18n="feedback">Feedback</a>{{SOURCE_LINK}}</p>
  </div>
 </footer>
-<script src="/static/app.js?v=91"></script>
+<script src="/static/app.js?v=92"></script>
 </body>
 </html>

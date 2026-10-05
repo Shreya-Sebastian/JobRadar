@@ -47,11 +47,26 @@ spec:
             - name: RADAR_WORKER_TIMETABLE
               value: "true"
             {{- end }}
+            {{- if .Values.google.indexingSecret }}
+            - name: RADAR_GOOGLE_INDEXING_KEY
+              value: /var/run/secrets/indexing/key.json
+            {{- end }}
           livenessProbe:
             httpGet: {path: /metrics, port: metrics}
             periodSeconds: 30
             failureThreshold: 3
           resources: {{- toYaml .Values.worker.resources | nindent 12 }}
+          {{- if .Values.google.indexingSecret }}
+          volumeMounts:
+            - {name: indexing-key, mountPath: /var/run/secrets/indexing, readOnly: true}
+          {{- end }}
+      {{- if .Values.google.indexingSecret }}
+      volumes:
+        - name: indexing-key
+          secret:
+            secretName: {{ .Values.google.indexingSecret }}
+            optional: true
+      {{- end }}
 {{- if .Values.worker.keda.enabled }}
 ---
 apiVersion: keda.sh/v1alpha1

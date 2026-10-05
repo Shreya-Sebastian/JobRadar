@@ -161,6 +161,17 @@ def linkcheck() -> dict:
     return out
 
 
+def index_jobs() -> dict:
+    """Hourly: announce new job pages to Google and withdraw closed ones (radar/indexing.py)."""
+    from radar import indexing
+
+    init_db()
+    with session_scope() as s:
+        out = indexing.notify(s)
+    log.info("index_jobs: %s", {k: v for k, v in out.items() if k != "urls"})
+    return out
+
+
 def sectors() -> dict:
     """Nightly: every employer's sector, from the employer lists and its own postings (radar/sectors.py)."""
     from radar import sectors as sec

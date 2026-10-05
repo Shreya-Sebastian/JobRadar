@@ -24,6 +24,7 @@ mail:
 # "Continue with Google": a Secret with RADAR_GOOGLE_CLIENT_ID and RADAR_GOOGLE_CLIENT_SECRET; empty = no button
 google:
   existingSecret: ""
+  indexingSecret: ""          # a secret with key.json: a service account that owns the Search Console property
 
 redis:
   enabled: true               # in-cluster Redis for the queue, rate limits and response cache

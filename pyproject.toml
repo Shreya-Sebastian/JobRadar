@@ -23,6 +23,7 @@ dependencies = [
     "prometheus-client",
     "alembic",
     "python-json-logger",
+    "cryptography",  # signs the service-account login for Google's Indexing API
 ]
 
 [project.optional-dependencies]

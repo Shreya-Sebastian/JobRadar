@@ -71,6 +71,10 @@ class Settings(BaseSettings):
     # "Continue with Google" (OpenID Connect); both unset = the button is hidden
     google_client_id: str | None = None
     google_client_secret: str | None = None
+    # Google Indexing API (radar/indexing.py): the service account key file, and how many notifications to send
+    google_indexing_key: str | None = None
+    indexing_daily: int = 190  # Google's default quota is 200 a day
+    indexing_per_run: int = 20
     # local development only: with the console backend, show the login link on the page instead of only in the log.
     # Never set this on a server: anyone could then log in as any e-mail address.
     dev_login_links: bool = False

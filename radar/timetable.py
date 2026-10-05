@@ -37,6 +37,7 @@ TIMETABLE = [
     Entry("linkcheck", daily_at=(3, 15), timeout_seconds=3600),
     Entry("qualitycheck", daily_at=(3, 45)),
     Entry("sectors", daily_at=(4, 5)),
+    Entry("index_jobs", every_minutes=60, offset_minutes=25),
     Entry("analytics_nightly", daily_at=(0, 10)),
     Entry("send_alerts", daily_at=(6, 30)),  # 08:30 in the Netherlands in summer, 07:30 in winter
     Entry("discover_weekly", daily_at=(0, 40), weekday=6, timeout_seconds=5400),  # Sunday night, quietest hours

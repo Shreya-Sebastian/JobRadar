@@ -24,6 +24,7 @@ mail:
 
 google:
   existingSecret: radar-google   # created by hand; optional, the Google button stays hidden until it exists
+  indexingSecret: radar-google-indexing   # created by hand: the Indexing API service account (radar/indexing.py)
 
 config:
   corsOrigins: "https://techjobsradar.nl"

@@ -80,6 +80,17 @@ class Posting(Base):
     source: Mapped[Source] = relationship(back_populates="postings")
 
 
+class IndexNotice(Base):
+    """A job page announced to Google's Indexing API (radar/indexing.py): the last notification sent for it."""
+
+    __tablename__ = "index_notices"
+
+    posting_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    url: Mapped[str] = mapped_column(String(1000))
+    kind: Mapped[str] = mapped_column(String(20))  # URL_UPDATED | URL_DELETED
+    sent_at: Mapped[datetime] = mapped_column(DateTime, index=True)
+
+
 class Employer(Base):
     """Per employer on the radar: its sector (radar/sectors.py), rebuilt nightly from the employer lists and the
     employer's own postings. `sector_source` says how it was found: list, list+text, source, text or none."""

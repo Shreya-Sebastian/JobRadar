@@ -521,6 +521,19 @@ def cmd_eval(args: argparse.Namespace) -> None:
         sys.exit(1)
 
 
+def cmd_index_jobs(args: argparse.Namespace) -> None:
+    """Announce new job pages to Google and withdraw closed ones now (the worker does this hourly)."""
+    from radar import indexing
+    from radar.db import init_db, session_scope
+
+    init_db()
+    with session_scope() as s:
+        out = indexing.notify(s, dry_run=args.dry_run)
+    for kind, url in out.pop("urls", []):
+        print(kind, url)
+    print(out)
+
+
 def cmd_sectors(_: argparse.Namespace) -> None:
     """Recompute every employer's sector now (the worker also does this nightly)."""
     from radar.tasks import sectors
@@ -720,6 +733,9 @@ def main(argv: list[str] | None = None) -> None:
     p.set_defaults(fn=cmd_register_probed)
 
     sub.add_parser("sectors", help="recompute every employer's sector").set_defaults(fn=cmd_sectors)
+    p = sub.add_parser("index-jobs", help="tell Google's Indexing API about new and closed job pages")
+    p.add_argument("--dry-run", action="store_true", help="list what would be sent")
+    p.set_defaults(fn=cmd_index_jobs)
     p = sub.add_parser("eval-filters", help="score the filters against the 500-posting filter test set")
     p.add_argument("--set", default="data/golden/filters.jsonl")
     p.add_argument("--split", default="all", choices=["all", "dev", "test"],

@@ -1,0 +1,81 @@
+"""Draw the site's icons and share card from the logo (web/favicon.svg): web/favicon.ico (16, 32, 48 px),
+web/icon-512.png, web/apple-touch-icon.png (180 px) and web/og-card.png (1200 x 630, for link previews).
+
+A development tool, not a runtime dependency: `pip install pillow`, then `python scripts/brand_assets.py` from the
+repository root after changing the logo or the colours. Fonts: Segoe UI on Windows, DejaVu Sans elsewhere."""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+from PIL import Image, ImageDraw, ImageFont
+
+WEB = Path(__file__).resolve().parent.parent / "web"
+ACCENT = (4, 120, 87)  # --accent, light theme
+INK = (15, 23, 42)
+MUTED = (100, 116, 139)
+BG = (248, 250, 252)
+WHITE = (255, 255, 255)
+
+
+def logo(size: int) -> Image.Image:
+    """The logo of web/favicon.svg (a 32-unit square), drawn at `size` pixels with 4x supersampling."""
+    s = size * 4
+    u = s / 32
+    img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    d.rounded_rectangle((0, 0, s - 1, s - 1), radius=9 * u, fill=ACCENT)
+    w = max(1, round(2 * u))
+    for r, alpha in ((10, 0.35), (5.5, 0.6)):
+        ring = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+        ImageDraw.Draw(ring).ellipse((16 * u - r * u, 16 * u - r * u, 16 * u + r * u, 16 * u + r * u),
+                                     outline=WHITE + (round(255 * alpha),), width=w)
+        img = Image.alpha_composite(img, ring)
+    d = ImageDraw.Draw(img)
+    d.line((16 * u, 16 * u, 23 * u, 9 * u), fill=WHITE, width=w)
+    for cx, cy in ((23, 9), (16, 16)):
+        d.ellipse((cx * u - w / 2, cy * u - w / 2, cx * u + w / 2, cy * u + w / 2), fill=WHITE)  # round line caps
+    for cx, cy in ((16, 16), (10.5, 20)):
+        d.ellipse((cx * u - 1.8 * u, cy * u - 1.8 * u, cx * u + 1.8 * u, cy * u + 1.8 * u), fill=WHITE)
+    return img.resize((size, size), Image.LANCZOS)
+
+
+def font(bold: bool, size: int) -> ImageFont.FreeTypeFont:
+    names = (["segoeuib.ttf", "arialbd.ttf", "DejaVuSans-Bold.ttf"] if bold
+             else ["segoeui.ttf", "arial.ttf", "DejaVuSans.ttf"])
+    for name in names:
+        for folder in (Path("C:/Windows/Fonts"), Path("/usr/share/fonts/truetype/dejavu")):
+            if (folder / name).exists():
+                return ImageFont.truetype(str(folder / name), size)
+    return ImageFont.load_default()
+
+
+def card() -> Image.Image:
+    img = Image.new("RGB", (1200, 630), BG)
+    d = ImageDraw.Draw(img)
+    d.rectangle((0, 0, 1200, 12), fill=ACCENT)
+    img.paste(logo(150), (90, 150), logo(150))
+    d.text((270, 160), "Tech Jobs Radar", font=font(True, 76), fill=INK)
+    d.text((272, 258), "Tech jobs straight from Dutch employers", font=font(False, 40), fill=INK)
+    d.text((92, 410), "Read from the employers' own career sites, updated daily.", font=font(False, 34), fill=MUTED)
+    d.text((92, 460), "Software, data, AI, cloud and security. Filter on English-speaking,", font=font(False, 34),
+           fill=MUTED)
+    d.text((92, 506), "visa sponsorship, junior roles and city.", font=font(False, 34), fill=MUTED)
+    d.text((92, 568), "techjobsradar.nl", font=font(True, 30), fill=ACCENT)
+    return img
+
+
+def main() -> None:
+    logo(256).save(WEB / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)])
+    logo(512).save(WEB / "icon-512.png")
+    apple = Image.new("RGB", (180, 180), ACCENT)  # iOS draws its own rounded corners on a full square
+    apple.paste(logo(180), (0, 0), logo(180))
+    apple.save(WEB / "apple-touch-icon.png")
+    card().save(WEB / "og-card.png", optimize=True)
+    for name in ("favicon.ico", "icon-512.png", "apple-touch-icon.png", "og-card.png"):
+        print(name, (WEB / name).stat().st_size, "bytes")
+
+
+if __name__ == "__main__":
+    sys.exit(main())

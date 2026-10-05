@@ -607,7 +607,7 @@ def _source_link(lang: str = "en", sentence: bool = False) -> str:
 
 
 def _render_index(session: Session | None = None, lang: str = "en") -> str:
-    """index.html with branding, a localised title and description carrying the live count, hreflang, and a
+    """index.html with branding, a localised title and description with the brand line, hreflang, and a
     footer of popular search pages. Renaming the site is one env var."""
     import json as _json
 
@@ -615,28 +615,30 @@ def _render_index(session: Session | None = None, lang: str = "en") -> str:
 
     html = (WEB_DIR / "index.html").read_text(encoding="utf-8")
     aliases = [a.strip() for a in settings.site_aliases.split(",") if a.strip()]
-    n, m, links = 0, 0, ""
+    links = ""
     if session is not None:
-        rows, pages = _pages_objects(session)
-        live = [r for r in rows if r.closed_at is None]
-        n, m = len(live), len({r.company for r in live})
+        _rows, pages = _pages_objects(session)
         links = seo.popular_links(pages, lang)
-    count = f"{n:,}".replace(",", "." if lang == "nl" else ",") if n else ""
+    # the brand line, not a running count: a count dates within hours and reads like an advert
     if lang == "nl":
-        title = f"{settings.site_name}: {count + ' ' if count else ''}ICT en tech vacatures in Nederland"
-        desc = (f"{count + ' ' if count else ''}actuele IT- en ICT-vacatures van {m or 'honderden'} werkgevers, "
-                "rechtstreeks van hun eigen carrièresites: developer, data, AI, cloud en security. Filter op "
-                "Engelstalig, visumsponsoring, junior, traineeship en stad.")
+        title = f"{settings.site_name} | {settings.site_slogan_nl}"
+        desc = ("ICT- en techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers en dagelijks "
+                "bijgewerkt: developer, data, AI, cloud en security. Filter op Engelstalige functies, visumsponsoring, "
+                "junior en stad.")
     else:
-        title = f"{settings.site_name}: {count + ' ' if count else ''}tech jobs in the Netherlands"
-        desc = (f"{count + ' ' if count else ''}live IT and tech jobs from {m or 'hundreds of'} Dutch employers' own "
-                "career sites: software, data, AI, cloud, security. Filter on English-speaking, visa sponsorship, "
-                "junior, traineeship and city.")
-    ld = {
-        "@context": "https://schema.org", "@type": "WebSite", "name": settings.site_name,
-        "alternateName": aliases, "url": settings.site_url, "description": settings.site_tagline,
-        "inLanguage": ["en", "nl"],
-    }
+        title = f"{settings.site_name} | {settings.site_slogan}"
+        desc = ("Tech and IT jobs in the Netherlands, read directly from employers' own career sites and updated "
+                "daily: software, data, AI, cloud and security. Filter on English-speaking roles, visa sponsorship, "
+                "junior positions and city.")
+    base = settings.site_url.rstrip("/")
+    ld = {"@context": "https://schema.org", "@graph": [
+        {"@type": "WebSite", "@id": f"{base}/#website", "name": settings.site_name, "alternateName": aliases,
+         "url": settings.site_url, "description": settings.site_tagline, "inLanguage": ["en", "nl"],
+         "publisher": {"@id": f"{base}/#organization"}},
+        {"@type": "Organization", "@id": f"{base}/#organization", "name": settings.site_name, "url": settings.site_url,
+         "logo": {"@type": "ImageObject", "url": f"{base}/static/icon-512.png", "width": 512, "height": 512},
+         "slogan": settings.site_slogan, "email": "contact@techjobsradar.nl"},
+    ]}
     return (html.replace("{{SITE_NAME}}", settings.site_name)
                 .replace("{{SITE_URL}}", settings.site_url.rstrip("/"))
                 .replace("{{SITE_TAGLINE}}", settings.site_tagline)
@@ -655,6 +657,13 @@ def _render_index(session: Session | None = None, lang: str = "en") -> str:
 
 if WEB_DIR.exists():
     app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
+
+    @app.get("/favicon.ico", include_in_schema=False)
+    def favicon():
+        from fastapi.responses import FileResponse
+
+        return FileResponse(WEB_DIR / "favicon.ico", media_type="image/x-icon",
+                            headers={"Cache-Control": "public, max-age=604800"})
 
     @app.get("/", include_in_schema=False)
     def index(session: Session = Depends(db)):

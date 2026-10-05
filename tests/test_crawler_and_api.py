@@ -324,13 +324,13 @@ def test_search_landing_pages_bilingual_and_in_sitemap(fresh_db):
     nl = client.get("/vacatures/ict-amsterdam")
     en = client.get("/jobs/tech-amsterdam")
     assert nl.status_code == 200 and en.status_code == 200
-    assert "<title>ICT vacatures Amsterdam (10)" in nl.text and 'lang="nl"' in nl.text
-    assert "<title>Tech jobs in Amsterdam (10)" in en.text and 'hreflang="nl" href="https://techjobsradar.nl/vacatures/ict-amsterdam"' in en.text
+    assert "<title>ICT vacatures Amsterdam | " in nl.text and 'lang="nl"' in nl.text
+    assert "<title>Tech jobs in Amsterdam | " in en.text and 'hreflang="nl" href="https://techjobsradar.nl/vacatures/ict-amsterdam"' in en.text
     assert "Data Engineer 0" in en.text and "{{" not in en.text
     assert client.get("/jobs/english-speaking").status_code == 200
     assert client.get("/jobs/tech-groningen").status_code == 404  # no postings there: no thin page
     home_nl = client.get("/nl/").text
-    assert 'lang="nl"' in home_nl and "ICT en tech vacatures in Nederland" in home_nl and "/vacatures/ict-amsterdam" in home_nl
+    assert 'lang="nl"' in home_nl and "Techvacatures rechtstreeks van Nederlandse werkgevers" in home_nl and "/vacatures/ict-amsterdam" in home_nl
     sm = client.get("/sitemap.xml").text
     assert "/vacatures/ict-amsterdam</loc>" in sm and "/jobs/english-speaking</loc>" in sm and "/nl/</loc>" in sm
 

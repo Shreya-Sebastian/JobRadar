@@ -1,7 +1,9 @@
 from radar.adapters.amazon import AmazonAdapter
 from radar.adapters.ashby import AshbyAdapter
+from radar.adapters.avature import AvatureAdapter
 from radar.adapters.base import Adapter, RawPosting
 from radar.adapters.greenhouse import GreenhouseAdapter
+from radar.adapters.icims import IcimsAdapter
 from radar.adapters.jsonld import JsonLdAdapter
 from radar.adapters.lever import LeverAdapter
 from radar.adapters.personio import PersonioAdapter
@@ -25,6 +27,8 @@ ADAPTERS: dict[str, type[Adapter]] = {
         SmartRecruitersAdapter,
         JsonLdAdapter,
         AmazonAdapter,
+        IcimsAdapter,
+        AvatureAdapter,
     )
 }
 

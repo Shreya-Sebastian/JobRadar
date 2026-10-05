@@ -356,3 +356,16 @@
   ats: jsonld
   slug: "https://mycareers.frieslandcampina.com/sitemap.xml"
   url: "https://mycareers.frieslandcampina.com"  # SuccessFactors microdata without a title property
+# --- 5 Oct 2026: iCIMS career sites (radar/adapters/icims.py) and Avature portals (radar/adapters/avature.py)
+- company: Booking.com
+  ats: icims
+  slug: jobs.booking.com/booking
+  url: "https://jobs.booking.com/booking/jobs"
+- company: Mammoet
+  ats: icims
+  slug: jobs.mammoet.com/careers-home
+  url: "https://jobs.mammoet.com/careers-home"
+- company: Siemens
+  ats: avature
+  slug: jobs.siemens.com/en_US/externaljobs
+  url: "https://jobs.siemens.com/en_US/externaljobs"

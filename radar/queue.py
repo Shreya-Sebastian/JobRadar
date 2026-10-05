@@ -14,7 +14,7 @@ from radar.config import settings
 CRAWL_QUEUE = "crawl"  # sitemap crawls, page by page
 LIGHT_QUEUE = "crawl-light"  # ATS APIs
 MAINT_QUEUE = "maintenance"
-HEAVY_ATS = {"jsonld"}
+HEAVY_ATS = {"jsonld", "avature"}  # page by page (Avature job pages are large)
 
 
 def crawl_queue_for(ats: str | None) -> str:

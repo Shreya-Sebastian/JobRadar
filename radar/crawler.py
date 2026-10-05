@@ -61,13 +61,13 @@ def known_urls_for(session: Session, source: Source) -> dict[str, str]:
     """Live postings an incremental adapter need not read again: page-URL key -> external id for a JSON-LD source,
     external id -> external id for SmartRecruiters (whose text costs one request per posting). Postings stored
     with little or no text are left out, so the next crawl reads them again."""
-    if source.ats not in ("jsonld", "smartrecruiters"):
+    if source.ats not in ("jsonld", "smartrecruiters", "avature"):
         return {}
     rows = session.execute(select(Posting.url, Posting.external_id)
                            .where(Posting.source_id == source.id, Posting.closed_at.is_(None),
                                   Posting.description_html.is_not(None),  # read once more to keep the formatting
                                   func.length(func.coalesce(Posting.description, "")) >= MIN_TEXT)).all()
-    if source.ats == "smartrecruiters":
+    if source.ats in ("smartrecruiters", "avature"):
         return {ext: ext for _, ext in rows}
     from radar.adapters.jsonld import _url_key
 

@@ -306,6 +306,30 @@
   const sizeLabel = (z) => t("size." + z);
   const empLabel = (e) => t("emp." + e);
   const sectorLabel = (s) => t("sector." + s);
+  // the employer's sector as a small icon on a tint of its own colour: the card's marker when there is no logo
+  const SECTOR_ICON = {
+    software: ["#2563eb", "M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 5l-3 14"],
+    consultancy: ["#7c3aed", "M3 8h18v12H3zM9 8V5h6v3M3 13h18"],
+    hardware: ["#0891b2", "M7 7h10v10H7zM10 10h4v4h-4zM9.5 3v4M14.5 3v4M9.5 17v4M14.5 17v4M3 9.5h4M3 14.5h4M17 9.5h4M17 14.5h4"],
+    finance: ["#059669", "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM15.5 9a4 4 0 1 0 0 6M7.5 11h6M7.5 13.5h6"],
+    pharma: ["#db2777", "M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3M7.5 15h9"],
+    health: ["#e11d48", "M12 20s-7.5-4.6-9-9.4A4.8 4.8 0 0 1 12 7.3a4.8 4.8 0 0 1 9 3.3C19.5 15.4 12 20 12 20zM8 12h2.5l1.5-2.5 2 5 1.5-2.5H16"],
+    government: ["#475569", "M4 21h16M6 18v-7M10 18v-7M14 18v-7M18 18v-7M3 11h18M12 3l8.5 5h-17z"],
+    education: ["#ca8a04", "M2 9l10-5 10 5-10 5zM6 11v5c3.5 2.5 8.5 2.5 12 0v-5M22 9v5"],
+    energy: ["#d97706", "M13 2L4.5 13.5H11L10 22l8.5-11.5H12z"],
+    transport: ["#0d9488", "M2 6h12v10H2zM14 10h4l3 3v3h-7M6 19.5a1.5 1.5 0 1 0 0-.01M17 19.5a1.5 1.5 0 1 0 0-.01"],
+    engineering: ["#ea580c", "M12 3v3M12 6l-6 15M12 6l6 15M8.2 15.5h7.6M12 6a1.5 1.5 0 1 0 0-.01"],
+    industry: ["#78716c", "M2 21h20M3 21V10l6 4v-4l6 4V6l6 3v12M7 17h2M12 17h2M17 17h2"],
+    retail: ["#c026d3", "M5 8h14l-1.2 13H6.2zM9 8V6.5a3 3 0 0 1 6 0V8"],
+    telecom_media: ["#4f46e5", "M12 21v-9M8.4 8.4a5 5 0 0 1 7.2 0M5.5 5.5a9 9 0 0 1 13 0M12 12a.5.5 0 1 0 0-.01"],
+    staffing: ["#64748b", "M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21a7 7 0 0 1 14 0M16 3.5a4 4 0 0 1 0 7.5M18 14.5a6 6 0 0 1 4 6.5"],
+    other: ["#64748b", "M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16M15 9h4a1 1 0 0 1 1 1v11M3 21h18M8 8h3M8 12h3M8 16h3"]
+  };
+  function sectorTile(sector) {
+    const [colour, path] = SECTOR_ICON[sector] || SECTOR_ICON.other;
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${path}"/></svg>`;
+  }
+  const sectorColour = (sector) => (SECTOR_ICON[sector] || SECTOR_ICON.other)[0];
   const positionLabel = (s) => t("pos." + s);
   // typed text becomes the position whose name it matches; anything else is not added
   const positionPick = (v) => {
@@ -797,7 +821,7 @@
     return "";
   }
   const cap = (s) => s ? s[0].toUpperCase() + s.slice(1) : s;
-  // one job: the employer's logo (none where it has none: no stand-in), title, employer and place, then one line of what the posting asks, then the skills as quiet text.
+  // one job: the employer's logo (its sector's icon where it has none), title, employer and place, then one line of what the posting asks, then the skills as quiet text.
   // Colour only where it decides: green when no Dutch is needed, orange when it mentions visa sponsorship.
   function jobCard(i) {
     const have = state.profile.skills, saved = state.saved.includes(i.id);
@@ -821,7 +845,7 @@
     const skills = shown.length ? `<div class="job-skills">${shown.map((s) => `<span${have.includes(s) ? ' class="have"' : ""}>${esc(s)}</span>`).join("")}${i.skills.length > 6 ? `<span class="more">+${i.skills.length - 6}</span>` : ""}</div>` : "";
     const old = i.age_days > 365 ? `<span class="badge stale" title="${t("old.year.title")}">${t("old.year")}</span>` : i.age_days > 90 ? `<span class="badge stale">${t("old")}</span>` : "";
     return `<li class="job">
-      ${i.logo ? `<span class="job-logo" aria-hidden="true"><img src="/logo/${encodeURIComponent(i.logo)}" alt="" loading="lazy" decoding="async" onerror="this.parentElement.remove()"></span>` : ""}
+      <span class="job-logo" style="--sc:${sectorColour(i.sector)}" title="${esc(sectorLabel(i.sector || "other"))}">${sectorTile(i.sector)}${i.logo ? `<img src="/logo/${encodeURIComponent(i.logo)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ""}</span>
       <div class="job-body">
         <div class="job-top"><a class="job-title" href="${jobPath(i)}" data-pid="${i.id}" target="_blank" title="${esc(trustText(i))}">${esc(i.title)}</a>
           <span class="job-age" title="${esc(i.posted_at)}">${age(i)}${old}</span></div>

@@ -645,6 +645,7 @@ def posting_dicts(
             "salary_max": r.ex.get("salary_max_eur"),
             "ats": r.ats,
             "via_agency": r.kind == "agency",
+            "sector": r.sector,
             "org_size": r.org_size,
             "confirmed_at": r.confirmed_at.isoformat() if r.confirmed_at else None,
             "link_checked_at": r.link_checked_at.isoformat() if r.link_checked_at else None,

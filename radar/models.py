@@ -205,13 +205,15 @@ class UserSession(Base):
 
 
 class UserData(Base):
-    """What a signed-in user keeps across devices: the profile and the saved jobs, as sent by the page."""
+    """What a signed-in user keeps across devices: the profile, the saved jobs and where each saved job is in the
+    application tracker ({job id: {"col": "interested" | "applied" | "archived", "at": iso time}}), as sent."""
 
     __tablename__ = "user_data"
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     profile: Mapped[dict] = mapped_column(JSON, default=dict)
     saved: Mapped[list] = mapped_column(JSON, default=list)
+    board: Mapped[dict] = mapped_column(JSON, default=dict)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 

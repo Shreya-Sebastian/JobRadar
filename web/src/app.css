@@ -254,6 +254,31 @@
   .results-head { @apply mt-5 mb-2.5 flex flex-wrap items-center gap-x-3 gap-y-2; }
   .results-head .count { @apply mr-auto ml-0 text-sm font-semibold text-ink; }
   .sort { @apply flex items-center gap-2 text-sm text-muted; }
+  /* ---------- tracker board ---------- */
+  .board-head { @apply mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1; }
+  .board { @apply grid gap-4 overflow-x-auto pb-2; grid-template-columns: repeat(4, minmax(250px, 1fr));
+    scroll-snap-type: x mandatory; }
+  .board-empty { @apply rounded-2xl border border-dashed border-line p-10 text-center; grid-column: 1 / -1; }
+  .col { @apply flex min-h-[200px] flex-col rounded-2xl border border-line p-3 transition-colors; scroll-snap-align: start;
+    background: color-mix(in oklab, var(--chip) 55%, var(--bg)); }
+  .col.over { @apply border-accent bg-accent/10; }
+  .col h3 { @apply m-0 mb-3 flex items-center justify-between px-1 text-sm font-semibold text-ink; }
+  .col h3 b { @apply rounded-full bg-card px-2 text-xs font-semibold text-muted; }
+  .col-list { @apply m-0 flex flex-1 list-none flex-col gap-2.5 p-0; }
+  .col-empty { @apply rounded-xl border border-dashed border-line px-3 py-6 text-center text-xs; }
+  .bcard { @apply cursor-grab rounded-xl border border-line bg-card p-3 shadow-xs transition hover:border-accent/50; }
+  .bcard.dragging { @apply opacity-50; }
+  .bcard-top { @apply flex gap-3; }
+  .bcard .job-logo { @apply size-9 rounded-lg; }
+  .bcard .job-logo svg { @apply size-5; }
+  .bcard-title { @apply text-sm leading-snug font-semibold text-ink no-underline hover:text-accent; }
+  .bcard-meta { @apply mt-0.5 truncate text-xs text-muted; }
+  .bcard-foot { @apply mt-2.5 flex items-center gap-2 text-xs; }
+  .bcard-foot > span { @apply mr-auto; }
+  .bmove { @apply rounded-md py-1 pr-7 pl-2 text-xs; }
+  .bdel { @apply grid size-7 place-items-center rounded-md border-0 bg-transparent p-0 text-muted shadow-none hover:bg-chip hover:text-bad; }
+  .bdel svg { @apply size-4; }
+  .toast-action { @apply ml-2 font-semibold; }
   .rss-link { @apply inline-flex items-center gap-1 text-sm font-medium text-muted no-underline hover:text-accent-2; }
   .rss-link svg { @apply size-4; }
   .sort select { @apply py-1.5; }
@@ -387,6 +412,9 @@
   .job { padding: .85rem; gap: .75rem; }
   .job-logo { width: 2.5rem; height: 2.5rem; font-size: 12px; border-radius: .65rem; }
   .pop { position: static; width: auto; margin-top: .5rem; }  /* under the pill row, pushing the jobs down */
+  .board { grid-template-columns: repeat(4, 85%); margin-inline: -1rem; padding-inline: 1rem; }
+  .refresh-btn:disabled { display: none; }  /* room for the name in the header; it shows once there is news */
+  .topbar-right { gap: .4rem; }
   .pillbar { mask-image: linear-gradient(to right, #000 85%, transparent); padding-right: 2rem; }
   .job-skills span:nth-child(n+5):not(.more) { display: none; }
   .job-title { font-size: 16px; }

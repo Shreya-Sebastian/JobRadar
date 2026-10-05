@@ -19,7 +19,8 @@
       "tab.overview": "Overview", "tab.jobs": "Jobs", "tab.market": "Market", "tab.profile": "Profile",
       
       
-      "ov.skills": "Most requested skills", "hero.title": "Tech jobs in the Netherlands, filtered by what they ask", "hero.sub": "{n} live jobs from {c} employers · updated {d}", "foot.tag": "Tech jobs in the Netherlands, read straight from employers' own career sites and updated every day.",
+      "ov.skills": "Most requested skills",
+      "tab.tracker": "Tracker", "tr.title": "Your applications", "tr.hint": "Star a job to collect it under Saved, then move it along as you go.", "col.saved": "Saved", "col.interested": "Interested", "col.applied": "Applied", "col.archived": "Archived", "tr.move": "Move to", "tr.delete": "Remove from the tracker", "tr.removed": "Removed from your tracker.", "tr.undo": "Undo", "tr.empty": "Nothing here yet. Star a job in the Jobs tab to start tracking it.", "tr.col.empty": "Drag a job here", "tr.applied.on": "applied {d}", "tr.moved.on": "since {d}", "tr.closed": "closed", "hero.title": "Tech jobs in the Netherlands, filtered by what they ask", "hero.sub": "{n} live jobs from {c} employers · updated {d}", "foot.tag": "Tech jobs in the Netherlands, read straight from employers' own career sites and updated every day.",
       "jobs.none": "No jobs match these filters. Try removing one.", "rss.title": "RSS feed of this search: new jobs in your feed reader", "pill.lang": "Language", "pill.visa": "Visa sponsorship", "pill.exp": "Experience", "pill.level": "Level", "pill.role": "Role", "pill.degree": "Degree", "pill.remote": "Remote", "pill.company": "Company", "pill.posted": "Date posted", "pill.more": "More", "remote.label": "Remote", "sal.from": "from {v}", "fact.noexp": "No experience asked", "sal.upto": "up to {v}", "sal.title": "Salary stated in the posting (per year, gross)", "fact.visa": "Visa sponsorship", "fact.nodutch": "No Dutch needed",
       "ov.graph": "Skills asked for together",
       "kpi.week": "new in the last 7 days", "kpi.week.vs": "the 7 days before: {m}", "kpi.week.title": "Jobs posted in the last 7 days, by the date employers posted them, against the 7 days before",
@@ -129,7 +130,8 @@
       "tab.overview": "Overzicht", "tab.jobs": "Vacatures", "tab.market": "Markt", "tab.profile": "Profiel",
       
       
-      "ov.skills": "Meest gevraagde skills", "hero.title": "Techvacatures in Nederland, gefilterd op wat ze vragen", "hero.sub": "{n} open vacatures bij {c} werkgevers · bijgewerkt {d}", "foot.tag": "Techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers en elke dag bijgewerkt.",
+      "ov.skills": "Meest gevraagde skills",
+      "tab.tracker": "Sollicitaties", "tr.title": "Je sollicitaties", "tr.hint": "Geef een vacature een ster om hem onder Bewaard te zetten, en schuif hem door terwijl je solliciteert.", "col.saved": "Bewaard", "col.interested": "Interessant", "col.applied": "Gesolliciteerd", "col.archived": "Gearchiveerd", "tr.move": "Verplaats naar", "tr.delete": "Uit het overzicht halen", "tr.removed": "Uit je overzicht gehaald.", "tr.undo": "Ongedaan maken", "tr.empty": "Nog niets. Geef een vacature in het tabblad Vacatures een ster om hem te volgen.", "tr.col.empty": "Sleep een vacature hierheen", "tr.applied.on": "gesolliciteerd {d}", "tr.moved.on": "sinds {d}", "tr.closed": "gesloten", "hero.title": "Techvacatures in Nederland, gefilterd op wat ze vragen", "hero.sub": "{n} open vacatures bij {c} werkgevers · bijgewerkt {d}", "foot.tag": "Techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers en elke dag bijgewerkt.",
       "jobs.none": "Geen vacatures met deze filters. Haal er een weg.", "rss.title": "RSS-feed van deze zoekopdracht: nieuwe vacatures in je feedlezer", "pill.lang": "Taal", "pill.visa": "Visumsponsoring", "pill.exp": "Ervaring", "pill.level": "Niveau", "pill.role": "Functie", "pill.degree": "Opleiding", "pill.remote": "Thuiswerken", "pill.company": "Werkgever", "pill.posted": "Geplaatst", "pill.more": "Meer", "remote.label": "Thuiswerken", "sal.from": "vanaf {v}", "fact.noexp": "Geen ervaring gevraagd", "sal.upto": "tot {v}", "sal.title": "Salaris volgens de vacature (per jaar, bruto)", "fact.visa": "Visumsponsoring", "fact.nodutch": "Geen Nederlands nodig",
       "ov.graph": "Skills die samen gevraagd worden",
       "kpi.week": "nieuw in de laatste 7 dagen", "kpi.week.vs": "de 7 dagen daarvoor: {m}", "kpi.week.title": "Vacatures geplaatst in de laatste 7 dagen, op de datum van de werkgever, tegenover de 7 dagen daarvoor",
@@ -239,7 +241,7 @@
     get(k, d) { try { const v = localStorage.getItem("radar." + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
     set(k, v) {
       try { localStorage.setItem("radar." + k, JSON.stringify(v)); } catch { /* private mode */ }
-      if (k === "profile" || k === "saved") account.push();
+      if (k === "profile" || k === "saved" || k === "board") account.push();
     },
   };
   // anonymous usage events for the admin analytics page (radar/analytics.py): no cookie, no personal data
@@ -264,6 +266,11 @@
         // saved jobs: the union of both sides; profile: the account's copy wins once it has one
         const saved = [...new Set([...(d.saved || []), ...state.saved])];
         state.saved.splice(0, state.saved.length, ...saved);
+        // tracker stages: per job, the most recent move wins
+        for (const [id, v] of Object.entries(d.board || {})) {
+          if (!state.board[id] || (v.at || "") > (state.board[id].at || "")) state.board[id] = v;
+        }
+        try { localStorage.setItem("radar.board", JSON.stringify(state.board)); } catch { /* private mode */ }
         if (d.updated_at && d.profile && Object.keys(d.profile).length) state.profile = Object.assign(emptyProfile(), d.profile);
         try { localStorage.setItem("radar.profile", JSON.stringify(state.profile)); localStorage.setItem("radar.saved", JSON.stringify(state.saved)); } catch { /* private mode */ }
         this.push(0);
@@ -277,7 +284,7 @@
         try {
           const r = await fetch("/api/me/data", { method: "PUT", credentials: "same-origin",
             headers: { "Content-Type": "application/json", "X-Requested-With": "radar" },
-            body: JSON.stringify({ profile: state.profile, saved: state.saved }) });
+            body: JSON.stringify({ profile: state.profile, saved: state.saved, board: state.board }) });
           if (el) el.textContent = r.ok ? t("acct.synced") : t("acct.sync.fail");
         } catch { if (el) el.textContent = t("acct.sync.fail"); }
       }, delay);
@@ -370,6 +377,7 @@
     tab: "jobs", page: 1, size: 40, sort: "size_large", skill: null,  // larger organisations first, by default
     profile: Object.assign(emptyProfile(), store.get("profile", {})),
     saved: store.get("saved", []),
+    board: store.get("board", {}),  // the application tracker: {job id: {col, at}}; no entry = "saved"
     options: { roles: [], positions: [], cities: [], skills: [] },
     charts: {}, overview: null,
   };
@@ -847,7 +855,7 @@
     const skills = shown.length ? `<div class="job-skills">${shown.map((s) => `<span${have.includes(s) ? ' class="have"' : ""}>${esc(s)}</span>`).join("")}${i.skills.length > 6 ? `<span class="more">+${i.skills.length - 6}</span>` : ""}</div>` : "";
     const old = i.age_days > 365 ? `<span class="badge stale" title="${t("old.year.title")}">${t("old.year")}</span>` : i.age_days > 90 ? `<span class="badge stale">${t("old")}</span>` : "";
     return `<li class="job">
-      <span class="job-logo" style="--sc:${sectorColour(i.sector)}" title="${esc(sectorLabel(i.sector || "other"))}">${sectorTile(i.sector)}${i.logo ? `<img src="/logo/${encodeURIComponent(i.logo)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ""}</span>
+      ${logoTile(i)}
       <div class="job-body">
         <div class="job-top"><a class="job-title" href="${jobPath(i)}" data-pid="${i.id}" target="_blank" title="${esc(trustText(i))}">${esc(i.title)}</a>
           <span class="job-age" title="${esc(i.posted_at)}">${age(i)}${old}</span></div>
@@ -861,9 +869,86 @@
       </div>
     </li>`;
   }
+  function logoTile(i) {
+    return `<span class="job-logo" style="--sc:${sectorColour(i.sector)}" title="${esc(sectorLabel(i.sector || "other"))}">${sectorTile(i.sector)}${i.logo ? `<img src="/logo/${encodeURIComponent(i.logo)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ""}</span>`;
+  }
+
+  // ---------- TRACKER: the saved jobs as a board, Saved -> Interested -> Applied -> Archived ----------
+  const COLUMNS = ["saved", "interested", "applied", "archived"];
+  let boardItems = {};  // job id -> posting, from the last load
+  const columnOf = (id) => (state.board[id] && COLUMNS.includes(state.board[id].col) ? state.board[id].col : "saved");
+  async function renderTracker() {
+    const batches = [];
+    for (let k = 0; k < state.saved.length; k += 200) batches.push(state.saved.slice(k, k + 200));  // the API's page size
+    const pages = await Promise.all(batches.map((ids) => api("/api/postings", new URLSearchParams({ ids: ids.join(","), size: 200, include_closed: "true", sort: "newest" }))));
+    boardItems = Object.fromEntries(pages.flatMap((d) => d.items).map((i) => [i.id, i]));
+    paintBoard();
+    bindBoard();
+  }
+  function paintBoard() {
+    const shortDate = (iso) => new Date(iso).toLocaleDateString(LANG === "nl" ? "nl-NL" : "en-GB", { day: "numeric", month: "short" });
+    const cols = Object.fromEntries(COLUMNS.map((c) => [c, []]));
+    for (const id of state.saved) if (boardItems[id]) cols[columnOf(id)].push(boardItems[id]);
+    if (!state.saved.length) { $("#board").innerHTML = `<p class="board-empty muted">${t("tr.empty")}</p>`; return; }
+    $("#board").innerHTML = COLUMNS.map((c) => `<div class="col" data-col="${c}">
+      <h3><span>${t("col." + c)}</span><b>${cols[c].length}</b></h3>
+      <ol class="col-list" data-col="${c}">${cols[c].map((i) => {
+        const at = state.board[i.id] && state.board[i.id].at;
+        const when = at ? (c === "applied" ? t("tr.applied.on", { d: shortDate(at) }) : t("tr.moved.on", { d: shortDate(at) })) : age(i);
+        return `<li class="bcard" draggable="true" data-id="${i.id}">
+          <div class="bcard-top">${logoTile(i)}<div class="min-w-0"><a class="bcard-title" href="${jobPath(i)}" data-pid="${i.id}" target="_blank">${esc(i.title)}</a>
+          <div class="bcard-meta">${esc(i.company)}${i.city ? " · " + esc(cityLabel(i.city)) : ""}</div></div></div>
+          <div class="bcard-foot"><span class="muted">${esc(when)}${i.closed ? ` · <span class="bad">${t("tr.closed")}</span>` : ""}</span>
+            <select class="bmove" data-id="${i.id}" aria-label="${t("tr.move")}" title="${t("tr.move")}">${COLUMNS.map((o) => `<option value="${o}"${o === c ? " selected" : ""}>${t("col." + o)}</option>`).join("")}</select>
+            <button class="bdel" data-id="${i.id}" title="${t("tr.delete")}" aria-label="${t("tr.delete")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg></button></div>
+        </li>`;
+      }).join("") || `<li class="col-empty muted">${t("tr.col.empty")}</li>`}</ol></div>`).join("");
+  }
+  let boardBound = false;
+  function bindBoard() {
+    if (boardBound) return;
+    boardBound = true;
+    const board = $("#board");
+    board.addEventListener("change", (e) => { const s = e.target.closest(".bmove"); if (s) moveTo(Number(s.dataset.id), s.value); });
+    board.addEventListener("click", (e) => { const b = e.target.closest(".bdel"); if (b) removeFromTracker(Number(b.dataset.id)); });
+    board.addEventListener("dragstart", (e) => {
+      const c = e.target.closest(".bcard"); if (!c) return;
+      e.dataTransfer.setData("text/plain", c.dataset.id); e.dataTransfer.effectAllowed = "move"; c.classList.add("dragging");
+    });
+    board.addEventListener("dragend", (e) => { const c = e.target.closest(".bcard"); if (c) c.classList.remove("dragging"); });
+    board.addEventListener("dragover", (e) => {
+      const col = e.target.closest(".col"); if (!col) return;
+      e.preventDefault(); $$("#board .col").forEach((x) => x.classList.toggle("over", x === col));
+    });
+    board.addEventListener("dragleave", (e) => { if (!board.contains(e.relatedTarget)) $$("#board .col").forEach((x) => x.classList.remove("over")); });
+    board.addEventListener("drop", (e) => {
+      const col = e.target.closest(".col"); if (!col) return;
+      e.preventDefault(); $$("#board .col").forEach((x) => x.classList.remove("over"));
+      const id = Number(e.dataTransfer.getData("text/plain")); if (id) moveTo(id, col.dataset.col);
+    });
+  }
+  function moveTo(id, col) {
+    if (!COLUMNS.includes(col) || columnOf(id) === col) return;
+    if (col === "saved") delete state.board[id]; else state.board[id] = { col, at: new Date().toISOString() };
+    store.set("board", state.board);
+    paintBoard();
+  }
+  function removeFromTracker(id) {
+    const before = { saved: [...state.saved], board: { ...state.board } };
+    const i = state.saved.indexOf(id);
+    if (i >= 0) state.saved.splice(i, 1);
+    delete state.board[id];
+    store.set("saved", state.saved); store.set("board", state.board);
+    paintBoard();
+    toast(t("tr.removed"), t("tr.undo"), () => {
+      state.saved.splice(0, state.saved.length, ...before.saved); state.board = before.board;
+      store.set("saved", state.saved); store.set("board", state.board); paintBoard();
+    });
+  }
   function toggleSaved(id, btn) {
     const i = state.saved.indexOf(id);
-    if (i >= 0) state.saved.splice(i, 1); else { state.saved.push(id); beacon("star"); }
+    if (i >= 0) { state.saved.splice(i, 1); if (state.board[id]) { delete state.board[id]; store.set("board", state.board); } }
+    else { state.saved.push(id); beacon("star"); }
     store.set("saved", state.saved);
     if (btn) { btn.classList.toggle("on"); btn.textContent = state.saved.includes(id) ? "★" : "☆"; }
   }
@@ -993,9 +1078,14 @@
   }
   function closeMenu() { $("#acct-menu").hidden = true; $("#acct-avatar").setAttribute("aria-expanded", "false"); }
   let toastTimer = null;
-  function toast(msg) {
+  function toast(msg, action, onAction) {
     const el = $("#toast"); el.textContent = msg; el.hidden = false;
-    clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 4000);
+    if (action && onAction) {  // e.g. "Undo"
+      const b = document.createElement("button"); b.className = "link toast-action"; b.textContent = action;
+      b.addEventListener("click", () => { onAction(); el.hidden = true; }, { once: true });
+      el.append(" ", b);
+    }
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, action ? 7000 : 4000);
   }
   function bindAccount() {
     const loginUrl = () => (LANG === "nl" ? "/nl/inloggen" : "/login");
@@ -1119,7 +1209,7 @@
   }
 
   // ---------- routing ----------
-  const renderers = { overview: renderOverview, jobs: () => { buildJobsFilters(); return refreshJobs(); }, market: renderMarket, profile: renderProfile, account: renderAccount, company: renderCompany, admin: renderAdmin };
+  const renderers = { tracker: renderTracker, overview: renderOverview, jobs: () => { buildJobsFilters(); return refreshJobs(); }, market: renderMarket, profile: renderProfile, account: renderAccount, company: renderCompany, admin: renderAdmin };
   let firstRoute = true;
   async function route() {
     if (!firstRoute) beacon("nav");

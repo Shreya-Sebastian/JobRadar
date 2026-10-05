@@ -446,17 +446,22 @@ def me(request: Request, user: User | None = Depends(current_user), session: Ses
             "has_password": bool(user.password_hash), "can_reset_password": _reset_allowed(request, session)}
 
 
+BOARD_COLUMNS = ("interested", "applied", "archived")  # "saved" is the default: no entry
+
+
 class DataBody(BaseModel):
     profile: dict = Field(default_factory=dict)
     saved: list[int] = Field(default_factory=list, max_length=2000)
+    board: dict = Field(default_factory=dict)  # the application tracker: {job id: {"col": ..., "at": ...}}
 
 
 @router.get("/api/me/data")
 def get_data(user: User = Depends(require_user), session: Session = Depends(_db)):
     row = session.get(UserData, user.id)
     if row is None:
-        return {"profile": {}, "saved": [], "updated_at": None}
-    return {"profile": row.profile or {}, "saved": row.saved or [], "updated_at": row.updated_at.isoformat()}
+        return {"profile": {}, "saved": [], "board": {}, "updated_at": None}
+    return {"profile": row.profile or {}, "saved": row.saved or [], "board": row.board or {},
+            "updated_at": row.updated_at.isoformat()}
 
 
 @router.put("/api/me/data")
@@ -470,6 +475,10 @@ def put_data(body: DataBody, request: Request, user: User = Depends(require_user
         session.add(row)
     row.profile = body.profile
     row.saved = sorted(set(body.saved))
+    # only stages of saved jobs, in the known columns: nothing else rides along
+    row.board = {str(k): {"col": v["col"], "at": str(v.get("at", ""))[:40]} for k, v in body.board.items()
+                 if isinstance(v, dict) and v.get("col") in BOARD_COLUMNS and str(k).isdigit()
+                 and int(k) in row.saved}
     row.updated_at = datetime.utcnow()
     session.commit()
     return {"ok": True, "updated_at": row.updated_at.isoformat()}
@@ -526,6 +535,7 @@ def export(user: User = Depends(require_user), session: Session = Depends(_db)):
     body = {"email": user.email, "created_at": user.created_at.isoformat(),
             "last_login_at": user.last_login_at.isoformat() if user.last_login_at else None,
             "profile": row.profile if row else {}, "saved_job_ids": row.saved if row else [],
+            "application_tracker": row.board if row else {},
             "job_alerts": user.alerts or "off"}
     return Response(content=json.dumps(body, indent=2), media_type="application/json",
                     headers={"Content-Disposition": 'attachment; filename="tech-jobs-radar-data.json"'})

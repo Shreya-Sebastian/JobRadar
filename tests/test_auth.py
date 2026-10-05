@@ -42,11 +42,15 @@ def test_magic_link_login_sync_and_logout(client):
         assert s.query(LoginToken).one().token_hash != token
         assert all(len(x.token_hash) == 64 for x in s.query(UserSession))
 
-    assert client.get("/api/me/data").json() == {"profile": {}, "saved": [], "updated_at": None}
-    r = client.put("/api/me/data", json={"profile": {"skills": ["Python"]}, "saved": [3, 1, 3]}, headers=H)
+    assert client.get("/api/me/data").json() == {"profile": {}, "saved": [], "board": {}, "updated_at": None}
+    board = {"3": {"col": "applied", "at": "2026-10-06T10:00:00Z"}, "9": {"col": "applied"}, "1": {"col": "nope"}}
+    r = client.put("/api/me/data", json={"profile": {"skills": ["Python"]}, "saved": [3, 1, 3], "board": board},
+                   headers=H)
     assert r.status_code == 200
     d = client.get("/api/me/data").json()
     assert d["profile"] == {"skills": ["Python"]} and d["saved"] == [1, 3]
+    # tracker stages of saved jobs, in the known columns only
+    assert d["board"] == {"3": {"col": "applied", "at": "2026-10-06T10:00:00Z"}}
     export = client.get("/api/me/export")
     assert export.json()["email"] == "ada@example.org" and export.json()["saved_job_ids"] == [1, 3]
 

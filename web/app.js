@@ -19,7 +19,7 @@
       "tab.overview": "Overview", "tab.jobs": "Jobs", "tab.market": "Market", "tab.profile": "Profile",
       
       
-      "ov.skills": "Most requested skills",
+      "ov.skills": "Most requested skills", "hero.title": "Tech jobs in the Netherlands, filtered by what they ask", "hero.sub": "{n} live jobs from {c} employers · updated {d}", "foot.tag": "Tech jobs in the Netherlands, read straight from employers' own career sites and updated every day.",
       "jobs.none": "No jobs match these filters. Try removing one.", "pill.lang": "Language", "pill.visa": "Visa sponsorship", "pill.exp": "Experience", "pill.level": "Level", "pill.role": "Role", "pill.degree": "Degree", "pill.remote": "Remote", "pill.company": "Company", "pill.posted": "Date posted", "pill.more": "More", "remote.label": "Remote", "fact.visa": "Visa sponsorship", "fact.nodutch": "No Dutch needed",
       "ov.quick": "Filter by what each posting actually asks", "ov.q.en": "No Dutch required", "ov.q.visa": "Visa sponsorship", "ov.q.exp": "Up to 1 year of experience", "ov.q.deg": "No degree mentioned", "ov.q.remote": "Remote or hybrid", "ov.q.noagency": "Employers only, no agencies", "ov.q.small": "Under 50 employees", "ov.q.week": "Posted this week", "ov.q.all": "All filters",
       "ov.graph": "Skills asked for together",
@@ -129,7 +129,7 @@
       "tab.overview": "Overzicht", "tab.jobs": "Vacatures", "tab.market": "Markt", "tab.profile": "Profiel",
       
       
-      "ov.skills": "Meest gevraagde skills",
+      "ov.skills": "Meest gevraagde skills", "hero.title": "Techvacatures in Nederland, gefilterd op wat ze vragen", "hero.sub": "{n} open vacatures bij {c} werkgevers · bijgewerkt {d}", "foot.tag": "Techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers en elke dag bijgewerkt.",
       "jobs.none": "Geen vacatures met deze filters. Haal er een weg.", "pill.lang": "Taal", "pill.visa": "Visumsponsoring", "pill.exp": "Ervaring", "pill.level": "Niveau", "pill.role": "Functie", "pill.degree": "Opleiding", "pill.remote": "Thuiswerken", "pill.company": "Werkgever", "pill.posted": "Geplaatst", "pill.more": "Meer", "remote.label": "Thuiswerken", "fact.visa": "Visumsponsoring", "fact.nodutch": "Geen Nederlands nodig",
       "ov.quick": "Filter op wat de vacature echt vraagt", "ov.q.en": "Geen Nederlands vereist", "ov.q.visa": "Visumsponsoring", "ov.q.exp": "Maximaal 1 jaar ervaring", "ov.q.deg": "Geen opleiding genoemd", "ov.q.remote": "Thuis of hybride", "ov.q.noagency": "Alleen werkgevers, geen bureaus", "ov.q.small": "Minder dan 50 medewerkers", "ov.q.week": "Deze week geplaatst", "ov.q.all": "Alle filters",
       "ov.graph": "Skills die samen gevraagd worden",
@@ -558,6 +558,7 @@
       [last, t("kpi.crawl")],
     ].map(([v, l]) => `<div class="kpi"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join("");
     document.title = t("title");
+    $("#hero-sub").textContent = t("hero.sub", { n: fmt(o.live_tech_postings), c: fmt(o.companies), d: last });
   }
 
   // ---------- OVERVIEW ----------
@@ -699,6 +700,8 @@
       const n = PILL_COUNTS[b.dataset.pop](f);
       b.classList.toggle("on", n > 0); $(".n", b).textContent = n > 0 ? n : "";
     });
+    const any = Object.values(PILL_COUNTS).some((c) => c(f) > 0) || f.visa || f.q || f.cities.length || state.skill;
+    $("#f-reset").hidden = !any;  // nothing to reset
   }
   function openPop(key) {
     $$("#pops .pop").forEach((p) => { p.hidden = p.dataset.pop !== key; });
@@ -794,16 +797,16 @@
     const exp = expCell(i);
     const facts = [
       levelCell(i) && `<span class="fact">${levelCell(i)}</span>`,
-      !exp.includes('class="muted"') && `<span class="fact">${exp}</span>`,
+      !exp.includes('class="muted"') && `<span class="fact exp">${exp}</span>`,
       i.english_only ? `<span class="fact good" title="${t("lang.en.title")}">${t("fact.nodutch")}</span>` : `<span class="fact" title="${t("lang." + langKey(i) + ".title")}">${t("lang." + langKey(i))}</span>`,
-      i.visa === true && `<span class="fact good">${t("fact.visa")}</span>`,
+      i.visa === true && `<span class="fact visa">${t("fact.visa")}</span>`,
       policy && `<span class="fact">${esc(policy)}</span>`,
     ].filter(Boolean).join("");
     const old = i.age_days > 365 ? `<span class="badge stale" title="${t("old.year.title")}">${t("old.year")}</span>` : i.age_days > 90 ? `<span class="badge stale">${t("old")}</span>` : "";
     return `<li class="job">
       <span class="job-logo" style="--h:${hue(i.company)}" aria-hidden="true">${esc(initials(i.company))}</span>
       <div class="job-body">
-        <div class="job-top"><a class="job-title" href="${jobPath(i)}" data-pid="${i.id}" target="_blank" title="${esc(trustText(i))}">${esc(i.title)}</a>${trustBadge(i)}
+        <div class="job-top"><span class="job-head"><a class="job-title" href="${jobPath(i)}" data-pid="${i.id}" target="_blank" title="${esc(trustText(i))}">${esc(i.title)}</a>${trustBadge(i)}</span>
           <span class="job-age" title="${esc(i.posted_at)}">${age(i)}${old}</span></div>
         <div class="job-meta">${companyLink(i.company)}${i.via_agency ? ` <span class="chip more">${t("agency")}</span>` : ""}${place ? ` · ${esc(place)}${more}` : ""}</div>
         <div class="job-facts">${facts}</div>

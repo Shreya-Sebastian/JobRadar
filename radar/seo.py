@@ -462,10 +462,31 @@ def verification_meta() -> str:
     return f'<meta name="google-site-verification" content="{escape(token)}">' if token else ""
 
 
-def popular_links(pages: list[Page], lang: str, limit: int = 18) -> str:
-    """Footer links on the home page: helps visitors, and helps crawlers find the landing pages."""
-    chosen = sorted(pages, key=lambda p: -p.count)[:limit]
-    return " · ".join(
-        f'<a href="{p.nl_path if lang == "nl" else p.en_path}">{escape(p.nl_title if lang == "nl" else p.en_title)}</a>'
-        for p in chosen
+FOOTER_HEADS = {"en": ("Cities", "Roles", "Popular searches"), "nl": ("Steden", "Functies", "Populair")}
+
+
+def popular_links(pages: list[Page], lang: str, per_column: int = 6) -> str:
+    """The home page footer: the busiest landing pages in three short columns (cities, roles, popular searches).
+    For visitors a way in, for crawlers a path to the landing pages; short labels, so it does not read as a list
+    of keywords."""
+    nl = lang == "nl"
+    ranked = sorted(pages, key=lambda p: -p.count)
+
+    def label(p: Page) -> str:
+        if p.city and not p.role and not p.theme:
+            return city_nl(p.city) if nl else p.city
+        return p.nl_title if nl else p.en_title.removesuffix(" in the Netherlands")
+
+    columns = (
+        [p for p in ranked if p.city and not p.role and not p.theme],
+        [p for p in ranked if p.role and not p.city],
+        [p for p in ranked if p.theme and not p.city and not p.role],
     )
+    html = []
+    for head, items in zip(FOOTER_HEADS["nl" if nl else "en"], columns, strict=True):
+        if not items:
+            continue
+        links = "".join(f'<li><a href="{p.nl_path if nl else p.en_path}">{escape(label(p))}</a></li>'
+                        for p in items[:per_column])
+        html.append(f'<div class="foot-col"><h3>{head}</h3><ul>{links}</ul></div>')
+    return "".join(html)

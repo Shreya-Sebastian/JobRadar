@@ -31,7 +31,6 @@
     --bg: #f1f5f9; --card: #ffffff; --ink: #0f172a; --muted: #5b6b80; --line: #e2e8f0;
     --accent: #047857; --accent-2: #f97316; --on-accent: #ffffff; --chip: #f1f5f9; --chip-ink: #334155;
     --ok: #059669; --bad: #dc2626; --warn: #d97706;
-    --logo-s: 65%; --logo-bg: 90%; --logo-fg: 32%;
     --tag-lang-fg: #047857; --tag-lang-bg: #d1fae5; --tag-visa-fg: #92400e; --tag-visa-bg: #fef3c7;
     --badge-bg: #c2410c; --badge-fg: #ffffff; --faint: #64748b;
   }
@@ -41,7 +40,6 @@
       --bg: #0b1120; --card: #131c2e; --ink: #f1f5f9; --muted: #9aa8bc; --line: #243045;
       --accent: #34d399; --accent-2: #fb923c; --on-accent: #022c22; --chip: #1f2a3d; --chip-ink: #cbd5e1;
       --ok: #34d399; --bad: #f87171; --warn: #fbbf24;
-      --logo-s: 55%; --logo-bg: 24%; --logo-fg: 80%;
       --tag-lang-fg: #6ee7b7; --tag-lang-bg: #0c3b2e; --tag-visa-fg: #fcd34d; --tag-visa-bg: #3d2a07;
       --badge-bg: #fb923c; --badge-fg: #1c0a00; --faint: #7f8da3;
     }
@@ -51,7 +49,6 @@
     --bg: #0b1120; --card: #131c2e; --ink: #f1f5f9; --muted: #9aa8bc; --line: #243045;
     --accent: #34d399; --accent-2: #fb923c; --on-accent: #022c22; --chip: #1f2a3d; --chip-ink: #cbd5e1;
     --ok: #34d399; --bad: #f87171; --warn: #fbbf24;
-    --logo-s: 55%; --logo-bg: 24%; --logo-fg: 80%;
       --tag-lang-fg: #6ee7b7; --tag-lang-bg: #0c3b2e; --tag-visa-fg: #fcd34d; --tag-visa-bg: #3d2a07;
       --badge-bg: #fb923c; --badge-fg: #1c0a00; --faint: #7f8da3;
   }
@@ -262,8 +259,8 @@
   .jobs-empty { @apply rounded-2xl border border-dashed border-line p-8 text-center; }
   .job { @apply flex gap-4 rounded-2xl border border-line bg-card p-4 shadow-xs transition hover:-translate-y-px hover:border-accent/50
     hover:shadow-md sm:p-5; }
-  .job-logo { @apply relative grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl text-sm font-bold tracking-tight;
-    background: hsl(var(--h) var(--logo-s) var(--logo-bg)); color: hsl(var(--h) var(--logo-s) var(--logo-fg)); }
+  .job-logo { @apply relative grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-chip text-muted; }
+  .job-logo .no-logo { @apply size-6 opacity-70; }
   /* a logo sits on a white plate in both themes: most are drawn for a light background */
   .job-logo img { @apply absolute inset-0 size-full bg-white object-contain p-1.5 ring-1 ring-line ring-inset; border-radius: inherit; }
   .job-body { @apply min-w-0 flex-1; }

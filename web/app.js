@@ -785,10 +785,6 @@
     paintPills();
     $("#postings").innerHTML = d.items.length ? d.items.map(jobCard).join("") : `<li class="jobs-empty muted">${t("jobs.none")}</li>`;
   }
-  // a letter tile in place of a logo: the employer's initials on a colour of its own
-  const initials = (c) => (c || "?").replace(/\b(B\.?V\.?|N\.?V\.?|Group|Nederland|Netherlands)\b/gi, "").replace(/[^\p{L}\p{N} ]/gu, " ")
-    .trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?";
-  const hue = (s) => [...(s || "")].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
   // a stated salary as a short range: "€60k–75k", "from €60k", "up to €75k" (per year; implausible values are left out)
   function salaryText(i) {
     const ok = (v) => v != null && v >= 15000 && v <= 400000;
@@ -800,7 +796,7 @@
     return "";
   }
   const cap = (s) => s ? s[0].toUpperCase() + s.slice(1) : s;
-  // one job: logo, title, employer and place, then one line of what the posting asks, then the skills as quiet text.
+  // one job: the employer's logo (a neutral building where there is none), title, employer and place, then one line of what the posting asks, then the skills as quiet text.
   // Colour only where it decides: green when no Dutch is needed, orange when it mentions visa sponsorship.
   function jobCard(i) {
     const have = state.profile.skills, saved = state.saved.includes(i.id);
@@ -825,7 +821,7 @@
     const old = i.age_days > 365 ? `<span class="badge stale" title="${t("old.year.title")}">${t("old.year")}</span>` : i.age_days > 90 ? `<span class="badge stale">${t("old")}</span>` : "";
     const logo = i.logo ? `<img src="/logo/${encodeURIComponent(i.logo)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : "";
     return `<li class="job">
-      <span class="job-logo" style="--h:${hue(i.company)}" aria-hidden="true">${esc(initials(i.company))}${logo}</span>
+      <span class="job-logo" aria-hidden="true"><svg class="no-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16"/><path d="M15 9h4a1 1 0 0 1 1 1v11"/><path d="M3 21h18M8 8h3M8 12h3M8 16h3"/></svg>${logo}</span>
       <div class="job-body">
         <div class="job-top"><a class="job-title" href="${jobPath(i)}" data-pid="${i.id}" target="_blank" title="${esc(trustText(i))}">${esc(i.title)}</a>
           <span class="job-age" title="${esc(i.posted_at)}">${age(i)}${old}</span></div>

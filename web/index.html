@@ -81,7 +81,7 @@
     <div class="filter-row">
       <div class="field grow"><label data-i18n="f.search">Search</label><input type="search" id="f-q" data-i18n-placeholder="f.search.ph" placeholder="title or company"></div>
       <div class="field"><label data-i18n="f.window">Window</label><select id="f-days"><option value="" data-i18n="f.window.all">All live</option><option value="1" data-i18n="f.window.1">Last 24 h</option><option value="7" data-i18n="f.window.7">Last 7 days</option><option value="30" data-i18n="f.window.30">Last 30 days</option><option value="90" data-i18n="f.window.90">Last 90 days</option></select></div>
-      <div class="field"><label data-i18n="f.language">Language</label><select id="f-language"><option value="nl" data-i18n="f.language.nl">Dutch only (no English needed)</option><option value="en" data-i18n="f.language.en">English (no Dutch required)</option><option value="" data-i18n="f.language.any" selected>Dutch and/or English</option></select></div>
+      <div class="field"><label data-i18n="f.language">Languages you speak</label><select id="f-language" data-i18n-title="f.language.hint" title="We hide jobs that ask for a language you did not pick."><option value="" data-i18n="f.language.any" selected>Dutch and English</option><option value="nl" data-i18n="f.language.nl">Dutch only</option><option value="en" data-i18n="f.language.en">English only</option></select></div>
       <div class="field"><label data-i18n="f.sort">Sort</label><select id="f-sort"><option value="newest" data-i18n="f.sort.newest">Newest</option><option value="match" data-i18n="f.sort.match">Best match</option><option value="size_small" data-i18n="f.sort.small">Smaller organisations first</option><option value="size_large" data-i18n="f.sort.large">Larger organisations first</option></select></div>
     </div>
     <div class="filter-row">
@@ -164,7 +164,7 @@
       <div class="field"><label data-i18n="f.remote">Remote</label><div class="chips toggles" id="p-remote"></div></div>
       <div class="field"><label data-i18n="f.cities">Cities</label><div class="chipinput" id="p-cities"></div></div>
       <div class="field"><label data-i18n="p.exclude">Employers to hide</label><div class="chipinput" id="p-exclude"></div></div>
-      <div class="field"><label data-i18n="p.language">Posting language</label><select id="p-language"><option value="nl" data-i18n="f.language.nl">Dutch only (no English needed)</option><option value="en" data-i18n="f.language.en">English (no Dutch required)</option><option value="" data-i18n="f.language.any" selected>Dutch and/or English</option></select></div>
+      <div class="field"><label data-i18n="p.language">Languages you speak</label><select id="p-language" data-i18n-title="f.language.hint" title="We hide jobs that ask for a language you did not pick."><option value="" data-i18n="f.language.any" selected>Dutch and English</option><option value="nl" data-i18n="f.language.nl">Dutch only</option><option value="en" data-i18n="f.language.en">English only</option></select></div>
       <label class="check"><input type="checkbox" id="p-visa"> <span data-i18n="p.visa">Only jobs that mention visa sponsorship</span></label>
       <label class="check"><input type="checkbox" id="p-agencies"> <span data-i18n="p.agencies">Hide recruitment agencies</span></label>
       <label class="check"><input type="checkbox" id="p-noenrol"> <span data-i18n="f.noenrol">Exclude internships that require enrolment</span></label>
@@ -277,6 +277,6 @@
   <p class="mt-6 border-t border-line pt-6"><a href="{{PRIVACY_PATH}}" data-i18n="privacy">Privacy</a> · <a href="{{FEEDBACK_PATH}}" data-i18n="feedback">Feedback</a>{{SOURCE_LINK}}</p>
  </div>
 </footer>
-<script src="/static/app.js?v=77"></script>
+<script src="/static/app.js?v=78"></script>
 </body>
 </html>

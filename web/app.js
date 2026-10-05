@@ -25,7 +25,7 @@
       "ov.matches.empty": 'Add your skills under <a href="#profile">Profile</a> to see matches.',
       "f.search": "Search", "f.search.ph": "title or company", "f.window": "Window", "f.window.all": "All live", "f.window.1": "Last 24 h",
       "f.window.7": "Last 7 days", "f.window.30": "Last 30 days", "f.window.90": "Last 90 days",
-      "f.language": "Language", "f.language.any": "Dutch and/or English", "f.language.nl": "Dutch only (no English needed)", "f.language.en": "English (no Dutch required)",
+      "f.language": "Languages you speak", "f.language.any": "Dutch and English", "f.language.nl": "Dutch only", "f.language.en": "English only", "f.language.hint": "We hide jobs that ask for a language you did not pick.",
       "f.sort": "Sort", "f.sort.newest": "Newest", "f.sort.match": "Best match", "f.role": "Role", "f.level": "Level", "f.remote": "Remote",
       "f.cities": "Cities", "f.visa": "Visa sponsorship mentioned", "f.agencies": "Hide agencies", 
       "f.saved": "Saved only", "f.skill": "Skill", "f.reset": "Reset filters", "f.profile": "Use my profile",
@@ -37,7 +37,7 @@
       "mk.roles": "Role family", "mk.hiring": "Who is hiring", "mk.salary": "Stated salaries", "mk.salary.hint": "per year",
       "mk.lang": "Posting language", "mk.remote": "Remote policy",
       "p.looking": "Job preferences",
-      "p.roles": "Roles", "p.levels": "Levels", "p.exclude": "Employers to hide", "p.language": "Posting language",
+      "p.roles": "Roles", "p.levels": "Levels", "p.exclude": "Employers to hide", "p.language": "Languages you speak",
       "p.visa": "Only jobs that mention visa sponsorship", "p.agencies": "Hide recruitment agencies", "p.save": "Save profile", "p.export": "Export",
       "p.import": "Import", "p.clear": "Clear", "p.skills": "Skills",
       "p.extract": "Extract skills from CV text", "p.cv.ph": "Paste your CV text", "p.extract.btn": "Extract",
@@ -55,7 +55,7 @@
      
       "match.none": "No live posting fits all your profile filters. Loosen a level or city under Profile.",
       "li.match": "match {p}%", "li.have": "you have {s}", "li.missing": "missing {s}", "agency": "agency", "closed": "closed",
-      "jobs.match": "{n} jobs match", "jobs.match.one": "1 job matches", "page": "page {p} of {t}", "today": "today", "yesterday": "yesterday", "days.ago": "{d}d ago", "old": "old", 
+      "jobs.match": "{n} jobs match", "jobs.match.one": "1 job matches", "page": "page {p} of {t}", "today": "today", "yesterday": "yesterday", "days.ago": "{d}d ago", "old": "old", "old.year": "1y+", "old.year.title": "Posted over a year ago: possibly a role the employer keeps open all the time", 
       "lang.nl": "NL", "lang.en": "EN", "lang.both": "NL + EN", "lang.nl.title": "Dutch required, no English needed", "lang.en.title": "No Dutch required", "lang.both.title": "Dutch and English both required",
       "visa.yes": "yes", "visa.no": "no", "visa.unknown": "?", "save": "save", "remove": "remove",
       "salary.none": "No posting in this selection states a salary.", "salary.n": "postings state a salary", "salary.median": "median", "salary.p25": "lower quarter", "salary.p75": "upper quarter",
@@ -133,7 +133,7 @@
       "ov.matches.empty": 'Voeg je skills toe onder <a href="#profile">Profiel</a> om matches te zien.',
       "f.search": "Zoeken", "f.search.ph": "functietitel of werkgever", "f.window": "Periode", "f.window.all": "Alle open", "f.window.1": "Laatste 24 uur",
       "f.window.7": "Laatste 7 dagen", "f.window.30": "Laatste 30 dagen", "f.window.90": "Laatste 90 dagen",
-      "f.language": "Taal", "f.language.any": "Nederlands en/of Engels", "f.language.nl": "Alleen Nederlands (geen Engels nodig)", "f.language.en": "Engels (geen Nederlands vereist)",
+      "f.language": "Talen die je spreekt", "f.language.any": "Nederlands en Engels", "f.language.nl": "Alleen Nederlands", "f.language.en": "Alleen Engels", "f.language.hint": "We verbergen vacatures die een taal vragen die je niet hebt gekozen.",
       "f.sort": "Sorteren", "f.sort.newest": "Nieuwste", "f.sort.match": "Beste match", "f.role": "Rol", "f.level": "Niveau", "f.remote": "Thuiswerken",
       "f.cities": "Steden", "f.visa": "Visumsponsoring genoemd", "f.agencies": "Bureaus verbergen", 
       "f.saved": "Alleen bewaard", "f.skill": "Skill", "f.reset": "Filters wissen", "f.profile": "Mijn profiel gebruiken",
@@ -145,7 +145,7 @@
       "mk.roles": "Rolfamilie", "mk.hiring": "Wie neemt aan", "mk.salary": "Vermelde salarissen", "mk.salary.hint": "per jaar",
       "mk.lang": "Taal van de vacature", "mk.remote": "Thuiswerkbeleid",
       "p.looking": "Voorkeuren",
-      "p.roles": "Rollen", "p.levels": "Niveaus", "p.exclude": "Werkgevers verbergen", "p.language": "Taal van de vacature",
+      "p.roles": "Rollen", "p.levels": "Niveaus", "p.exclude": "Werkgevers verbergen", "p.language": "Talen die je spreekt",
       "p.visa": "Alleen vacatures die visumsponsoring noemen", "p.agencies": "Wervingsbureaus verbergen", "p.save": "Profiel opslaan", "p.export": "Exporteren",
       "p.import": "Importeren", "p.clear": "Wissen", "p.skills": "Skills",
       "p.extract": "Skills uit cv-tekst halen", "p.cv.ph": "Plak je cv-tekst", "p.extract.btn": "Herkennen",
@@ -162,7 +162,7 @@
      
       "match.none": "Geen open vacature past bij al je profielfilters. Versoepel een niveau of stad onder Profiel.",
       "li.match": "match {p}%", "li.have": "je hebt {s}", "li.missing": "mist {s}", "agency": "bureau", "closed": "gesloten",
-      "jobs.match": "{n} vacatures gevonden", "jobs.match.one": "1 vacature gevonden", "page": "pagina {p} van {t}", "today": "vandaag", "yesterday": "gisteren", "days.ago": "{d}d geleden", "old": "oud", 
+      "jobs.match": "{n} vacatures gevonden", "jobs.match.one": "1 vacature gevonden", "page": "pagina {p} van {t}", "today": "vandaag", "yesterday": "gisteren", "days.ago": "{d}d geleden", "old": "oud", "old.year": "1j+", "old.year.title": "Meer dan een jaar geleden geplaatst: mogelijk een vacature die altijd open staat", 
       "lang.nl": "NL", "lang.en": "EN", "lang.both": "NL + EN", "lang.nl.title": "Nederlands vereist, geen Engels nodig", "lang.en.title": "Geen Nederlands vereist", "lang.both.title": "Nederlands en Engels allebei vereist",
       "visa.yes": "ja", "visa.no": "nee", "visa.unknown": "?", "save": "bewaren", "remove": "verwijderen",
       "salary.none": "Geen vacature in deze selectie noemt een salaris.", "salary.n": "vacatures noemen een salaris", "salary.median": "mediaan", "salary.p25": "onderste kwart", "salary.p75": "bovenste kwart",
@@ -744,7 +744,7 @@
     $("#prev").disabled = d.page <= 1; $("#next").disabled = d.page >= pages;
     $("#postings tbody").innerHTML = d.items.map((i) => `<tr>
       <td><button class="star${state.saved.includes(i.id) ? " on" : ""}" data-id="${i.id}" title="${t("save")}">${state.saved.includes(i.id) ? "★" : "☆"}</button></td>
-      <td class="muted" title="${esc(i.posted_at)}">${age(i)}${i.age_days > 90 ? `<span class="badge stale">${t("old")}</span>` : ""}</td>
+      <td class="muted" title="${esc(i.posted_at)}">${age(i)}${i.age_days > 365 ? `<span class="badge stale" title="${t("old.year.title")}">${t("old.year")}</span>` : i.age_days > 90 ? `<span class="badge stale">${t("old")}</span>` : ""}</td>
       <td><a href="${jobPath(i)}" data-pid="${i.id}" target="_blank" title="${esc(trustText(i))}">${esc(i.title)}</a>${trustBadge(i)}</td>
       <td>${companyLink(i.company)}${i.via_agency ? ` <span class="chip more">${t("agency")}</span>` : ""}</td>
       <td>${esc(i.city ? cityLabel(i.city) : (i.remote ? "Remote" : ""))}${i.also_in && i.also_in.length ? ` <span class="more-cities" title="${esc(t("also.in", { c: i.also_in.map(cityLabel).join(", ") }))}">+${i.also_in.length}</span>` : ""}</td>

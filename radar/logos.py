@@ -220,13 +220,22 @@ def refresh(session, limit: int = 120, now: datetime | None = None, client: http
     client = client or _client()
     found = missing = 0
     domains = known_domains()
+    errors = 0
     for company in due:
         ats, slug, url, _ = best[company]
         page = board_url(ats, slug, url)
-        got = find_logo(page, client) if page else None
-        if not got and company in domains:  # boards built entirely in JavaScript (Workday): the employer's own site
-            page = f"https://{domains[company]}/"
-            got = find_logo(page, client)
+        try:
+            got = find_logo(page, client) if page else None
+            if not got and company in domains:  # boards built entirely in JavaScript (Workday): the employer's site
+                page = f"https://{domains[company]}/"
+                got = find_logo(page, client)
+        except Exception as e:  # a rate-limiter hiccup or an odd page: this employer is tried again next run
+            log.warning("logo lookup for %s failed: %s", company, e)
+            errors += 1
+            if errors >= 10:
+                break
+            continue
+        errors = 0
         row = known.get(company) or CompanyLogo(company=company, slug=slug_of(company))
         row.fetched_at, row.page_url = now, (page or "")[:500]
         if got:
@@ -238,7 +247,7 @@ def refresh(session, limit: int = 120, now: datetime | None = None, client: http
         session.add(row)
         session.commit()
     _known.clear()
-    return {"looked_up": len(due), "found": found, "missing": missing}
+    return {"looked_up": len(due), "found": found, "missing": missing, "errors": errors}
 
 
 def known_domains() -> dict[str, str]:

@@ -176,7 +176,6 @@
   .toggles .chip { @apply cursor-pointer bg-card px-3 py-1 text-[13px] ring-1 ring-line ring-inset transition-colors select-none
     hover:ring-accent/60; }
   .toggles .chip.on { @apply bg-accent text-on-accent ring-accent; }
-  .quick .chip { @apply py-1.5 text-sm no-underline hover:bg-accent/10; }  /* shortcuts into the jobs tab */
   .chipinput { @apply relative flex min-h-10 flex-wrap items-center gap-1.5 rounded-lg border border-line bg-card px-2 py-1
     shadow-xs transition focus-within:border-accent focus-within:ring-3 focus-within:ring-accent/20; }
   .chipinput .chip { @apply py-1 pr-1 pl-2.5 text-[13px]; }

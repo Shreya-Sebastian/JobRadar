@@ -21,7 +21,6 @@
       
       "ov.skills": "Most requested skills", "hero.title": "Tech jobs in the Netherlands, filtered by what they ask", "hero.sub": "{n} live jobs from {c} employers · updated {d}", "foot.tag": "Tech jobs in the Netherlands, read straight from employers' own career sites and updated every day.",
       "jobs.none": "No jobs match these filters. Try removing one.", "pill.lang": "Language", "pill.visa": "Visa sponsorship", "pill.exp": "Experience", "pill.level": "Level", "pill.role": "Role", "pill.degree": "Degree", "pill.remote": "Remote", "pill.company": "Company", "pill.posted": "Date posted", "pill.more": "More", "remote.label": "Remote", "sal.from": "from {v}", "fact.noexp": "No experience asked", "sal.upto": "up to {v}", "sal.title": "Salary stated in the posting (per year, gross)", "fact.visa": "Visa sponsorship", "fact.nodutch": "No Dutch needed",
-      "ov.quick": "Filter by what each posting actually asks", "ov.q.en": "No Dutch required", "ov.q.visa": "Visa sponsorship", "ov.q.exp": "Up to 1 year of experience", "ov.q.deg": "No degree mentioned", "ov.q.remote": "Remote or hybrid", "ov.q.noagency": "Employers only, no agencies", "ov.q.small": "Under 50 employees", "ov.q.week": "Posted this week", "ov.q.all": "All filters",
       "ov.graph": "Skills asked for together",
       "ov.matches": "Best matches for you",
       "ov.matches.empty": 'Add your skills under <a href="#profile">Profile</a> to see matches.',
@@ -131,7 +130,6 @@
       
       "ov.skills": "Meest gevraagde skills", "hero.title": "Techvacatures in Nederland, gefilterd op wat ze vragen", "hero.sub": "{n} open vacatures bij {c} werkgevers · bijgewerkt {d}", "foot.tag": "Techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers en elke dag bijgewerkt.",
       "jobs.none": "Geen vacatures met deze filters. Haal er een weg.", "pill.lang": "Taal", "pill.visa": "Visumsponsoring", "pill.exp": "Ervaring", "pill.level": "Niveau", "pill.role": "Functie", "pill.degree": "Opleiding", "pill.remote": "Thuiswerken", "pill.company": "Werkgever", "pill.posted": "Geplaatst", "pill.more": "Meer", "remote.label": "Thuiswerken", "sal.from": "vanaf {v}", "fact.noexp": "Geen ervaring gevraagd", "sal.upto": "tot {v}", "sal.title": "Salaris volgens de vacature (per jaar, bruto)", "fact.visa": "Visumsponsoring", "fact.nodutch": "Geen Nederlands nodig",
-      "ov.quick": "Filter op wat de vacature echt vraagt", "ov.q.en": "Geen Nederlands vereist", "ov.q.visa": "Visumsponsoring", "ov.q.exp": "Maximaal 1 jaar ervaring", "ov.q.deg": "Geen opleiding genoemd", "ov.q.remote": "Thuis of hybride", "ov.q.noagency": "Alleen werkgevers, geen bureaus", "ov.q.small": "Minder dan 50 medewerkers", "ov.q.week": "Deze week geplaatst", "ov.q.all": "Alle filters",
       "ov.graph": "Skills die samen gevraagd worden",
       "ov.matches": "Beste matches voor jou",
       "ov.matches.empty": 'Voeg je skills toe onder <a href="#profile">Profiel</a> om matches te zien.',

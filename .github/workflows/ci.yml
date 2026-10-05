@@ -17,7 +17,15 @@ jobs:
           cache: pip
       - run: pip install -e ".[dev]"
       - run: ruff check radar tests scripts
-      - run: pytest -q
+      - name: Tests
+        # failing tests become annotations, which the checks API shows without signing in to read the log
+        run: |
+          set -o pipefail
+          pytest -q -rf 2>&1 | tee pytest.log || {
+            grep -E "^(FAILED|ERROR) " pytest.log | head -10 | sed 's/^/::error title=pytest::/'
+            grep -E "^E  " pytest.log | head -10 | sed 's/^/::error title=pytest detail::/'
+            exit 1
+          }
       - name: Extraction evals (gate)
         run: python -m radar.cli eval --golden data/golden/golden.jsonl --extractor rules --fail-under 0.70
       - name: Filter test set (500 labelled postings)

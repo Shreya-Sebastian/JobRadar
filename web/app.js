@@ -20,6 +20,9 @@
       
       
       "ov.skills": "Most requested skills",
+      "rep.title": "This week in the market", "rep.open": "Shareable report →", "rep.range": "Jobs posted {a} to {b}, against the week before",
+      "rep.new": "new jobs", "rep.before": "the week before: {n}", "rep.nodutch": "need no Dutch", "rep.visa": "mention visa sponsorship",
+      "rep.salary": "median stated salary", "rep.skills": "Skills asked for", "rep.positions": "Most posted positions", "rep.change": "change in share against the week before",
       "tab.tracker": "Tracker", "tr.title": "Your applications", "tr.hint": "Star a job to collect it under Saved, then move it along as you go.", "col.saved": "Saved", "col.interested": "Interested", "col.applied": "Applied", "col.archived": "Archived", "tr.move": "Move to", "tr.delete": "Remove from the tracker", "tr.removed": "Removed from your tracker.", "tr.undo": "Undo", "tr.empty": "Nothing here yet. Star a job in the Jobs tab to start tracking it.", "tr.col.empty": "Drag a job here", "tr.applied.on": "applied {d}", "tr.moved.on": "since {d}", "tr.closed": "closed", "hero.title": "Tech jobs in the Netherlands, filtered by what they ask", "hero.sub": "{n} live jobs from {c} employers · updated {d}", "foot.tag": "Tech jobs in the Netherlands, read straight from employers' own career sites and updated every day.",
       "jobs.none": "No jobs match these filters. Try removing one.", "rss.title": "RSS feed of this search: new jobs in your feed reader", "pill.lang": "Language", "pill.visa": "Visa sponsorship", "pill.exp": "Experience", "pill.level": "Level", "pill.role": "Role", "pill.degree": "Degree", "pill.remote": "Remote", "pill.company": "Company", "pill.posted": "Date posted", "pill.more": "More", "remote.label": "Remote", "sal.from": "from {v}", "fact.noexp": "No experience asked", "sal.upto": "up to {v}", "sal.title": "Salary stated in the posting (per year, gross)", "fact.visa": "Visa sponsorship", "fact.nodutch": "No Dutch needed",
       "ov.graph": "Skills asked for together",
@@ -131,6 +134,9 @@
       
       
       "ov.skills": "Meest gevraagde skills",
+      "rep.title": "Deze week op de markt", "rep.open": "Deelbaar rapport →", "rep.range": "Vacatures geplaatst van {a} tot {b}, tegenover de week ervoor",
+      "rep.new": "nieuwe vacatures", "rep.before": "de week ervoor: {n}", "rep.nodutch": "zonder Nederlands", "rep.visa": "noemen visumsponsoring",
+      "rep.salary": "mediaan vermeld salaris", "rep.skills": "Gevraagde skills", "rep.positions": "Meest geplaatste functies", "rep.change": "verschil in aandeel met de week ervoor",
       "tab.tracker": "Sollicitaties", "tr.title": "Je sollicitaties", "tr.hint": "Geef een vacature een ster om hem onder Bewaard te zetten, en schuif hem door terwijl je solliciteert.", "col.saved": "Bewaard", "col.interested": "Interessant", "col.applied": "Gesolliciteerd", "col.archived": "Gearchiveerd", "tr.move": "Verplaats naar", "tr.delete": "Uit het overzicht halen", "tr.removed": "Uit je overzicht gehaald.", "tr.undo": "Ongedaan maken", "tr.empty": "Nog niets. Geef een vacature in het tabblad Vacatures een ster om hem te volgen.", "tr.col.empty": "Sleep een vacature hierheen", "tr.applied.on": "gesolliciteerd {d}", "tr.moved.on": "sinds {d}", "tr.closed": "gesloten", "hero.title": "Techvacatures in Nederland, gefilterd op wat ze vragen", "hero.sub": "{n} open vacatures bij {c} werkgevers · bijgewerkt {d}", "foot.tag": "Techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers en elke dag bijgewerkt.",
       "jobs.none": "Geen vacatures met deze filters. Haal er een weg.", "rss.title": "RSS-feed van deze zoekopdracht: nieuwe vacatures in je feedlezer", "pill.lang": "Taal", "pill.visa": "Visumsponsoring", "pill.exp": "Ervaring", "pill.level": "Niveau", "pill.role": "Functie", "pill.degree": "Opleiding", "pill.remote": "Thuiswerken", "pill.company": "Werkgever", "pill.posted": "Geplaatst", "pill.more": "Meer", "remote.label": "Thuiswerken", "sal.from": "vanaf {v}", "fact.noexp": "Geen ervaring gevraagd", "sal.upto": "tot {v}", "sal.title": "Salaris volgens de vacature (per jaar, bruto)", "fact.visa": "Visumsponsoring", "fact.nodutch": "Geen Nederlands nodig",
       "ov.graph": "Skills die samen gevraagd worden",
@@ -954,7 +960,24 @@
   }
 
   // ---------- MARKET ----------
+  async function renderReport() {
+    const r = await api("/api/market/report");
+    const d = (iso) => new Date(iso + "T12:00:00Z").toLocaleDateString(LANG === "nl" ? "nl-NL" : "en-GB", { day: "numeric", month: "short" });
+    const pct = (v) => v == null ? "-" : Math.round(v * 100) + "%";
+    $("#rep-link").href = LANG === "nl" ? "/nl/marktrapport" : "/market-report";
+    $("#rep-range").textContent = t("rep.range", { a: d(r.from), b: d(r.to) });
+    $("#rep-tiles").innerHTML = [
+      [fmt(r.new), t("rep.new"), r.new_before != null ? t("rep.before", { n: fmt(r.new_before) }) : ""],
+      [pct(r.no_dutch), t("rep.nodutch"), ""], [fmt(r.visa), t("rep.visa"), ""],
+      ...(r.salary_median ? [["€" + fmt(Math.round(r.salary_median / 1000) * 1000), t("rep.salary"), ""]] : []),
+    ].map(([v, l, s]) => `<div class="kpi"><b>${esc(v)}</b><span>${esc(l)}</span>${s ? `<span class="kpi-sub">${esc(s)}</span>` : ""}</div>`).join("");
+    const bars = (items) => { const top = Math.max(1, ...items.map((i) => i.n));
+      return items.map((i) => `<div class="rbar"><span>${esc(i.k)}</span><i style="width:${Math.round(i.n / top * 100)}%"></i><b>${esc(i.v)}</b>${i.c != null ? ` <small class="${i.c > 0.004 ? "ok" : i.c < -0.004 ? "bad" : "muted"}" title="${t("rep.change")}">${i.c > 0.004 ? "▲" : i.c < -0.004 ? "▼" : "="} ${Math.abs(Math.round(i.c * 100))}</small>` : ""}</div>`).join(""); };
+    $("#rep-skills").innerHTML = bars(r.skills.slice(0, 8).map((s) => ({ k: s.skill, n: s.share, v: pct(s.share), c: s.change })));
+    $("#rep-positions").innerHTML = bars(r.positions.map((p) => ({ k: positionLabel(p.key), n: p.count, v: fmt(p.count) })));
+  }
   async function renderMarket() {
+    renderReport().catch(() => {});
     const p = new URLSearchParams();
     const [city, sen, role, comp, sal, lang, remote, exp, sector, pos] = await Promise.all([
       api("/api/breakdown/city", withParams(p, { top: 12 })), api("/api/breakdown/seniority", p),

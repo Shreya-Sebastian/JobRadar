@@ -248,6 +248,30 @@ def logo(slug: str, session: Session = Depends(db)):
     return Response(row.data, media_type=row.content_type, headers=headers)
 
 
+def _market_report(session: Session) -> dict:
+    from sqlalchemy import func, select
+
+    from radar.models import Posting
+
+    start = session.scalar(select(func.min(Posting.first_seen)))
+    return cached("market:report", lambda: stats.market_report(stats.CACHE.rows(session), start), ttl=900)
+
+
+@app.get("/api/market/report")
+def market_report(session: Session = Depends(db)):
+    """This week in the Dutch tech job market (the Market tab and /market-report)."""
+    return _market_report(session)
+
+
+@app.get("/market-report", include_in_schema=False)
+@app.get("/nl/marktrapport", include_in_schema=False)
+def market_report_page(request: Request, session: Session = Depends(db)):
+    from radar import pages
+
+    lang = "nl" if request.url.path.startswith("/nl/") else "en"
+    return Response(pages.render_report(_market_report(session), lang), media_type="text/html")
+
+
 @app.get("/feed.xml", include_in_schema=False)
 @app.get("/nl/feed.xml", include_in_schema=False)
 def feed(request: Request, f: stats.Filters = Depends(filters), session: Session = Depends(db)):
@@ -520,7 +544,8 @@ def sitemap(session: Session = Depends(db)):
         rows, landing_pages = _pages_objects(session)
         live = [r for r in rows if r.closed_at is None]
         home = lastmod(tech)
-        urls = [(f"{base}/", home), (f"{base}/nl/", home), (f"{base}/companies", home)]
+        urls = [(f"{base}/", home), (f"{base}/nl/", home), (f"{base}/companies", home),
+                (f"{base}/market-report", home), (f"{base}/nl/marktrapport", home)]
         for lp in landing_pages:
             day = lastmod(seo._filtered(live, lp.filters, lp.city))
             urls += [(base + lp.nl_path, day), (base + lp.en_path, day)]

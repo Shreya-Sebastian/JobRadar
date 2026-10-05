@@ -254,6 +254,14 @@
   .results-head { @apply mt-5 mb-2.5 flex flex-wrap items-center gap-x-3 gap-y-2; }
   .results-head .count { @apply mr-auto ml-0 text-sm font-semibold text-ink; }
   .sort { @apply flex items-center gap-2 text-sm text-muted; }
+  /* ---------- weekly report: one bar per item ---------- */
+  .rbar { @apply mb-2 grid items-center gap-x-3 text-sm; grid-template-columns: minmax(7rem, 40%) 1fr auto; }
+  .rbar > span { @apply truncate text-ink; }
+  .rbar > i { @apply block h-2 rounded-full bg-accent; min-width: 2px; }
+  .rbar > b { @apply font-semibold whitespace-nowrap text-ink tabular-nums; }
+  .rbar > small { grid-column: 3; @apply -mt-1 text-xs whitespace-nowrap; }
+  .report h2 { @apply mb-4; }
+
   /* ---------- tracker board ---------- */
   .board-head { @apply mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1; }
   .board { @apply grid gap-4 overflow-x-auto pb-2; grid-template-columns: repeat(4, minmax(250px, 1fr));
@@ -338,7 +346,7 @@
   .site-footer { @apply mt-14 border-t border-line bg-card; }
   .foot-grid { @apply grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-[1.5fr_1fr_1fr_1fr]; }
   .foot-brand { @apply col-span-2 max-w-sm lg:col-span-1; }
-  .foot-brand p { @apply mt-3 text-sm text-muted; }
+  .foot-brand p { @apply mt-0 text-sm text-muted; }
   .foot-col h3 { @apply m-0 text-xs font-semibold tracking-wide text-ink uppercase; }
   .foot-col ul { @apply m-0 mt-3 flex list-none flex-col gap-2 p-0; }
   .foot-col a { @apply text-sm text-muted no-underline hover:text-accent; }

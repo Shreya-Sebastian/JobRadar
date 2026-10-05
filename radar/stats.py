@@ -372,6 +372,49 @@ def load_rows(session: Session, include_closed_days: int = 90) -> list[Row]:
     return rows
 
 
+def market_report(rows: list[Row], tracking_start: datetime | None, now: datetime | None = None,
+                  days: int = 7) -> dict[str, Any]:
+    """The weekly market report: the jobs posted in the last `days` days (closed since or not) against the `days`
+    before, as aggregates only: no employer is named. The earlier window counts once tracking covered all of it."""
+    now = now or datetime.utcnow()
+
+    def when(r: Row) -> datetime:
+        return r.posted_at or r.first_seen
+
+    cur = [r for r in rows if now - timedelta(days=days) < when(r) <= now]
+    covered = tracking_start is not None and tracking_start <= now - timedelta(days=2 * days)
+    earlier = [r for r in rows if now - timedelta(days=2 * days) < when(r) <= now - timedelta(days=days)]
+    prev = earlier if covered else None
+
+    def share(rs: list[Row] | None, pred) -> float | None:
+        return round(sum(1 for r in rs if pred(r)) / len(rs), 3) if rs else None
+
+    no_dutch = lambda r: bool(r.ex.get("english_only"))  # noqa: E731
+    skills_now = Counter(s for r in cur for s in r.skills)
+    skills_before = Counter(s for r in prev for s in r.skills) if prev else None
+    skills = []
+    for s, n in skills_now.most_common(12):
+        item = {"skill": s, "share": round(n / len(cur), 3)}
+        if skills_before is not None and prev:
+            item["change"] = round(n / len(cur) - skills_before.get(s, 0) / len(prev), 3)
+        skills.append(item)
+    salaries = sorted(r.ex["salary_min_eur"] for r in cur if 15000 <= (r.ex.get("salary_min_eur") or 0) <= 400000)
+    bands = Counter(r.experience for r in cur)
+    return {
+        "from": (now - timedelta(days=days)).date().isoformat(), "to": now.date().isoformat(), "days": days,
+        "new": len(cur), "new_before": len(prev) if prev is not None else None,
+        "no_dutch": share(cur, no_dutch), "no_dutch_before": share(prev, no_dutch),
+        "visa": sum(1 for r in cur if r.ex.get("visa_sponsorship") is True),
+        "remote": share(cur, lambda r: r.ex.get("remote_policy") in ("remote", "hybrid")),
+        "salary_median": statistics.median(salaries) if len(salaries) >= 10 else None, "salary_n": len(salaries),
+        "skills": skills,
+        "positions": [{"key": k, "count": n} for k, n in Counter(r.position for r in cur).most_common(9)
+                      if k != "other"][:8],
+        "cities": [{"key": k, "count": n} for k, n in Counter(r.city for r in cur if r.city).most_common(6)],
+        "experience": {k: round(n / len(cur), 3) for k, n in bands.items()} if cur else {},
+    }
+
+
 def new_jobs(session: Session, now: datetime | None = None, days: int = 7) -> dict[str, int]:
     """Tech jobs posted in the last `days` days and in the `days` before that (the employer's date, or the day first
     seen when it gives none; closed ones included, duplicates not). A rolling window, so the figure does not drop

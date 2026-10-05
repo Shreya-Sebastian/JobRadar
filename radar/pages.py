@@ -499,6 +499,137 @@ def similar_jobs(rows: list[Row], p, limit: int = 5) -> list[Row]:
     return out
 
 
+REPORT_TEXT = {'en': {'title': 'The Dutch tech job market this week',
+                      'doc': 'Dutch tech job market this week',
+                      'desc': 'A weekly look at tech jobs in the Netherlands: how many were posted, the skills '
+                              'employers ask for, how many need no Dutch, and where the work is. Updated every day.',
+                      'range': 'Jobs posted {a} to {b}',
+                      'new': 'new jobs',
+                      'before': 'the week before: {n}',
+                      'no_dutch': 'need no Dutch',
+                      'visa': 'mention visa sponsorship',
+                      'remote': 'remote or hybrid',
+                      'salary': 'median stated salary',
+                      'salary_n': '{n} postings state one',
+                      'skills': 'Skills asked for',
+                      'positions': 'Most posted positions',
+                      'cities': 'Where',
+                      'exp': 'Experience asked',
+                      'change': 'change in share against the week before',
+                      'jobs': 'See the jobs',
+                      'home': '/',
+                      'method': "Counted from employers' own career sites, by the date each job was posted, closed "
+                                'jobs included. No employer is singled out.',
+                      'bands': {'none': 'none asked',
+                                '1': 'up to 1 year',
+                                '2-3': '2-3 years',
+                                '4-5': '4-5 years',
+                                '6+': '6+ years',
+                                'unspecified': 'not stated'}},
+               'nl': {'title': 'De Nederlandse techarbeidsmarkt deze week',
+                      'doc': 'Techarbeidsmarkt deze week',
+                      'desc': 'Een wekelijkse blik op techvacatures in Nederland: hoeveel er geplaatst zijn, welke '
+                              'skills werkgevers vragen, hoeveel geen Nederlands vereisen en waar het werk is. '
+                              'Dagelijks bijgewerkt.',
+                      'range': 'Vacatures geplaatst van {a} tot {b}',
+                      'new': 'nieuwe vacatures',
+                      'before': 'de week ervoor: {n}',
+                      'no_dutch': 'zonder Nederlands',
+                      'visa': 'noemen visumsponsoring',
+                      'remote': 'thuis of hybride',
+                      'salary': 'mediaan vermeld salaris',
+                      'salary_n': '{n} vacatures noemen er een',
+                      'skills': 'Gevraagde skills',
+                      'positions': 'Meest geplaatste functies',
+                      'cities': 'Waar',
+                      'exp': 'Gevraagde ervaring',
+                      'change': 'verschil in aandeel met de week ervoor',
+                      'jobs': 'Bekijk de vacatures',
+                      'home': '/nl/',
+                      'method': 'Geteld op de carrièresites van werkgevers zelf, op de datum waarop elke vacature '
+                                'geplaatst is, gesloten vacatures meegeteld. Er wordt geen werkgever uitgelicht.',
+                      'bands': {'none': 'geen',
+                                '1': 'tot 1 jaar',
+                                '2-3': '2-3 jaar',
+                                '4-5': '4-5 jaar',
+                                '6+': '6+ jaar',
+                                'unspecified': 'niet vermeld'}}}
+
+
+def render_report(rep: dict, lang: str) -> str:
+    """/market-report and /nl/marktrapport: the weekly market report as a page to share and to find."""
+    from datetime import date
+
+    from radar.positions import LABELS as POSITION_LABELS
+    from radar.seo import city_nl
+
+    lang = "nl" if lang == "nl" else "en"
+    t = REPORT_TEXT[lang]
+    sep = "." if lang == "nl" else ","
+
+    def num(n) -> str:
+        return f"{int(n):,}".replace(",", sep)
+
+    def pct(v) -> str:
+        return "-" if v is None else f"{round(v * 100)}%"
+
+    def day(iso: str) -> str:
+        d = date.fromisoformat(iso)
+        return d.strftime("%d-%m-%Y") if lang == "nl" else d.strftime("%d %b %Y").lstrip("0")
+
+    before = t["before"].format(n=num(rep["new_before"])) if rep["new_before"] is not None else ""
+    tiles = [(num(rep["new"]), t["new"], before),
+             (pct(rep["no_dutch"]), t["no_dutch"], ""), (num(rep["visa"]), t["visa"], ""),
+             (pct(rep["remote"]), t["remote"], "")]
+    if rep["salary_median"]:
+        tiles.append((f"€{num(round(rep['salary_median'], -3))}", t["salary"], t["salary_n"].format(n=rep["salary_n"])))
+    tiles_html = "".join(f'<div class="kpi"><b>{escape(v)}</b><span>{escape(label)}</span>'
+                         + (f'<span class="kpi-sub">{escape(sub)}</span>' if sub else "") + "</div>"
+                         for v, label, sub in tiles)
+
+    def bars(items) -> str:
+        top = max((n for _, n, _ in items), default=1) or 1
+        return "".join(f'<div class="rbar"><span>{escape(k)}</span><i style="width:{round(n / top * 100)}%"></i>'
+                       f'<b>{escape(v)}</b></div>' for k, n, v in items)
+
+    def change(v) -> str:
+        if v is None:
+            return ""
+        arrow = "▲" if v > 0.004 else "▼" if v < -0.004 else "="
+        tone = "ok" if v > 0.004 else "bad" if v < -0.004 else "muted"
+        return f' <small class="{tone}" title="{escape(t["change"])}">{arrow} {abs(round(v * 100))}</small>'
+
+    skills = bars([(s["skill"], s["share"], pct(s["share"])) for s in rep["skills"]])
+    skills = "".join(line.replace("</b></div>", "</b>" + change(s.get("change")) + "</div>", 1)
+                     for line, s in zip(skills.split('<div class="rbar">')[1:], rep["skills"], strict=True)
+                     for line in ['<div class="rbar">' + line])
+    labels = POSITION_LABELS[lang]
+    positions = bars([(labels.get(p["key"], p["key"]), p["count"], num(p["count"])) for p in rep["positions"]])
+    cities = bars([(city_nl(c["key"]) if lang == "nl" else c["key"], c["count"], num(c["count"]))
+                   for c in rep["cities"]])
+    order = ["none", "1", "2-3", "4-5", "6+", "unspecified"]
+    exp = bars([(t["bands"][k], rep["experience"].get(k, 0), pct(rep["experience"].get(k, 0)))
+                for k in order if k in rep["experience"]])
+    base = settings.site_url.rstrip("/")
+    self_path = "/nl/marktrapport" if lang == "nl" else "/market-report"
+    ld = {"@context": "https://schema.org", "@type": "Report", "name": t["title"], "inLanguage": lang,
+          "url": base + self_path, "datePublished": rep["to"], "description": t["desc"],
+          "publisher": {"@type": "Organization", "name": settings.site_name, "url": base}}
+    return _brand(_template("report.html")) \
+        .replace("{{LANG}}", lang).replace("{{DOC_TITLE}}", escape(t["doc"])).replace("{{TITLE}}", escape(t["title"])) \
+        .replace("{{DESCRIPTION}}", escape(t["desc"])).replace("{{SELF_PATH}}", self_path) \
+        .replace("{{EN_PATH}}", "/market-report").replace("{{NL_PATH}}", "/nl/marktrapport") \
+        .replace("{{HOME}}", t["home"]) \
+        .replace("{{RANGE}}", escape(t["range"].format(a=day(rep["from"]), b=day(rep["to"])))) \
+        .replace("{{TILES}}", tiles_html) \
+        .replace("{{L_SKILLS}}", escape(t["skills"])).replace("{{SKILLS}}", skills) \
+        .replace("{{L_POSITIONS}}", escape(t["positions"])).replace("{{POSITIONS}}", positions) \
+        .replace("{{L_CITIES}}", escape(t["cities"])).replace("{{CITIES}}", cities) \
+        .replace("{{L_EXP}}", escape(t["exp"])).replace("{{EXP}}", exp) \
+        .replace("{{L_JOBS}}", escape(t["jobs"])).replace("{{METHOD}}", escape(t["method"])) \
+        .replace("{{JSONLD}}", json.dumps(ld, ensure_ascii=False))
+
+
 def _sector_label(rows: list[Row], lang: str) -> str:
     from radar.sectors import LABELS
 

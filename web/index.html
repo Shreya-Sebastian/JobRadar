@@ -24,7 +24,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="/static/app.css?v=19">
+<link rel="stylesheet" href="/static/app.css?v=20">
 <script src="/static/vendor/chart.umd.min.js"></script>
 <script src="/static/vendor/d3.min.js"></script>
 <script src="/static/theme.js?v=1"></script>
@@ -138,6 +138,18 @@
 
 <!-- ============ MARKET ============ -->
 <section class="tab" data-tab="market">
+  <div class="card mk-report">
+    <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+      <h2 class="m-0" data-i18n="rep.title">This week in the market</h2>
+      <a class="text-sm font-medium" id="rep-link" href="/market-report" data-i18n="rep.open">Shareable report</a>
+    </div>
+    <p class="small muted mt-1 mb-3" id="rep-range"></p>
+    <div class="kpis" id="rep-tiles"></div>
+    <div class="grid two mt-4">
+      <div><h3 class="mt-0" data-i18n="rep.skills">Skills asked for</h3><div id="rep-skills"></div></div>
+      <div><h3 class="mt-0" data-i18n="rep.positions">Most posted positions</h3><div id="rep-positions"></div></div>
+    </div>
+  </div>
   <div class="grid three">
     <div class="card"><h2 data-i18n="mk.cities">Cities</h2><div class="chart"><canvas id="mk-city"></canvas></div></div>
     <div class="card"><h2 data-i18n="mk.seniority">Seniority</h2><div class="chart"><canvas id="mk-seniority"></canvas></div></div>
@@ -288,7 +300,6 @@
  <div class="wrap py-10">
   <div class="foot-grid">
    <div class="foot-brand">
-    <a class="brand" href="{{HOME_PATH}}"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="var(--accent)"/><g fill="none" stroke="var(--on-accent)" stroke-width="2" stroke-linecap="round"><circle cx="16" cy="16" r="10" opacity=".35"/><circle cx="16" cy="16" r="5.5" opacity=".6"/><path d="M16 16l7-7"/></g><circle cx="16" cy="16" r="1.8" fill="var(--on-accent)"/><circle cx="10.5" cy="20" r="1.8" fill="var(--on-accent)"/></svg><b>{{SITE_NAME}}</b></a>
     <p data-i18n="foot.tag">Tech jobs in the Netherlands, read straight from employers' own career sites and updated every day.</p>
    </div>
    {{SEO_LINKS}}
@@ -296,6 +307,6 @@
   <p class="foot-bottom"><a href="{{PRIVACY_PATH}}" data-i18n="privacy">Privacy</a> · <a href="{{FEEDBACK_PATH}}" data-i18n="feedback">Feedback</a>{{SOURCE_LINK}}</p>
  </div>
 </footer>
-<script src="/static/app.js?v=98"></script>
+<script src="/static/app.js?v=99"></script>
 </body>
 </html>

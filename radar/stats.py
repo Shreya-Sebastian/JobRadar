@@ -372,6 +372,36 @@ def load_rows(session: Session, include_closed_days: int = 90) -> list[Row]:
     return rows
 
 
+def weekly_new(session: Session, now: datetime | None = None, weeks: int = 12) -> dict[str, Any]:
+    """Tech jobs posted per week (Monday to Sunday, by the employer's date, or the day first seen when it gives
+    none), closed ones included, duplicates not. Only from the first full week the radar watched: earlier weeks
+    would hold just the jobs still open when tracking began, and draw a boom that was not there."""
+    now = now or datetime.utcnow()
+    start = session.scalar(select(func.min(Posting.first_seen)))
+    if start is None:
+        return {"since": None, "weeks": [], "this_week": 0, "last_week_so_far": 0}
+
+    def monday(d: datetime) -> datetime:
+        return datetime(d.year, d.month, d.day) - timedelta(days=d.weekday())
+
+    first = monday(start) if start == monday(start) else monday(start) + timedelta(days=7)  # the first full week
+    first = max(first, monday(now) - timedelta(weeks=weeks - 1))
+    when = func.coalesce(Posting.posted_at, Posting.first_seen)
+    dates = session.scalars(select(when).where(Posting.is_tech.is_(True), Posting.duplicate_of.is_(None),
+                                               when >= first, when <= now)).all()
+    counts = Counter(monday(d) for d in dates)
+    this = monday(now)
+    out = []
+    w = first
+    while w <= this:
+        out.append({"week": w.date().isoformat(), "count": counts.get(w, 0), "partial": w == this})
+        w += timedelta(days=7)
+    so_far = now - this
+    last_by_now = sum(1 for d in dates if this - timedelta(days=7) <= d < this - timedelta(days=7) + so_far)
+    return {"since": start.date().isoformat(), "weeks": out, "this_week": counts.get(this, 0),
+            "last_week_so_far": last_by_now}
+
+
 def overview(session: Session) -> dict[str, Any]:
     live = session.scalar(
         select(func.count()).select_from(Posting).where(Posting.closed_at.is_(None), Posting.duplicate_of.is_(None))

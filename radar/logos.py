@@ -23,6 +23,7 @@ from radar.config import settings
 log = logging.getLogger(__name__)
 
 MAX_BYTES = 150_000
+PAGE_BYTES = 800_000  # a page is read this far: the logo and the icons sit in its head and header
 RETRY_DAYS = 30
 REFRESH_DAYS = 90
 TYPES = {"image/png", "image/jpeg", "image/webp", "image/gif", "image/svg+xml", "image/x-icon",
@@ -134,18 +135,34 @@ def download(url: str, client: httpx.Client) -> tuple[str, bytes] | None:
 
     if not robots.allowed(url, client):
         return None
-    try:
-        r = client.get(url)
-    except httpx.HTTPError:
+    got = _read(url, client, MAX_BYTES + 1)
+    if got is None:
         return None
-    data = r.content
-    ctype = sniff(data) or r.headers.get("content-type", "").split(";")[0].strip().lower()
+    status, header_type, data, _ = got
+    ctype = sniff(data) or header_type
     least = 100 if ctype == "image/svg+xml" else 300  # smaller rasters are blank or 1-pixel placeholders
-    if r.status_code != 200 or ctype not in TYPES or not least <= len(data) <= MAX_BYTES:
+    if status != 200 or ctype not in TYPES or not least <= len(data) <= MAX_BYTES:
         return None
     if ctype == "image/svg+xml" and (b"<script" in data.lower() or b"<svg" not in data[:2000].lower()):
         return None
     return ctype, data
+
+
+def _read(url: str, client: httpx.Client, limit: int) -> tuple[int, str, bytes, str] | None:
+    """(status, content type, at most `limit` bytes of the body, final url), streamed so that a huge page or file
+    never sits in memory whole."""
+    try:
+        with client.stream("GET", url) as r:
+            chunks, size = [], 0
+            for chunk in r.iter_bytes():
+                chunks.append(chunk)
+                size += len(chunk)
+                if size >= limit:
+                    break
+            ctype = r.headers.get("content-type", "").split(";")[0].strip().lower()
+            return r.status_code, ctype, b"".join(chunks)[:limit], str(r.url)
+    except httpx.HTTPError:
+        return None
 
 
 def sniff(data: bytes) -> str | None:
@@ -173,17 +190,16 @@ def find_logo(page_url: str, client: httpx.Client, depth: int = 0) -> tuple[str,
 
     if not robots.allowed(page_url, client):
         return None
-    try:
-        r = client.get(page_url)
-    except httpx.HTTPError:
+    page = _read(page_url, client, PAGE_BYTES)
+    if page is None or page[0] != 200 or "html" not in page[1]:
         return None
-    if r.status_code != 200 or "html" not in r.headers.get("content-type", ""):
-        return None
-    for url in candidates(r.text, str(r.url)):
+    html, final = page[2].decode("utf-8", "replace"), page[3]
+    del page
+    for url in candidates(html, final):
         got = download(url, client)
         if got:
             return url, got[0], got[1]
-    site = website(r.text, str(r.url)) if ATS_HOSTS.search(urlparse(str(r.url)).netloc) else None
+    site = website(html, final) if ATS_HOSTS.search(urlparse(final).netloc) else None
     return find_logo(site, client, depth + 1) if site and depth == 0 else None
 
 
@@ -198,6 +214,7 @@ def _client() -> httpx.Client:
 def refresh(session, limit: int = 120, now: datetime | None = None, client: httpx.Client | None = None) -> dict:
     """Look up logos for employers with live postings that have none yet (or whose lookup is due again)."""
     from sqlalchemy import func, select
+    from sqlalchemy.orm import defer
 
     from radar.models import CompanyLogo, Posting, Source
 
@@ -213,7 +230,8 @@ def refresh(session, limit: int = 120, now: datetime | None = None, client: http
     for company, ats, slug, url, n in rows:
         if company and (company not in best or n > best[company][3]):
             best[company] = (ats, slug, url, n)
-    known = {c.company: c for c in session.scalars(select(CompanyLogo))}
+    # without the image data: only which employers are done, and when
+    known = {c.company: c for c in session.scalars(select(CompanyLogo).options(defer(CompanyLogo.data)))}
     due = [c for c in sorted(best, key=lambda c: -best[c][3])
            if c not in known or known[c].fetched_at < now - timedelta(days=REFRESH_DAYS if known[c].status == "ok"
                                                                          else RETRY_DAYS)][:limit]
@@ -246,6 +264,7 @@ def refresh(session, limit: int = 120, now: datetime | None = None, client: http
             missing += 1
         session.add(row)
         session.commit()
+        session.expunge(row)  # the image is stored; keep it out of memory
     _known.clear()
     return {"looked_up": len(due), "found": found, "missing": missing, "errors": errors}
 

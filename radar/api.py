@@ -164,6 +164,12 @@ def overview(request: Request, session: Session = Depends(db)):
     return cached(_key(request), lambda: stats.overview(session), ttl=60)
 
 
+@app.get("/api/trend/weekly")
+def trend_weekly(request: Request, session: Session = Depends(db)):
+    """New tech jobs per week since tracking began (the Overview chart)."""
+    return cached(_key(request), lambda: stats.weekly_new(session), ttl=600)
+
+
 @app.get("/api/skills")
 def skills(request: Request, top: int = Query(40, le=200), f: stats.Filters = Depends(filters),
            session: Session = Depends(db)):

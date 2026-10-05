@@ -22,7 +22,7 @@
       "ov.skills": "Most requested skills", "hero.title": "Tech jobs in the Netherlands, filtered by what they ask", "hero.sub": "{n} live jobs from {c} employers · updated {d}", "foot.tag": "Tech jobs in the Netherlands, read straight from employers' own career sites and updated every day.",
       "jobs.none": "No jobs match these filters. Try removing one.", "pill.lang": "Language", "pill.visa": "Visa sponsorship", "pill.exp": "Experience", "pill.level": "Level", "pill.role": "Role", "pill.degree": "Degree", "pill.remote": "Remote", "pill.company": "Company", "pill.posted": "Date posted", "pill.more": "More", "remote.label": "Remote", "sal.from": "from {v}", "fact.noexp": "No experience asked", "sal.upto": "up to {v}", "sal.title": "Salary stated in the posting (per year, gross)", "fact.visa": "Visa sponsorship", "fact.nodutch": "No Dutch needed",
       "ov.graph": "Skills asked for together",
-      "kpi.week": "new this week", "kpi.week.vs": "last week by now: {m}", "kpi.week.title": "Jobs posted since Monday, by the date employers posted them, against the same point last week",
+      "kpi.week": "new in the last 7 days", "kpi.week.vs": "the 7 days before: {m}", "kpi.week.title": "Jobs posted in the last 7 days, by the date employers posted them, against the 7 days before",
       "ov.matches": "Best matches for you",
       "ov.matches.empty": 'Add your skills under <a href="#profile">Profile</a> to see matches.',
       "f.search": "Search", "f.search.ph": "title or company", "f.window": "Window", "f.window.all": "All live", "f.window.1": "Last 24 h",
@@ -132,7 +132,7 @@
       "ov.skills": "Meest gevraagde skills", "hero.title": "Techvacatures in Nederland, gefilterd op wat ze vragen", "hero.sub": "{n} open vacatures bij {c} werkgevers · bijgewerkt {d}", "foot.tag": "Techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers en elke dag bijgewerkt.",
       "jobs.none": "Geen vacatures met deze filters. Haal er een weg.", "pill.lang": "Taal", "pill.visa": "Visumsponsoring", "pill.exp": "Ervaring", "pill.level": "Niveau", "pill.role": "Functie", "pill.degree": "Opleiding", "pill.remote": "Thuiswerken", "pill.company": "Werkgever", "pill.posted": "Geplaatst", "pill.more": "Meer", "remote.label": "Thuiswerken", "sal.from": "vanaf {v}", "fact.noexp": "Geen ervaring gevraagd", "sal.upto": "tot {v}", "sal.title": "Salaris volgens de vacature (per jaar, bruto)", "fact.visa": "Visumsponsoring", "fact.nodutch": "Geen Nederlands nodig",
       "ov.graph": "Skills die samen gevraagd worden",
-      "kpi.week": "nieuw deze week", "kpi.week.vs": "vorige week op dit moment: {m}", "kpi.week.title": "Vacatures geplaatst sinds maandag, op de datum van de werkgever, tegenover hetzelfde moment vorige week",
+      "kpi.week": "nieuw in de laatste 7 dagen", "kpi.week.vs": "de 7 dagen daarvoor: {m}", "kpi.week.title": "Vacatures geplaatst in de laatste 7 dagen, op de datum van de werkgever, tegenover de 7 dagen daarvoor",
       "ov.matches": "Beste matches voor jou",
       "ov.matches.empty": 'Voeg je skills toe onder <a href="#profile">Profiel</a> om matches te zien.',
       "f.search": "Zoeken", "f.search.ph": "functietitel of werkgever", "f.window": "Periode", "f.window.all": "Alle open", "f.window.1": "Laatste 24 uur",
@@ -555,7 +555,7 @@
     const last = o.last_crawl_at ? fmtDate(o.last_crawl_at + "Z") : "-";
     $("#kpis").innerHTML = [
       [fmt(o.live_tech_postings), t("kpi.live")], [fmt(o.companies), t("kpi.employers")],
-      ...(o.week ? [[fmt(o.week.this_week), t("kpi.week"), t("kpi.week.vs", { m: fmt(o.week.last_week_so_far) }), t("kpi.week.title")]] : []),
+      ...(o.new ? [[fmt(o.new.recent), t("kpi.week"), o.new.before != null ? t("kpi.week.vs", { m: fmt(o.new.before) }) : "", t("kpi.week.title")]] : []),
       [last, t("kpi.crawl")],
     ].map(([v, l, sub, title]) => `<div class="kpi"${title ? ` title="${esc(title)}"` : ""}><b>${esc(v)}</b><span>${esc(l)}</span>${sub ? `<span class="kpi-sub">${esc(sub)}</span>` : ""}</div>`).join("");
     document.title = t("title");

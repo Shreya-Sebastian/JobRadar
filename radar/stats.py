@@ -372,6 +372,20 @@ def load_rows(session: Session, include_closed_days: int = 90) -> list[Row]:
     return rows
 
 
+def new_jobs(session: Session, now: datetime | None = None, days: int = 7) -> dict[str, int]:
+    """Tech jobs posted in the last `days` days and in the `days` before that (the employer's date, or the day first
+    seen when it gives none; closed ones included, duplicates not). A rolling window, so the figure does not drop
+    to nearly nothing every Monday. The earlier window counts only once tracking covered all of it."""
+    now = now or datetime.utcnow()
+    start = session.scalar(select(func.min(Posting.first_seen)))
+    when = func.coalesce(Posting.posted_at, Posting.first_seen)
+    base = select(func.count()).select_from(Posting).where(Posting.is_tech.is_(True), Posting.duplicate_of.is_(None))
+    recent = session.scalar(base.where(when > now - timedelta(days=days), when <= now)) or 0
+    covered = start is not None and start <= now - timedelta(days=2 * days)
+    before = session.scalar(base.where(when > now - timedelta(days=2 * days), when <= now - timedelta(days=days)))
+    return {"recent": recent, "before": (before or 0) if covered else None, "days": days}
+
+
 def weekly_new(session: Session, now: datetime | None = None, weeks: int = 12) -> dict[str, Any]:
     """Tech jobs posted per week (Monday to Sunday, by the employer's date, or the day first seen when it gives
     none), closed ones included, duplicates not. Only from the first full week the radar watched: earlier weeks

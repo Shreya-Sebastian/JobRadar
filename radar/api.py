@@ -162,8 +162,7 @@ def _key(request: Request) -> str:
 @app.get("/api/overview")
 def overview(request: Request, session: Session = Depends(db)):
     def compute():
-        week = stats.weekly_new(session, weeks=2)  # the "new this week" figure
-        return {**stats.overview(session), "week": {k: week[k] for k in ("this_week", "last_week_so_far")}}
+        return {**stats.overview(session), "new": stats.new_jobs(session)}  # the "new in the last 7 days" figure
 
     return cached(_key(request), compute, ttl=60)
 

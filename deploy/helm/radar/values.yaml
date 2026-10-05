@@ -71,6 +71,13 @@ worker:
     requests: {cpu: 100m, memory: 192Mi}
     limits: {cpu: "1", memory: 768Mi}
   metricsPort: 9100
+  # a second, small worker for the quick ATS boards only (queue crawl-light), so they never wait behind sitemaps
+  light:
+    enabled: false
+    replicas: 1
+    resources:
+      requests: {cpu: 50m, memory: 100Mi}
+      limits: {cpu: 500m, memory: 350Mi}
   # Scale on queue depth with KEDA (install KEDA separately). Falls back to fixed replicas when disabled.
   keda:
     enabled: false

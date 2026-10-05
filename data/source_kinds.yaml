@@ -68,3 +68,18 @@ agency:
 - engineering detachering
 - uitzendbureau
 - werving en selectie
+# found by agency discovery (29 Sept 2026) and labelled when registered; listed here so the file is complete
+- adecco
+- recruitzio
+- unique
+- robert half
+- harvey nash
+- olympia
+- emagine
+- hamilton barnes
+- tmc
+- maandag
+- start people
+# explicit corrections: sources whose name or slug reads like another kind ("bjakcareer": BJAK is a fintech)
+employer:
+- bjakcareer

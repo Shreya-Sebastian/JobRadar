@@ -118,6 +118,32 @@ def _locale_rank(url: str) -> int:
     return {"en": 0, None: 1, "nl": 2}.get(lang, 3)
 
 
+def better_locale_sitemap(url: str, client: httpx.Client | None = None) -> str | None:
+    """For a sitemap in a foreign locale ("https://careers.bcg.com/ca/fr/sitemap_index.xml"), the same sitemap in
+    English or Dutch that the site's robots.txt lists and that answers, or None."""
+    if _locale_rank(url) < 3:
+        return None
+    own = client is None
+    client = client or _client()
+    try:
+        u = urlparse(url)
+        tail = u.path.rsplit("/", 1)[-1]
+        try:
+            r = client.get(f"{u.scheme}://{u.netloc}/robots.txt")
+            listed = re.findall(r"(?im)^\s*sitemap:\s*(\S+)", r.text) if r.status_code < 400 else []
+        except Exception:
+            return None
+        for sm in sorted(listed, key=_locale_rank):
+            if _locale_rank(sm) >= 3 or urlparse(sm).netloc != u.netloc or not sm.endswith("/" + tail):
+                continue
+            if _locs(client, sm):
+                return sm
+        return None
+    finally:
+        if own:
+            client.close()
+
+
 def find_job_sitemap(domain: str, client: httpx.Client | None = None, max_sitemaps: int = 12) -> dict | None:
     """{'sitemap': url, 'jobs': n job-detail URLs, 'sample': url} for the best sitemap, or None."""
     own = client is None

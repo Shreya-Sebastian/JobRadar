@@ -64,9 +64,10 @@ def load_source_kinds(path: str | Path | None = None) -> dict[str, list[str]]:
 
     path = Path(path) if path else Path(settings.data_dir) / "source_kinds.yaml"
     if not path.exists():
-        return {"aggregator": [], "agency": [], "board": [], "test": []}
+        return {"aggregator": [], "agency": [], "board": [], "test": [], "employer": []}
     data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    return {k: [str(v).lower() for v in data.get(k, [])] for k in ("aggregator", "agency", "board", "test")}
+    return {k: [str(v).lower() for v in data.get(k, [])]
+            for k in ("aggregator", "agency", "board", "test", "employer")}
 
 
 _TEST_SLUG = re.compile(
@@ -88,6 +89,8 @@ def classify_source(company: str, slug: str, kinds: dict[str, list[str]] | None 
     werkenvoornederland); an aggregator re-posts jobs that exist elsewhere."""
     kinds = kinds or load_source_kinds()
     slug_l, name_l = slug.lower(), company.lower()
+    if slug_l in kinds.get("employer", []):
+        return "employer"  # an explicit correction: "bjakcareer" names a fintech, not a recruiter
     for kind in ("board", "aggregator", "agency", "test"):
         # a test entry names a board ("ey" is EY's demo tenant on Recruitee), never every source of that employer
         if slug_l in kinds[kind] or (kind != "test" and name_l in kinds[kind]):
@@ -101,19 +104,29 @@ def classify_source(company: str, slug: str, kinds: dict[str, list[str]] | None 
     return "employer"
 
 
-def apply_source_kinds(session: Session) -> dict[str, int]:
-    """Label every source; deactivate aggregators and close their open postings."""
+def apply_source_kinds(session: Session, changes: list | None = None) -> dict[str, int]:
+    """Label every source; deactivate aggregators and close their open postings. Each relabel is appended to
+    `changes` as (source id, company, slug, old kind, new kind) when a list is given."""
     from datetime import datetime
 
     from radar.models import Posting
 
     kinds = load_source_kinds()
     counts = {"employer": 0, "agency": 0, "aggregator": 0, "board": 0, "test": 0, "postings_closed": 0}
-    for src in session.scalars(select(Source)):
+    for src in list(session.scalars(select(Source))):
         kind = classify_source(src.company, src.slug, kinds)
-        if kind == "employer" and any((p.url or "").split("/")[2:3] == [h] for p in src.postings[:3]
-                                      for h in ("test.com", "example.com", "localhost")):
-            kind = "test"
+        if kind == "employer" and src.kind == "agency" and src.slug.lower() not in kinds["employer"]:
+            # agencies found by agency discovery are labelled when they are registered and are not all in the
+            # file: only an explicit "employer" entry turns one back (on 5 Oct 2026 a relabel without this check
+            # made Adecco, Robert Half and twelve other agencies employers)
+            kind = "agency"
+        if kind == "employer":
+            # the first few links only, by query: loading every source's postings ran the worker out of memory
+            urls = session.scalars(select(Posting.url).where(Posting.source_id == src.id).limit(3))
+            if any((u or "").split("/")[2:3] == [h] for u in urls for h in ("test.com", "example.com", "localhost")):
+                kind = "test"
+        if changes is not None and (src.kind or "employer") != kind:
+            changes.append((src.id, src.company, src.slug, src.kind or "employer", kind))
         src.kind = kind
         counts[kind] += 1
         if kind in ("aggregator", "test") and src.active:

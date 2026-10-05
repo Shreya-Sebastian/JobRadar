@@ -71,3 +71,17 @@ def test_a_retry_that_never_ran_does_not_block_its_source(monkeypatch):
     job.save()
     assert q.enqueue_crawl(7) is not None  # the stale retry is replaced by a fresh job
     assert q.enqueue_crawl(7) is None  # and that one is not queued twice
+
+
+
+def test_crawls_go_to_the_queue_for_their_platform(monkeypatch):
+    import fakeredis
+
+    from radar import queue as q
+
+    fake = fakeredis.FakeRedis()
+    monkeypatch.setattr(q, "get_redis", lambda: fake)
+    monkeypatch.setattr("radar.config.settings.redis_url", "redis://fake")
+    assert q.enqueue_crawl(11, "jsonld").origin == q.CRAWL_QUEUE
+    assert q.enqueue_crawl(12, "greenhouse").origin == q.LIGHT_QUEUE
+    assert q.get_queue(q.CRAWL_QUEUE).count == 1 and q.get_queue(q.LIGHT_QUEUE).count == 1

@@ -294,14 +294,47 @@ def cmd_top100(args: argparse.Namespace) -> None:
         sys.exit(1)
 
 
-def cmd_source_kinds(_: argparse.Namespace) -> None:
+def cmd_source_kinds(args: argparse.Namespace) -> None:
     """Label sources as employer / agency / aggregator from data/source_kinds.yaml; switch aggregators off."""
     from radar.db import init_db, session_scope
     from radar.registry import apply_source_kinds
 
     init_db()
+    changes: list = []
     with session_scope() as s:
-        print(apply_source_kinds(s))
+        counts = apply_source_kinds(s, changes)
+        for sid, company, slug, old, new in changes:
+            print(f"{sid}\t{company}\t{slug[:70]}\t{old} -> {new}")
+        print(counts)
+        if args.dry_run:
+            s.rollback()
+            print(f"dry run: {len(changes)} changes, nothing written")
+
+
+def cmd_fix_locales(args: argparse.Namespace) -> None:
+    """Point sitemap sources read in a foreign locale ("/ca/fr/sitemap_index.xml") at the site's English or Dutch
+    sitemap, so visitors land on a page they can read."""
+    from sqlalchemy import select
+
+    from radar.db import init_db, session_scope
+    from radar.models import Source
+    from radar.sitemaps import better_locale_sitemap
+
+    init_db()
+    with session_scope() as s:
+        found = 0
+        for src in s.scalars(select(Source).where(Source.ats == "jsonld", Source.active.is_(True))):
+            better = better_locale_sitemap(src.slug)
+            if not better:
+                continue
+            found += 1
+            taken = s.scalar(select(Source).where(Source.ats == "jsonld", Source.slug == better))
+            print(f"{src.id}\t{src.company}\t{src.slug} -> {better}{'  (already a source: skipped)' if taken else ''}")
+            if not args.dry_run and not taken:
+                src.slug = better
+        if args.dry_run:
+            s.rollback()
+        print(f"{found} sources read in another locale{'; dry run, nothing written' if args.dry_run else ''}")
 
 
 def cmd_copy_db(args: argparse.Namespace) -> None:
@@ -598,7 +631,7 @@ def cmd_worker(args: argparse.Namespace) -> None:
     from rq import SimpleWorker, Worker
 
     from radar.db import init_db
-    from radar.queue import CRAWL_QUEUE, MAINT_QUEUE, get_queue, get_redis
+    from radar.queue import get_queue, get_redis
 
     init_db()
     if args.metrics_port:
@@ -607,8 +640,9 @@ def cmd_worker(args: argparse.Namespace) -> None:
         from radar import timetable
 
         timetable.start(get_redis())
-    # maintenance first: a dedup or link check waits for the running crawl job, not for the whole crawl queue
-    queues = [get_queue(MAINT_QUEUE), get_queue(CRAWL_QUEUE)]
+    # in order of priority; by default maintenance first (a dedup or link check waits for the running crawl job,
+    # not for the whole queue), then the sitemaps, then the quick ATS boards when no sitemap is waiting
+    queues = [get_queue(name.strip()) for name in args.queues.split(",") if name.strip()]
     cls = SimpleWorker if (args.simple or sys.platform == "win32") else Worker
     worker = cls(queues, connection=get_redis())
     # the scheduler moves retried jobs (Retry with an interval) back onto the queue; without it they stay
@@ -655,7 +689,12 @@ def main(argv: list[str] | None = None) -> None:
     p.set_defaults(fn=cmd_extract)
 
     sub.add_parser("stats").set_defaults(fn=cmd_stats)
-    sub.add_parser("source-kinds", help="label employer/agency/aggregator sources").set_defaults(fn=cmd_source_kinds)
+    p = sub.add_parser("source-kinds", help="label employer/agency/aggregator sources")
+    p.add_argument("--dry-run", action="store_true", help="list the changes without writing them")
+    p.set_defaults(fn=cmd_source_kinds)
+    p = sub.add_parser("fix-locales", help="switch sitemap sources in a foreign locale to the English or Dutch one")
+    p.add_argument("--dry-run", action="store_true", help="list the changes without writing them")
+    p.set_defaults(fn=cmd_fix_locales)
     sub.add_parser("rename", help="recompute employer display names from slugs").set_defaults(fn=cmd_rename)
     sub.add_parser("recheck-countries", help="apply the country and place rules to stored open postings") \
         .set_defaults(fn=cmd_recheck_countries)
@@ -758,6 +797,8 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--burst", action="store_true", help="exit when the queue is empty")
     p.add_argument("--simple", action="store_true", help="no forking (Windows / tests)")
     p.add_argument("--metrics-port", type=int, default=settings.metrics_port)
+    p.add_argument("--queues", default="maintenance,crawl,crawl-light",
+                   help="queues to serve, in priority order (a second worker can serve crawl-light alone)")
     p.set_defaults(fn=cmd_worker)
 
 

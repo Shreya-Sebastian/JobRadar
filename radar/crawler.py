@@ -132,6 +132,17 @@ def close_expired(session: Session) -> int:
     return closed
 
 
+def close_inactive(session: Session) -> int:
+    """Close live postings of sources that are switched off (deactivated before `deactivate` closed them)."""
+    now = datetime.utcnow()
+    inactive = select(Source.id).where(Source.active.is_(False))
+    closed = 0
+    for p in session.scalars(select(Posting).where(Posting.closed_at.is_(None), Posting.source_id.in_(inactive))):
+        p.closed_at = now
+        closed += 1
+    return closed
+
+
 def deactivate(session: Session, source: Source) -> int:
     """Switch a source off and close its live postings: nothing re-reads them any more, so they would otherwise stay
     listed with links nobody checks."""

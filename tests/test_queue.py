@@ -25,10 +25,10 @@ def test_schedule_worker_finalize_round_trip(fresh_db, monkeypatch):
 
     out = schedule()
     assert out == {"due": 1, "queued": 1}
-    assert q.get_queue().count == 1
+    assert q.get_queue(q.LIGHT_QUEUE).count == 1  # an ATS API board: the quick queue
     assert schedule()["queued"] == 0  # same job already queued: not duplicated
 
-    worker = SimpleWorker([q.get_queue()], connection=fake)
+    worker = SimpleWorker([q.get_queue(q.LIGHT_QUEUE)], connection=fake)
     worker.work(burst=True, with_scheduler=False)
     with session_scope() as s:
         p = s.query(Posting).one()

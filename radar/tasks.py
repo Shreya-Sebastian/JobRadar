@@ -12,7 +12,7 @@ from sqlalchemy import func, select
 from radar.adapters import get_adapter
 from radar.adapters.base import AdapterError, RawPosting, SourceNotFound
 from radar.config import settings
-from radar.crawler import close_expired, deactivate, ingest, known_urls_for, mark_duplicates
+from radar.crawler import close_expired, close_inactive, deactivate, ingest, known_urls_for, mark_duplicates
 from radar.db import init_db, session_scope
 from radar.metrics import FETCH_SECONDS, FETCHES, LIVE_POSTINGS, POSTINGS_CLOSED, POSTINGS_NEW, POSTINGS_SEEN, SOURCES
 from radar.models import CrawlRun, Posting, Source
@@ -81,8 +81,8 @@ def cadence_minutes(src: Source) -> int:
     if src.last_nl_count is None:
         return 0
     if src.ats == "jsonld":
-        # page-by-page crawls of a sitemap are expensive: never more often than every 6 hours
-        return max(settings.cadence_normal_minutes, 360)
+        # page-by-page crawls of a sitemap are expensive (most of all crawl time): twice a day
+        return max(settings.cadence_normal_minutes, 720)
     if src.last_nl_count >= 20:
         return settings.cadence_high_minutes
     if src.last_nl_count >= 1:
@@ -106,9 +106,10 @@ def schedule() -> dict:
     init_db()
     with session_scope() as s:
         ids = due_sources(s)
+        ats = dict(s.execute(select(Source.id, Source.ats).where(Source.id.in_(ids))).all()) if ids else {}
         run = CrawlRun(sources_total=len(ids), notes="queued")
         s.add(run)
-    queued = sum(1 for i in ids if enqueue_crawl(i) is not None)
+    queued = sum(1 for i in ids if enqueue_crawl(i, ats.get(i)) is not None)
     log.info("scheduled %d of %d due sources", queued, len(ids))
     return {"due": len(ids), "queued": queued}
 
@@ -117,7 +118,7 @@ def finalize() -> dict:
     """Dedup, refresh gauges and bump the data version so API processes reload. Runs as a CronJob."""
     init_db()
     with session_scope() as s:
-        expired = close_expired(s)
+        expired = close_expired(s) + close_inactive(s)
         dups = mark_duplicates(s)
         from radar import auth, feedback
 

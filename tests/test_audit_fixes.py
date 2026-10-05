@@ -226,3 +226,48 @@ def test_english_and_dutch_locale_sitemaps_go_first():
     listed = ["https://c.example/ca/fr/sitemap_index.xml", "https://c.example/jp/ja/sitemap_index.xml",
               "https://c.example/global/en/sitemap_index.xml"]
     assert sorted(listed, key=_locale_rank)[0] == "https://c.example/global/en/sitemap_index.xml"
+
+
+def test_explicit_employer_entry_overrides_an_agency_name():
+    from radar.registry import classify_source, load_source_kinds
+
+    kinds = load_source_kinds()
+    assert classify_source("BJAK", "bjakcareer", kinds) == "employer"
+    assert classify_source("MCFLY & BROWN", "https://www.mcflybrown.com/job/sitemap.xml", kinds) == "agency"
+
+
+def test_source_kinds_keeps_agencies_labelled_at_registration(fresh_db):
+    from radar.registry import apply_source_kinds
+
+    with session_scope() as s:
+        found = Source(company="Acme Detachering", ats="recruitee", slug="acmedetachering", active=True, kind="agency")
+        fixed = Source(company="BJAK", ats="ashby", slug="bjakcareer", active=True, kind="agency")
+        s.add_all([found, fixed])
+        s.flush()
+        changes: list = []
+        apply_source_kinds(s, changes)
+        assert found.kind == "agency" and fixed.kind == "employer"
+        assert [c[3:] for c in changes] == [("agency", "employer")]
+
+
+def test_finalize_closes_what_inactive_sources_left_listed(fresh_db):
+    from radar.crawler import close_inactive
+
+    with session_scope() as s:
+        src = _src(s)
+        ingest(s, src, [_raw("1")])
+        src.active = False
+        assert close_inactive(s) == 1
+
+
+@respx.mock
+def test_foreign_locale_sitemap_has_an_english_twin():
+    from radar.sitemaps import better_locale_sitemap
+
+    respx.get("https://c.example/robots.txt").mock(return_value=httpx.Response(200, text=(
+        "Sitemap: https://c.example/ca/fr/sitemap_index.xml\nSitemap: https://c.example/global/en/sitemap_index.xml\n")))
+    respx.get("https://c.example/global/en/sitemap_index.xml").mock(return_value=httpx.Response(
+        200, text="<sitemapindex><sitemap><loc>https://c.example/global/en/sitemap1.xml</loc></sitemap></sitemapindex>"))
+    assert better_locale_sitemap("https://c.example/ca/fr/sitemap_index.xml") == \
+        "https://c.example/global/en/sitemap_index.xml"
+    assert better_locale_sitemap("https://c.example/global/en/sitemap_index.xml") is None

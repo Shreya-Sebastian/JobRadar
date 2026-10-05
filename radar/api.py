@@ -542,8 +542,12 @@ def job_page(posting_id: int, slug: str = "", session: Session = Depends(db), la
 
     emp = session.get(Employer, p.company)
     sector = emp.sector if emp else None
-    html = cached(f"page:job:{lang}:{p.id}:{p.content_hash}:{p.closed_at is None}:{sector}",
-                  lambda: pages.render_job(p, lang, sector), ttl=3600)
+
+    def render():
+        return pages.render_job(p, lang, sector, _related_pages(session, p.id, lang))
+
+    html = cached(f"page:job:{lang}:{p.id}:{p.content_hash}:{p.closed_at is None}:{sector}:{stats.CACHE.loads}",
+                  render, ttl=3600)
     return Response(html, media_type="text/html")
 
 
@@ -551,6 +555,26 @@ def job_page(posting_id: int, slug: str = "", session: Session = Depends(db), la
 @app.get("/nl/vacature/{posting_id}/{slug}", include_in_schema=False)
 def job_page_nl(posting_id: int, slug: str = "", session: Session = Depends(db)):
     return job_page(posting_id, slug, session, lang="nl")
+
+
+def _related_pages(session: Session, posting_id: int, lang: str) -> list[tuple[str, str]]:
+    """The search landing pages this job appears on, most specific first (a city and role page before a city page):
+    links from every job page into the landing pages, and its breadcrumb."""
+    from radar import seo
+
+    rows, page_dicts = _seo_pages(session)
+    row = next((r for r in rows if r.id == posting_id), None)
+    if row is None:
+        return []
+    found = []
+    for d in page_dicts:
+        page = seo.Page(**d)
+        if seo._filtered([row], page.filters, page.city):
+            specific = bool(page.city) + bool(page.role) + bool(page.theme)
+            found.append((specific, page.count, page.nl_path if lang == "nl" else page.en_path,
+                          page.nl_title if lang == "nl" else page.en_title))
+    found.sort(key=lambda x: (-x[0], -x[1]))
+    return [(path, title) for _, _, path, title in found]
 
 
 def _seo_pages(session: Session):

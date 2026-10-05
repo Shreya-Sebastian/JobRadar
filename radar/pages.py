@@ -219,7 +219,8 @@ _JOB_TEXT = {
         "policy": {"remote": "Remote", "hybrid": "Hybrid", "onsite": "On-site"},
         "visa_yes": "Visa sponsorship mentioned", "visa_no": "No visa sponsorship",
         "enrol": "For enrolled students", "salary": "€{lo} – €{hi} a year", "salary_from": "from €{lo} a year",
-        "skills": "Skills asked for", "nice": "Nice to have",
+        "skills": "Skills asked for", "nice": "Nice to have", "related": "More like this",
+        "home_crumb": "Tech jobs", "skills_short": "Skills",
     },
     "nl": {
         "overview": "Overzicht", "jobs": "Vacatures", "market": "Markt", "employers": "Werkgevers",
@@ -242,7 +243,8 @@ _JOB_TEXT = {
         "visa_yes": "Visumsponsoring genoemd", "visa_no": "Geen visumsponsoring",
         "enrol": "Voor ingeschreven studenten", "salary": "€{lo} – €{hi} per jaar",
         "salary_from": "vanaf €{lo} per jaar",
-        "skills": "Gevraagde skills", "nice": "Pluspunten",
+        "skills": "Gevraagde skills", "nice": "Pluspunten", "related": "Vergelijkbare vacatures",
+        "home_crumb": "Techvacatures", "skills_short": "Skills",
     },
 }
 
@@ -256,7 +258,20 @@ def _body(p) -> str:
     return drop_leading(body, (p.title, p.company))
 
 
-def render_job(p, lang: str = "en", sector: str | None = None) -> str:
+_FULL_TIME = re.compile(r"\bfull[- ]?time\b|\bfulltime\b|\b(?:36|38|40)\s*(?:uur|hours)\b", re.I)
+_PART_TIME = re.compile(r"\bpart[- ]?time\b|\bparttime\b|\b(?:16|20|24|28|32)\s*(?:-\s*\d+\s*)?(?:uur|hours)\b", re.I)
+
+
+def employment_type(ex: dict, text: str) -> list[str] | None:
+    """schema.org employmentType from the level and the hours the posting names; None when it does not say."""
+    if ex.get("seniority") == "intern":
+        return ["INTERN"]
+    kinds = [k for k, rx in (("FULL_TIME", _FULL_TIME), ("PART_TIME", _PART_TIME)) if rx.search(text or "")]
+    return kinds or None
+
+
+def render_job(p, lang: str = "en", sector: str | None = None, related: list[tuple[str, str]] | None = None) -> str:
+    """`related`: (path, title) of the landing pages this job appears on, most specific first."""
     """The listing page: what the radar read from the posting, then the employer's own text with credit and links
     back to the original. `p` is a radar.models.Posting."""
     from urllib.parse import urlparse
@@ -332,7 +347,16 @@ def render_job(p, lang: str = "en", sector: str | None = None) -> str:
     text = p.description or ""
     title = t["title"].format(t=p.title, c=p.company)
     summary = " ".join(text.split())
-    desc = (title + (t["in"].format(x=city) if city else "") + ". " + summary)[:155].rstrip() + ("…" if summary else "")
+    head = title + (t["in"].format(x=city) if city else "")
+    shown = [f for f in facts if f][:4]
+    if shown or req:
+        desc = head + (": " + ", ".join(shown) if shown else "") + "."
+        if req:
+            desc += f" {t['skills_short']}: " + ", ".join(req[:4]) + "."
+        if len(desc) > 160:
+            desc = desc[:157].rstrip(" ,.:") + "…"
+    else:
+        desc = (head + ". " + summary)[:155].rstrip() + ("…" if summary else "")
     url_link = f'<a href="{escape(p.url)}" rel="noopener" target="_blank">{escape(host)}</a>'
     credit = escape(t["credit"]).replace("{c}", escape(p.company)).replace("{h}", escape(host)).replace("{u}", url_link)
     self_path = job_path(p.id, p.title, lang)
@@ -356,12 +380,30 @@ def render_job(p, lang: str = "en", sector: str | None = None) -> str:
         if ex.get("remote_policy") == "remote" or p.remote:
             posting["jobLocationType"] = "TELECOMMUTE"
             posting["applicantLocationRequirements"] = {"@type": "Country", "name": "NL"}
+        kinds = employment_type(ex, text)
+        if kinds:
+            posting["employmentType"] = kinds if len(kinds) > 1 else kinds[0]
         if lo:
             posting["baseSalary"] = {"@type": "MonetaryAmount", "currency": "EUR", "value": {
                 "@type": "QuantitativeValue", "unitText": "YEAR", "minValue": lo, **({"maxValue": hi} if hi else {})}}
         posting = {k: v for k, v in posting.items() if v is not None}
         ld = ('<script type="application/ld+json">' + json.dumps(posting, ensure_ascii=False).replace("</", "<\\/")
               + "</script>")
+    # breadcrumbs: the site, the most specific landing page this job is on, the job
+    crumbs = [(t["home_crumb"], base + ("/nl/" if lang == "nl" else "/"))]
+    if related:
+        crumbs.append((related[0][1], base + related[0][0]))
+    crumbs.append((p.title, base + self_path))
+    ld += ('<script type="application/ld+json">' + json.dumps({
+        "@context": "https://schema.org", "@type": "BreadcrumbList",
+        "itemListElement": [{"@type": "ListItem", "position": i + 1, "name": n, "item": u}
+                            for i, (n, u) in enumerate(crumbs)]}, ensure_ascii=False).replace("</", "<\\/")
+           + "</script>")
+    related_html = ""
+    if related:
+        related_html = (f'<p class="small job-related"><b>{escape(t["related"])}:</b> '
+                        + " · ".join(f'<a href="{escape(path)}">{escape(name)}</a>' for path, name in related[:5])
+                        + "</p>")
 
     html = _template("job.html")
     for key, value in t.items():
@@ -387,6 +429,7 @@ def render_job(p, lang: str = "en", sector: str | None = None) -> str:
         .replace("{{COMPANY_PATH}}", company_path(slugify(p.company), lang)) \
         .replace("{{COMPANY}}", escape(p.company)) \
         .replace("{{CREDIT}}", credit) \
+        .replace("{{RELATED}}", related_html) \
         .replace("{{TEXT}}", _body(p) or f'<p class="muted">{escape(t["no_text"])}</p>')
 
 

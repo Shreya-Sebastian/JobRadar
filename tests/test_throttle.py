@@ -34,3 +34,22 @@ def test_requests_per_ip_are_limited(fresh_db, monkeypatch):
     other = {**BROWSER, "cf-connecting-ip": "198.51.100.2"}
     assert c.get("/api/postings", headers=other).status_code == 200
     assert c.get("/healthz", headers=me).status_code == 200
+
+
+def test_search_crawlers(monkeypatch):
+    import socket
+
+    from radar import throttle
+
+    assert not throttle.BLOCKED_AGENTS.search("Mozilla/5.0 (compatible; OAI-SearchBot/1.0; +https://openai.com/searchbot)")
+    assert not throttle.BLOCKED_AGENTS.search("Mozilla/5.0 (compatible; PerplexityBot/1.0)")
+    assert throttle.BLOCKED_AGENTS.search("Mozilla/5.0 (compatible; GPTBot/1.1)")  # training stays out
+    google = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+    hosts = {"66.249.66.1": "crawl-66-249-66-1.googlebot.com", "203.0.113.9": "evil.example.net"}
+    monkeypatch.setattr(socket, "gethostbyaddr", lambda ip: (hosts[ip], [], [ip]))
+    monkeypatch.setattr(socket, "getaddrinfo", lambda host, port: [(0, 0, 0, "", ("66.249.66.1", 0))]
+                        if host.endswith("googlebot.com") else [(0, 0, 0, "", ("203.0.113.9", 0))])
+    throttle._verified.clear()
+    assert throttle.verified_crawler("66.249.66.1", google)
+    assert not throttle.verified_crawler("203.0.113.9", google)  # says Googlebot, is not
+    assert not throttle.verified_crawler("66.249.66.1", "Mozilla/5.0 Chrome/130")  # a browser is counted as usual

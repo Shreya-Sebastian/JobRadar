@@ -796,7 +796,7 @@
     return "";
   }
   const cap = (s) => s ? s[0].toUpperCase() + s.slice(1) : s;
-  // one job: the employer's logo (a neutral building where there is none), title, employer and place, then one line of what the posting asks, then the skills as quiet text.
+  // one job: the employer's logo (none where it has none: no stand-in), title, employer and place, then one line of what the posting asks, then the skills as quiet text.
   // Colour only where it decides: green when no Dutch is needed, orange when it mentions visa sponsorship.
   function jobCard(i) {
     const have = state.profile.skills, saved = state.saved.includes(i.id);
@@ -819,9 +819,8 @@
     const shown = i.skills.slice(0, 6);
     const skills = shown.length ? `<div class="job-skills">${shown.map((s) => `<span${have.includes(s) ? ' class="have"' : ""}>${esc(s)}</span>`).join("")}${i.skills.length > 6 ? `<span class="more">+${i.skills.length - 6}</span>` : ""}</div>` : "";
     const old = i.age_days > 365 ? `<span class="badge stale" title="${t("old.year.title")}">${t("old.year")}</span>` : i.age_days > 90 ? `<span class="badge stale">${t("old")}</span>` : "";
-    const logo = i.logo ? `<img src="/logo/${encodeURIComponent(i.logo)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : "";
     return `<li class="job">
-      <span class="job-logo" aria-hidden="true"><svg class="no-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16"/><path d="M15 9h4a1 1 0 0 1 1 1v11"/><path d="M3 21h18M8 8h3M8 12h3M8 16h3"/></svg>${logo}</span>
+      ${i.logo ? `<span class="job-logo" aria-hidden="true"><img src="/logo/${encodeURIComponent(i.logo)}" alt="" loading="lazy" decoding="async" onerror="this.parentElement.remove()"></span>` : ""}
       <div class="job-body">
         <div class="job-top"><a class="job-title" href="${jobPath(i)}" data-pid="${i.id}" target="_blank" title="${esc(trustText(i))}">${esc(i.title)}</a>
           <span class="job-age" title="${esc(i.posted_at)}">${age(i)}${old}</span></div>

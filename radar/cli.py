@@ -554,6 +554,16 @@ def cmd_eval(args: argparse.Namespace) -> None:
         sys.exit(1)
 
 
+def cmd_logos(args: argparse.Namespace) -> None:
+    """Look up employer logos now (the worker does a batch daily)."""
+    from radar import logos
+    from radar.db import init_db, session_scope
+
+    init_db()
+    with session_scope() as s:
+        print(logos.refresh(s, limit=args.limit))
+
+
 def cmd_index_jobs(args: argparse.Namespace) -> None:
     """Announce new job pages to Google and withdraw closed ones now (the worker does this hourly)."""
     from radar import indexing
@@ -772,6 +782,9 @@ def main(argv: list[str] | None = None) -> None:
     p.set_defaults(fn=cmd_register_probed)
 
     sub.add_parser("sectors", help="recompute every employer's sector").set_defaults(fn=cmd_sectors)
+    p = sub.add_parser("logos", help="look up employer logos for the job cards")
+    p.add_argument("--limit", type=int, default=120)
+    p.set_defaults(fn=cmd_logos)
     p = sub.add_parser("index-jobs", help="tell Google's Indexing API about new and closed job pages")
     p.add_argument("--dry-run", action="store_true", help="list what would be sent")
     p.set_defaults(fn=cmd_index_jobs)

@@ -23,7 +23,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="/static/app.css?v=10">
+<link rel="stylesheet" href="/static/app.css?v=11">
 <script src="/static/vendor/chart.umd.min.js"></script>
 <script src="/static/vendor/d3.min.js"></script>
 <script src="/static/theme.js?v=1"></script>
@@ -128,7 +128,13 @@
     <button class="link" id="f-reset" data-i18n="f.reset">Reset filters</button>
     <label class="sort"><span data-i18n="f.sort">Sort</span> <select id="f-sort"><option value="newest" data-i18n="f.sort.newest">Newest</option><option value="match" data-i18n="f.sort.match">Best match</option><option value="size_small" data-i18n="f.sort.small">Smaller organisations first</option><option value="size_large" data-i18n="f.sort.large">Larger organisations first</option></select></label>
   </div>
-  <ol class="jobs" id="postings"></ol>
+  <ol class="jobs" id="postings">
+    <li class="job skel" aria-hidden="true"><span class="job-logo"></span><div class="job-body"><i class="bar w-3/5"></i><i class="bar w-2/5"></i><i class="bar w-4/5"></i></div></li>
+    <li class="job skel" aria-hidden="true"><span class="job-logo"></span><div class="job-body"><i class="bar w-3/5"></i><i class="bar w-2/5"></i><i class="bar w-4/5"></i></div></li>
+    <li class="job skel" aria-hidden="true"><span class="job-logo"></span><div class="job-body"><i class="bar w-3/5"></i><i class="bar w-2/5"></i><i class="bar w-4/5"></i></div></li>
+    <li class="job skel" aria-hidden="true"><span class="job-logo"></span><div class="job-body"><i class="bar w-3/5"></i><i class="bar w-2/5"></i><i class="bar w-4/5"></i></div></li>
+    <li class="job skel" aria-hidden="true"><span class="job-logo"></span><div class="job-body"><i class="bar w-3/5"></i><i class="bar w-2/5"></i><i class="bar w-4/5"></i></div></li>
+  </ol>
   <div class="pager"><button id="prev" data-i18n="pager.prev">‹ Prev</button><span id="page-info"></span><button id="next" data-i18n="pager.next">Next ›</button></div>
 </section>
 
@@ -292,6 +298,6 @@
   <p class="foot-bottom"><a href="{{PRIVACY_PATH}}" data-i18n="privacy">Privacy</a> · <a href="{{FEEDBACK_PATH}}" data-i18n="feedback">Feedback</a>{{SOURCE_LINK}}</p>
  </div>
 </footer>
-<script src="/static/app.js?v=86"></script>
+<script src="/static/app.js?v=87"></script>
 </body>
 </html>

@@ -60,7 +60,7 @@ def verified_crawler(ip: str, agent: str) -> bool:
         _verified[ip] = (ok, now + 86400)
     return ok
 
-_EXEMPT = ("/healthz", "/readyz", "/metrics", "/robots.txt", "/static/", "/favicon")
+_EXEMPT = ("/healthz", "/readyz", "/metrics", "/robots.txt", "/static/", "/favicon", "/logo/")
 _DETAIL = re.compile(r"^/api/postings|^/(?:nl/)?(?:jobs|job|vacatures|vacature|company|bedrijf)/")
 
 _local: dict[str, int] = {}

@@ -173,6 +173,17 @@ def index_jobs() -> dict:
     return out
 
 
+def logos() -> dict:
+    """Daily: look up logos for employers that have none yet (radar/logos.py), a batch at a time."""
+    from radar import logos as lg
+
+    init_db()
+    with session_scope() as s:
+        out = lg.refresh(s)
+    log.info("logos: %s", out)
+    return out
+
+
 def sectors() -> dict:
     """Nightly: every employer's sector, from the employer lists and its own postings (radar/sectors.py)."""
     from radar import sectors as sec

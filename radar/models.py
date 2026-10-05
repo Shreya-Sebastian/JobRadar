@@ -1,6 +1,18 @@
 from datetime import date, datetime
 
-from sqlalchemy import JSON, Boolean, Date, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Date,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    LargeBinary,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -89,6 +101,22 @@ class IndexNotice(Base):
     url: Mapped[str] = mapped_column(String(1000))
     kind: Mapped[str] = mapped_column(String(20))  # URL_UPDATED | URL_DELETED
     sent_at: Mapped[datetime] = mapped_column(DateTime, index=True)
+
+
+class CompanyLogo(Base):
+    """An employer's logo for the job cards (radar/logos.py), read once from its own board or website and served
+    from this site at /logo/<slug>. status "none": looked up, nothing usable; retried after a while."""
+
+    __tablename__ = "company_logos"
+
+    company: Mapped[str] = mapped_column(String(200), primary_key=True)
+    slug: Mapped[str] = mapped_column(String(120), unique=True, index=True)
+    status: Mapped[str] = mapped_column(String(10), default="none")  # ok | none
+    content_type: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    data: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
+    page_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
 class Employer(Base):

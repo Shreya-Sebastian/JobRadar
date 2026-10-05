@@ -208,6 +208,8 @@ def plausible_place(value: str | None) -> str | None:
     v = re.split(r"[,;(/|]", value)[0].strip(" -")
     if not 2 <= len(v) <= 40 or _NOT_A_PLACE.search(v) or not re.fullmatch(r"[A-Za-zÀ-ÿ' .-]+", v):
         return None
+    if place_country(v):  # a country or region ("United Kingdom" first in a list that also names the Netherlands)
+        return None
     words = v.split()
     return " ".join(
         w if w.lower() in ("aan", "de", "den", "der", "het", "op", "ter", "van", "en") else w[:1].upper() + w[1:]

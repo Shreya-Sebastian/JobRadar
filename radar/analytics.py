@@ -41,7 +41,7 @@ SESSION_GAP = timedelta(minutes=30)
 EVENTS = {"nav", "job_click", "profile_save", "login_request", "gap", "import", "export", "star"}
 
 # Paths that would only add noise: assets, health checks, polling, admin, the beacon itself
-_SKIP = re.compile(r"^/(static/|metrics|healthz|readyz|favicon|api/version|api/admin|api/me|api/e$|admin/)")
+_SKIP = re.compile(r"^/(static/|logo/|metrics|healthz|readyz|favicon|api/version|api/admin|api/me|api/e$|admin/)")
 _PAGE = re.compile(r"^/(|nl/?|vacatures/.+|jobs/.+|job/.+|nl/vacature/.+|company/.+|nl/bedrijf/.+|companies|"
                    r"privacy|nl/privacy|login|nl/inloggen|feedback|nl/feedback)$")
 _CRAWL = {"/robots.txt", "/sitemap.xml"}

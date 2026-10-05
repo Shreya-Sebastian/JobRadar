@@ -20,7 +20,7 @@
       
       
       "ov.skills": "Most requested skills", "hero.title": "Tech jobs in the Netherlands, filtered by what they ask", "hero.sub": "{n} live jobs from {c} employers · updated {d}", "foot.tag": "Tech jobs in the Netherlands, read straight from employers' own career sites and updated every day.",
-      "jobs.none": "No jobs match these filters. Try removing one.", "pill.lang": "Language", "pill.visa": "Visa sponsorship", "pill.exp": "Experience", "pill.level": "Level", "pill.role": "Role", "pill.degree": "Degree", "pill.remote": "Remote", "pill.company": "Company", "pill.posted": "Date posted", "pill.more": "More", "remote.label": "Remote", "fact.visa": "Visa sponsorship", "fact.nodutch": "No Dutch needed",
+      "jobs.none": "No jobs match these filters. Try removing one.", "pill.lang": "Language", "pill.visa": "Visa sponsorship", "pill.exp": "Experience", "pill.level": "Level", "pill.role": "Role", "pill.degree": "Degree", "pill.remote": "Remote", "pill.company": "Company", "pill.posted": "Date posted", "pill.more": "More", "remote.label": "Remote", "sal.from": "from {v}", "fact.noexp": "No experience asked", "sal.upto": "up to {v}", "sal.title": "Salary stated in the posting (per year, gross)", "fact.visa": "Visa sponsorship", "fact.nodutch": "No Dutch needed",
       "ov.quick": "Filter by what each posting actually asks", "ov.q.en": "No Dutch required", "ov.q.visa": "Visa sponsorship", "ov.q.exp": "Up to 1 year of experience", "ov.q.deg": "No degree mentioned", "ov.q.remote": "Remote or hybrid", "ov.q.noagency": "Employers only, no agencies", "ov.q.small": "Under 50 employees", "ov.q.week": "Posted this week", "ov.q.all": "All filters",
       "ov.graph": "Skills asked for together",
       "ov.matches": "Best matches for you",
@@ -130,7 +130,7 @@
       
       
       "ov.skills": "Meest gevraagde skills", "hero.title": "Techvacatures in Nederland, gefilterd op wat ze vragen", "hero.sub": "{n} open vacatures bij {c} werkgevers · bijgewerkt {d}", "foot.tag": "Techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers en elke dag bijgewerkt.",
-      "jobs.none": "Geen vacatures met deze filters. Haal er een weg.", "pill.lang": "Taal", "pill.visa": "Visumsponsoring", "pill.exp": "Ervaring", "pill.level": "Niveau", "pill.role": "Functie", "pill.degree": "Opleiding", "pill.remote": "Thuiswerken", "pill.company": "Werkgever", "pill.posted": "Geplaatst", "pill.more": "Meer", "remote.label": "Thuiswerken", "fact.visa": "Visumsponsoring", "fact.nodutch": "Geen Nederlands nodig",
+      "jobs.none": "Geen vacatures met deze filters. Haal er een weg.", "pill.lang": "Taal", "pill.visa": "Visumsponsoring", "pill.exp": "Ervaring", "pill.level": "Niveau", "pill.role": "Functie", "pill.degree": "Opleiding", "pill.remote": "Thuiswerken", "pill.company": "Werkgever", "pill.posted": "Geplaatst", "pill.more": "Meer", "remote.label": "Thuiswerken", "sal.from": "vanaf {v}", "fact.noexp": "Geen ervaring gevraagd", "sal.upto": "tot {v}", "sal.title": "Salaris volgens de vacature (per jaar, bruto)", "fact.visa": "Visumsponsoring", "fact.nodutch": "Geen Nederlands nodig",
       "ov.quick": "Filter op wat de vacature echt vraagt", "ov.q.en": "Geen Nederlands vereist", "ov.q.visa": "Visumsponsoring", "ov.q.exp": "Maximaal 1 jaar ervaring", "ov.q.deg": "Geen opleiding genoemd", "ov.q.remote": "Thuis of hybride", "ov.q.noagency": "Alleen werkgevers, geen bureaus", "ov.q.small": "Minder dan 50 medewerkers", "ov.q.week": "Deze week geplaatst", "ov.q.all": "Alle filters",
       "ov.graph": "Skills die samen gevraagd worden",
       "ov.matches": "Beste matches voor jou",
@@ -789,28 +789,49 @@
   const initials = (c) => (c || "?").replace(/\b(B\.?V\.?|N\.?V\.?|Group|Nederland|Netherlands)\b/gi, "").replace(/[^\p{L}\p{N} ]/gu, " ")
     .trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?";
   const hue = (s) => [...(s || "")].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
+  // a stated salary as a short range: "€60k–75k", "from €60k", "up to €75k" (per year; implausible values are left out)
+  function salaryText(i) {
+    const ok = (v) => v != null && v >= 15000 && v <= 400000;
+    const k = (v) => "€" + Math.round(v / 1000) + "k";
+    const lo = ok(i.salary_min) ? i.salary_min : null, hi = ok(i.salary_max) ? i.salary_max : null;
+    if (lo && hi && hi > lo) return `${k(lo)}–${k(hi).slice(1)}`;
+    if (lo) return t("sal.from", { v: k(lo) });
+    if (hi) return t("sal.upto", { v: k(hi) });
+    return "";
+  }
+  const cap = (s) => s ? s[0].toUpperCase() + s.slice(1) : s;
+  // one job: logo, title, employer and place, then one line of what the posting asks, then the skills as quiet text.
+  // Colour only where it decides: green when no Dutch is needed, orange when it mentions visa sponsorship.
   function jobCard(i) {
     const have = state.profile.skills, saved = state.saved.includes(i.id);
     const place = i.city ? cityLabel(i.city) : (i.remote ? t("remote.label") : "");
     const more = i.also_in && i.also_in.length ? ` <span class="more-cities" title="${esc(t("also.in", { c: i.also_in.map(cityLabel).join(", ") }))}">+${i.also_in.length}</span>` : "";
     const policy = i.remote_policy && i.remote_policy !== "onsite" && i.remote_policy !== "unknown" ? remoteLabel(i.remote_policy) : "";
-    const exp = expCell(i);
-    const facts = [
-      levelCell(i) && `<span class="fact">${levelCell(i)}</span>`,
-      !exp.includes('class="muted"') && `<span class="fact exp">${exp}</span>`,
-      i.english_only ? `<span class="fact good" title="${t("lang.en.title")}">${t("fact.nodutch")}</span>` : `<span class="fact" title="${t("lang." + langKey(i) + ".title")}">${t("lang." + langKey(i))}</span>`,
-      i.visa === true && `<span class="fact visa">${t("fact.visa")}</span>`,
-      policy && `<span class="fact">${esc(policy)}</span>`,
+    const exp = expCell(i), salary = salaryText(i);
+    const asks = [
+      levelCell(i) && `<span>${cap(levelCell(i))}</span>`,
+      i.experience === "none" && !i.years_text && i.years == null ? `<span>${t("fact.noexp")}</span>` : !exp.includes('class="muted"') && `<span>${exp}</span>`,
+      policy && `<span>${esc(policy)}</span>`,
+      salary && `<span class="sal" title="${t("sal.title")}">${esc(salary)}</span>`,
     ].filter(Boolean).join("");
+    const tags = [
+      i.english_only ? `<span class="tag lang" title="${t("lang.en.title")}">${t("fact.nodutch")}</span>`
+        : `<span class="tag" title="${t("lang." + langKey(i) + ".title")}">${t("lang." + langKey(i))}</span>`,
+      i.visa === true && `<span class="tag visa">${t("fact.visa")}</span>`,
+      i.via_agency && `<span class="tag">${t("agency")}</span>`,
+    ].filter(Boolean).join("");
+    const shown = i.skills.slice(0, 6);
+    const skills = shown.length ? `<div class="job-skills">${shown.map((s) => `<span${have.includes(s) ? ' class="have"' : ""}>${esc(s)}</span>`).join("")}${i.skills.length > 6 ? `<span class="more">+${i.skills.length - 6}</span>` : ""}</div>` : "";
     const old = i.age_days > 365 ? `<span class="badge stale" title="${t("old.year.title")}">${t("old.year")}</span>` : i.age_days > 90 ? `<span class="badge stale">${t("old")}</span>` : "";
+    const logo = i.logo ? `<img src="/logo/${encodeURIComponent(i.logo)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : "";
     return `<li class="job">
-      <span class="job-logo" style="--h:${hue(i.company)}" aria-hidden="true">${esc(initials(i.company))}</span>
+      <span class="job-logo" style="--h:${hue(i.company)}" aria-hidden="true">${esc(initials(i.company))}${logo}</span>
       <div class="job-body">
-        <div class="job-top"><span class="job-head"><a class="job-title" href="${jobPath(i)}" data-pid="${i.id}" target="_blank" title="${esc(trustText(i))}">${esc(i.title)}</a>${trustBadge(i)}</span>
+        <div class="job-top"><a class="job-title" href="${jobPath(i)}" data-pid="${i.id}" target="_blank" title="${esc(trustText(i))}">${esc(i.title)}</a>
           <span class="job-age" title="${esc(i.posted_at)}">${age(i)}${old}</span></div>
-        <div class="job-meta">${companyLink(i.company)}${i.via_agency ? ` <span class="chip more">${t("agency")}</span>` : ""}${place ? ` · ${esc(place)}${more}` : ""}</div>
-        <div class="job-facts">${facts}</div>
-        ${i.skills.length ? `<div class="chips">${i.skills.slice(0, 6).map((s) => `<span class="chip${have.includes(s) ? " have" : ""}">${esc(s)}</span>`).join("")}${i.skills.length > 6 ? `<span class="chip more">+${i.skills.length - 6}</span>` : ""}</div>` : ""}
+        <div class="job-meta">${companyLink(i.company)}${place ? `<span class="place">${esc(place)}${more}</span>` : ""}</div>
+        <div class="job-asks">${asks}${tags}</div>
+        ${skills}
       </div>
       <div class="job-side">
         <button class="star${saved ? " on" : ""}" data-id="${i.id}" title="${t("save")}">${saved ? "★" : "☆"}</button>
@@ -1118,6 +1139,7 @@
   });
   applyI18n();
   $("#kpis").hidden = location.hash !== "#overview";  // no placeholder flash on other tabs
+  if (["", "#jobs"].includes(location.hash.split("?")[0])) $("#boot").hidden = true;  // the job list shows placeholders
   bindAccount();
   account.load().then(() => { renderAccount(); jobFilters = null; }).then(loadHeader).then(route).catch((e) => { $("#kpis").hidden = false; $("#kpis").innerHTML = `<div class="kpi bad"><b>!</b><span>${esc(t("fail", { e: e.message }))}</span></div>`; });
 })();

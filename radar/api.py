@@ -220,10 +220,29 @@ def salary(request: Request, f: stats.Filters = Depends(filters), session: Sessi
 def postings(request: Request, page: int = Query(1, ge=1), size: int = Query(50, ge=1, le=200),
              sort: str = "newest", skills_have: str | None = None, f: stats.Filters = Depends(filters),
              session: Session = Depends(db)):
+    from radar import logos
     from radar.taxonomy import canonicalise
 
     have = set(canonicalise((skills_have or "").split(",")))
-    return cached(_key(request), lambda: stats.posting_dicts(_rows(session, f), page, size, sort, have))
+    out = cached(_key(request), lambda: stats.posting_dicts(_rows(session, f), page, size, sort, have))
+    marks = logos.known(session)
+    return {**out, "items": [{**i, "logo": marks.get(i["company"])} for i in out["items"]]}
+
+
+@app.get("/logo/{slug}", include_in_schema=False)
+def logo(slug: str, session: Session = Depends(db)):
+    """An employer's logo, stored by radar/logos.py: served from this site, so visitors contact no one else."""
+    from sqlalchemy import select
+
+    from radar.models import CompanyLogo
+
+    row = session.scalars(select(CompanyLogo).where(CompanyLogo.slug == slug, CompanyLogo.status == "ok")).first()
+    if row is None or not row.data:
+        raise HTTPException(404, "no logo")
+    headers = {"Cache-Control": "public, max-age=604800", "X-Content-Type-Options": "nosniff",
+               # an SVG opened on its own must not run anything
+               "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox"}
+    return Response(row.data, media_type=row.content_type, headers=headers)
 
 
 @app.get("/api/skills/canonical")

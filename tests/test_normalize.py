@@ -38,6 +38,9 @@ def test_regions_are_not_cities():
     from radar.normalize import plausible_place
 
     assert plausible_place("EMEA") is None and plausible_place("DACH") is None and plausible_place("Veghel") == "Veghel"
+    # a list of countries is not a city: the card showed "United Kingdom" for a role open in five countries incl. NL
+    assert plausible_place("United Kingdom; Canada; Germany; United States; The Netherlands") is None
+    assert plausible_place("Hauts-de-France") is None and plausible_place("Harderwijk") == "Harderwijk"
 
 
 def test_remote_and_title_normalisation():

@@ -188,9 +188,9 @@ class UserData(Base):
 
 
 class PageView(Base):
-    """One request or page event, for the admin analytics page. Anonymous by design: no IP address, no cookie.
-    `visitor` is a hash of IP and browser with a salt that changes every day, so a visitor can be counted once per
-    day but not followed across days or identified. Kept 90 days, then only the daily totals remain."""
+    """One request or page event, for the admin analytics page. No cookie. `ip` is kept 30 days for security and
+    abuse prevention, then blanked (radar/analytics.py). `visitor` is a hash of IP and browser with a salt that
+    changes every day, for daily unique counts. Kept 90 days, then only the daily totals remain."""
 
     __tablename__ = "page_views"
 
@@ -210,7 +210,8 @@ class PageView(Base):
     bot: Mapped[bool] = mapped_column(Boolean, default=False)
     visitor: Mapped[str | None] = mapped_column(String(16), nullable=True, index=True)
     event: Mapped[str | None] = mapped_column(String(30), nullable=True)  # job_click, search, profile_save, ...
-    detail: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    detail: Mapped[str | None] = mapped_column(String(200), nullable=True)  # a redirect's target, a search
+    ip: Mapped[str | None] = mapped_column(String(45), nullable=True)
 
 
 class DailyStat(Base):

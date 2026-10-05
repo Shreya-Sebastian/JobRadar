@@ -49,7 +49,7 @@ def _seed_posting():
         return p.id
 
 
-def test_visits_are_recorded_anonymously_and_shown_to_the_admin(client):
+def test_visits_are_recorded_and_shown_to_the_admin(client):
     pid = _seed_posting()
     human = {"user-agent": CHROME, "cf-connecting-ip": "203.0.113.5", "cf-ipcountry": "NL",
              "referer": "https://www.google.com/search?q=tech+jobs"}
@@ -67,8 +67,7 @@ def test_visits_are_recorded_anonymously_and_shown_to_the_admin(client):
     with session_scope() as s:
         rows = s.query(PageView).all()
         assert {r.event for r in rows} >= {"job_click", "nav", "search"} and "not-an-event" not in {r.event for r in rows}
-        stored = " ".join(str(v) for r in rows for v in vars(r).values())
-        assert "203.0.113.5" not in stored and "198.51.100.7" not in stored  # no IP addresses
+        assert {r.ip for r in rows} == {"203.0.113.5", "198.51.100.7", "66.249.66.1"}  # kept 30 days, for abuse
         assert not any(r.path.startswith("/static") for r in rows)
 
     assert client.get("/api/admin/analytics").status_code == 401
@@ -81,8 +80,13 @@ def test_visits_are_recorded_anonymously_and_shown_to_the_admin(client):
     assert d["job_clicks_by_employer"] == [{"key": "Acme", "hits": 1}]
     assert d["searches"][0]["key"] == "q=python&city=Utrecht"
     assert all("Googlebot" != b["key"] for b in d["browsers"])  # bots hidden by default
+    assert d["who"] == "humans" and all(not r["bot"] for r in d["recent"])
+    assert {r["ip"] for r in d["recent"]} == {"203.0.113.5", "198.51.100.7"}
     with_bots = client.get("/api/admin/analytics?bots=true", headers={"Authorization": "Bearer secret-token"}).json()
-    assert {"key": "Googlebot", "hits": 1} in with_bots["bots"]
+    assert {"key": "Googlebot", "hits": 1} in with_bots["bots"] and with_bots["who"] == "all"
+    only_bots = client.get("/api/admin/analytics?who=bots", headers={"Authorization": "Bearer secret-token"}).json()
+    assert [r["path"] for r in only_bots["recent"]] == ["/robots.txt"] and only_bots["recent"][0]["bot"] is True
+    assert only_bots["kpi"]["views_today"] == 0 and only_bots["countries"] == []
     page = client.get("/admin/analytics")
     assert page.status_code == 200 and "noindex" in page.headers["x-robots-tag"] and "{{" not in page.text
 
@@ -138,3 +142,31 @@ def test_admin_can_exclude_their_own_browser(client):
     analytics.flush()
     with session_scope() as s:
         assert s.query(PageView).count() == 1
+
+
+def test_redirects_are_counted_with_their_target(client):
+    pid = _seed_posting()
+    r = client.get(f"/job/{pid}", headers={"user-agent": CHROME}, follow_redirects=False)  # no slug: 301 to the full path
+    assert r.status_code == 301
+    analytics.flush()
+    d = client.get("/api/admin/analytics", headers={"Authorization": "Bearer secret-token"}).json()
+    assert d["redirects"]["count"] == 1
+    item = d["redirects"]["items"][0]
+    assert (item["path"], item["status"], item["hits"]) == (f"/job/{pid}", 301, 1) and item["to"].endswith(f"/job/{pid}/platform-engineer")
+    assert d["recent"][0]["to"] == item["to"]
+
+
+def test_job_pages_count_as_page_views():
+    assert analytics.classify("/job/12/data-engineer") == "page"
+    assert analytics.classify("/nl/vacature/12/data-engineer") == "page"
+    assert analytics.classify("/nl/bedrijf/adyen") == "page"
+
+
+def test_ip_addresses_are_erased_after_30_days(fresh_db):
+    now = datetime(2026, 10, 5, 3, 0)
+    with session_scope() as s:
+        s.add(PageView(ts=now - timedelta(days=31), kind="page", path="/", status=200, ip="203.0.113.5"))
+        s.add(PageView(ts=now - timedelta(days=2), kind="page", path="/", status=200, ip="198.51.100.7"))
+    with session_scope() as s:
+        analytics.nightly(s, now=now)
+        assert sorted(r.ip or "-" for r in s.query(PageView)) == ["-", "198.51.100.7"]

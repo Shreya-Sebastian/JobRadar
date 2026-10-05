@@ -223,6 +223,9 @@
   .pill.open .chev { @apply rotate-180; }
   .pill .n { @apply rounded-full bg-accent px-1.5 text-[11px] leading-4 font-semibold text-on-accent; }
   .pill .n:empty { display: none; }
+  .pill-s { @apply inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap; }
+  .pill-s.human { @apply bg-accent/15 text-accent; }
+  .pill-s.bot { @apply bg-accent-2/15 text-accent-2; }
   .pops { @apply relative z-30; }
   .pop { @apply absolute top-1.5 flex w-[min(32rem,100%)] flex-col gap-4 rounded-2xl border border-line bg-card p-4 shadow-xl; }
   .pop .field > label { @apply text-sm font-semibold text-ink; }

@@ -1,12 +1,13 @@
 """Anonymous site analytics for the admin page (/admin/analytics).
 
 What is recorded per request: time, path, status, response time, size, the referring domain, utm_source, the
-country (from Cloudflare's CF-IPCountry header), browser, OS, device class and whether it is a bot. What is not:
-the IP address, the full user agent, cookies, or anything from request bodies (pasted CV text never reaches here).
+country (from Cloudflare's CF-IPCountry header), the IP address, browser, OS, device class, whether it is a bot,
+and for a redirect where it pointed. What is not: the full user agent, cookies, or anything from request bodies
+(pasted CV text never reaches here).
 
-Unique visitors are counted with `visitor`, a hash of IP + user agent with a salt that is replaced every day and
-never kept, so a person is one visitor per day but cannot be followed across days or recognised later. This is
-the approach of cookieless analytics such as Plausible, and needs no consent banner.
+The IP address is kept for security and abuse prevention (telling heavy or hostile clients apart) and is erased
+after IP_DAYS, as the privacy statement says. Unique visitors are counted with `visitor`, a hash of IP + user agent
+with a salt that is replaced every day, so the daily counts do not depend on the address being kept.
 
 Rows are buffered in memory and written in batches every few seconds, so a page view costs no database round
 trip. Raw rows are kept 90 days (API calls 14 days); `rollup` keeps daily totals for the all-time figures.
@@ -22,9 +23,10 @@ import threading
 import time
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta
+from itertools import islice
 from urllib.parse import parse_qs, urlparse
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.orm import Session
 
 from radar.config import settings
@@ -33,12 +35,15 @@ log = logging.getLogger(__name__)
 
 RAW_DAYS = 90
 API_DAYS = 14
+IP_DAYS = 30  # then the address is blanked; the rest of the row stays until RAW_DAYS
+AUDIENCES = ("humans", "bots", "all")
 SESSION_GAP = timedelta(minutes=30)
 EVENTS = {"nav", "job_click", "profile_save", "login_request", "gap", "import", "export", "star"}
 
 # Paths that would only add noise: assets, health checks, polling, admin, the beacon itself
 _SKIP = re.compile(r"^/(static/|metrics|healthz|readyz|favicon|api/version|api/admin|api/me|api/e$|admin/)")
-_PAGE = re.compile(r"^/(|nl/?|vacatures/.+|jobs/.+|company/.+|companies|privacy|nl/privacy)$")
+_PAGE = re.compile(r"^/(|nl/?|vacatures/.+|jobs/.+|job/.+|nl/vacature/.+|company/.+|nl/bedrijf/.+|companies|"
+                   r"privacy|nl/privacy|login|nl/inloggen|feedback|nl/feedback)$")
 _CRAWL = {"/robots.txt", "/sitemap.xml"}
 
 _BOTS = [
@@ -223,7 +228,7 @@ def record(request, status: int, ms: float, size: int, event: str | None = None,
         "referrer": _referrer(request.headers.get("referer")) if kind == "page" else None,
         "utm_source": utm[:60] if utm else None, "country": (request.headers.get("cf-ipcountry") or "")[:2] or None,
         "browser": browser, "os": os_name, "device": device, "bot": bot,
-        "visitor": request_visitor(request),
+        "visitor": request_visitor(request), "ip": client_ip(request)[:45] or None,
         "event": event, "detail": detail[:200] if detail else None,
     }
     with _buffer_lock:
@@ -297,28 +302,40 @@ def _sessions(views: list) -> tuple[int, int, float]:
     return sessions, bounced, (pages / sessions if sessions else 0.0)
 
 
-def dashboard(session: Session, include_bots: bool = False, now: datetime | None = None) -> dict:
+def dashboard(session: Session, who: str = "humans", now: datetime | None = None, recent: int = 500,
+              include_bots: bool | None = None) -> dict:
+    """The analytics page. `who` filters every figure and list to humans, bots or all traffic (the timeline and the
+    crawler list always show both, side by side)."""
     from radar.models import PageView, Posting
+
+    if include_bots is not None:  # older callers
+        who = "all" if include_bots else "humans"
+    who = who if who in AUDIENCES else "humans"
+    include_bots = who != "humans"
+
+    def keep(r) -> bool:
+        return who == "all" or (who == "bots") == bool(r.bot)
 
     now = now or datetime.utcnow()
     day_start = datetime(now.year, now.month, now.day)
     since = now - timedelta(hours=24)
     cols = [PageView.ts, PageView.kind, PageView.path, PageView.status, PageView.ms, PageView.bytes,
             PageView.referrer, PageView.utm_source, PageView.country, PageView.browser, PageView.os, PageView.device,
-            PageView.bot, PageView.visitor, PageView.event, PageView.detail]
+            PageView.bot, PageView.visitor, PageView.event, PageView.detail, PageView.ip]
     rows = session.execute(select(*cols).where(PageView.ts >= min(since, day_start)).order_by(PageView.ts)).all()
     rows += [_as_row(r) for r in list(_buffer)]  # not yet flushed
     h24 = [r for r in rows if r.ts >= since]
     today = [r for r in rows if r.ts >= day_start]
-    shown = h24 if include_bots else [r for r in h24 if not r.bot]
+    shown = [r for r in h24 if keep(r)]
 
     def is_view(r):
         return r.kind == "page" or r.event == "nav"
 
-    views_today = [r for r in today if is_view(r) and (include_bots or not r.bot)]
+    views_today = [r for r in today if is_view(r) and keep(r)]
     views_24 = [r for r in shown if is_view(r)]
     human_views = [r for r in h24 if is_view(r) and not r.bot]
     served = [r for r in h24 if r.kind != "event"]
+    served_shown = [r for r in served if keep(r)]
     times = sorted(r.ms for r in served)
     sessions, bounced, pps = _sessions(human_views)
     bytes_24 = sum(r.bytes for r in served)
@@ -331,9 +348,10 @@ def dashboard(session: Session, include_bots: bool = False, now: datetime | None
             timeline[idx]["bots" if r.bot else "humans"] += 1
 
     consumers: dict[str, dict] = {}
-    for r in served:
-        key = r.browser if r.bot else f"visitor {r.visitor[:6]}"
-        c = consumers.setdefault(key, {"who": key, "country": r.country, "requests": 0, "bytes": 0, "bot": r.bot})
+    for r in served_shown:
+        key = r.ip or (r.browser if r.bot else f"visitor {(r.visitor or '')[:6]}")
+        c = consumers.setdefault(key, {"who": key, "agent": r.browser, "country": r.country, "requests": 0, "bytes": 0,
+                                       "bot": r.bot})
         c["requests"] += 1
         c["bytes"] += r.bytes
 
@@ -344,9 +362,20 @@ def dashboard(session: Session, include_bots: bool = False, now: datetime | None
     by_job = Counter(f"{posting[int(r.detail)].title} · {posting[int(r.detail)].company}"
                      for r in clicks if int(r.detail) in posting)
 
+    # redirects served: where each one sent the visitor (`detail` holds the Location header)
+    redirects = [r for r in served_shown if 300 <= (r.status or 0) < 400]
+    grouped: dict[tuple, dict] = {}
+    for r in redirects:
+        g = grouped.setdefault((r.path, r.status, r.detail), {"path": r.path, "status": r.status, "to": r.detail,
+                                                               "hits": 0, "last": r.ts})
+        g["hits"] += 1
+        g["last"] = max(g["last"], r.ts)
+    redirect_list = [{**g, "last": g["last"].isoformat(timespec="seconds") + "Z"}
+                     for g in sorted(grouped.values(), key=lambda g: (-g["hits"], g["path"]))[:100]]
+
     all_time = _all_time(session, today, day_start)
     return {
-        "generated_at": now.isoformat(timespec="seconds") + "Z", "include_bots": include_bots,
+        "generated_at": now.isoformat(timespec="seconds") + "Z", "include_bots": include_bots, "who": who,
         "kpi": {
             "views_today": len(views_today), "uniques_today": len({r.visitor for r in views_today}),
             "views_24h": len(views_24), "uniques_24h": len({r.visitor for r in views_24}),
@@ -370,22 +399,26 @@ def dashboard(session: Session, include_bots: bool = False, now: datetime | None
         "utm": _top(Counter(r.utm_source for r in shown if r.utm_source)),
         "countries": _top(Counter(r.country for r in shown if r.kind != "event" and r.country)),
         "os": _top(Counter(r.os for r in shown if r.kind != "event")),
-        "browsers": _top(Counter(r.browser for r in h24 if r.kind != "event" and (include_bots or not r.bot))),
-        "devices": _top(Counter(r.device for r in h24 if r.kind != "event")),
+        "browsers": _top(Counter(r.browser for r in served_shown)),
+        "devices": _top(Counter(r.device for r in served_shown)),
         "bots": _top(Counter(r.browser for r in h24 if r.bot and r.kind != "event")),
-        "statuses": _top(Counter(str(r.status) for r in served if (include_bots or not r.bot))),
+        "statuses": _top(Counter(str(r.status) for r in served_shown)),
+        "redirects": {"count": len(redirects), "items": redirect_list},
         "consumers": sorted(consumers.values(), key=lambda c: -c["bytes"])[:10],
         "job_clicks_by_employer": _top(by_employer),
         "job_clicks_by_job": _top(by_job),
         "searches": _top(Counter(r.detail for r in shown if r.event == "search" and r.detail), 15),
         "events": _top(Counter(r.event for r in shown if r.event and r.event not in ("nav", "search")), 12),
+        # every visit of the last 24 hours except the API calls a page makes while it loads, newest first
         "recent": [
-            {"ts": r.ts.isoformat(timespec="seconds") + "Z", "path": r.path, "status": r.status, "ms": r.ms,
-             "bytes": r.bytes, "referrer": r.referrer, "utm": r.utm_source, "country": r.country,
-             "browser": r.browser, "device": r.device, "visitor": (r.visitor or "")[:6], "event": r.event}
-            for r in reversed([r for r in h24 if r.kind in ("page", "event", "crawl")][-25:])
-            if include_bots or not r.bot
-        ][:20],
+            {"ts": r.ts.isoformat(timespec="seconds") + "Z", "kind": r.kind, "path": r.path, "status": r.status,
+             "ms": r.ms, "bytes": r.bytes, "referrer": r.referrer, "utm": r.utm_source, "country": r.country,
+             "browser": r.browser, "os": r.os, "device": r.device, "bot": bool(r.bot), "ip": r.ip,
+             "visitor": (r.visitor or "")[:6], "event": r.event,
+             "to": r.detail if 300 <= (r.status or 0) < 400 else None}
+            for r in islice((r for r in reversed(h24) if r.kind != "api" and keep(r)), max(0, recent))
+        ],
+        "recent_total": sum(1 for r in h24 if r.kind != "api" and keep(r)),
         "all_time": all_time,
     }
 
@@ -474,6 +507,8 @@ def nightly(session: Session, now: datetime | None = None) -> dict:
     old = session.execute(delete(PageView).where(PageView.ts < now - timedelta(days=RAW_DAYS))).rowcount
     old_api = session.execute(delete(PageView).where(PageView.kind == "api",
                                                      PageView.ts < now - timedelta(days=API_DAYS))).rowcount
+    session.execute(update(PageView).where(PageView.ts < now - timedelta(days=IP_DAYS), PageView.ip.is_not(None))
+                    .values(ip=None))
     session.commit()
     first = session.scalar(select(func.min(PageView.ts)))
     return {"daily_rows": rolled, "deleted": (old or 0) + (old_api or 0), "oldest_raw": first and first.isoformat()}

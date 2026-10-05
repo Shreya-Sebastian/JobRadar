@@ -54,8 +54,9 @@ async def _metrics_middleware(request: Request, call_next):
     try:
         from radar import analytics
 
+        moved = response.headers.get("location") if 300 <= response.status_code < 400 else None
         analytics.record(request, response.status_code, (time.perf_counter() - t0) * 1000,
-                         int(response.headers.get("content-length") or 0))
+                         int(response.headers.get("content-length") or 0), detail=moved)
     except Exception:  # statistics must never break a response
         pass
     if path.startswith("/api/") or path in ("/", "/healthz", "/readyz"):
@@ -372,11 +373,14 @@ def beacon(body: Beacon, request: Request):
 
 
 @app.get("/api/admin/analytics", include_in_schema=False)
-def admin_analytics(request: Request, bots: bool = False, session: Session = Depends(db)):
+def admin_analytics(request: Request, who: str = "humans", bots: bool = False, recent: int = 500,
+                    session: Session = Depends(db)):
     from radar import analytics
 
     _admin(request)
-    return {**analytics.dashboard(session, include_bots=bots), "this_browser_excluded": analytics.excluded(request)}
+    who = "all" if bots and who == "humans" else who  # ?bots=true: the older switch
+    return {**analytics.dashboard(session, who=who, recent=min(max(recent, 0), 5000)),
+            "this_browser_excluded": analytics.excluded(request)}
 
 
 @app.post("/api/admin/analytics/exclude", include_in_schema=False)

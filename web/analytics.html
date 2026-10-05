@@ -8,7 +8,7 @@
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
-<link rel="stylesheet" href="/static/app.css?v=6">
+<link rel="stylesheet" href="/static/app.css?v=9">
 <script src="/static/vendor/chart.umd.min.js"></script>
 </head>
 <body>
@@ -29,7 +29,9 @@
       <span class="small muted"><span class="mr-1 inline-block size-2 rounded-full bg-ok"></span><span id="stamp"></span> · auto-refreshes every 60 s</span>
       <div class="controls ml-auto flex flex-wrap items-center gap-2">
         <button id="me" title="Sets a cookie in this browser only, so your own visits are not counted">Exclude this browser</button>
-        <button id="bots">Include bots</button>
+        <div class="langswitch" id="who" role="group" aria-label="Show traffic from">
+          <button data-who="humans" class="on">Humans</button><button data-who="bots">Bots</button><button data-who="all">Both</button>
+        </div>
         <button id="refresh">Refresh</button>
         <button id="logout" class="link">Sign out</button>
       </div>
@@ -53,6 +55,7 @@
       <div class="card"><h2>Devices</h2><div id="devices" class="bars"></div></div>
       <div class="card"><h2>Crawlers and bots</h2><div id="bots_list" class="bars"></div></div>
       <div class="card"><h2>HTTP status codes</h2><div id="statuses" class="bars"></div></div>
+      <div class="card"><h2>Redirects (24 h) <span class="hint" id="redirect-count"></span></h2><div id="redirects"></div></div>
       <div class="card"><h2>Busiest API endpoints</h2><div id="top_api"></div></div>
       <div class="card"><h2>Top bandwidth (24 h)</h2><div id="consumers"></div></div>
     </div>
@@ -66,8 +69,15 @@
       <div class="card"><h2>Top pages</h2><div id="at_pages"></div></div>
     </div>
 
-    <div class="card overflow-x-auto"><h2>Recent visits (20)</h2><div id="recent"></div></div>
-    <p class="small muted mt-4">Anonymous by design: no IP addresses and no cookies. A visitor is a daily-changing hash, so people are counted once per day but cannot be followed across days.</p>
+    <div class="card overflow-x-auto">
+      <div class="mb-3 flex flex-wrap items-center gap-3">
+        <h2 class="m-0">Recent visits (24 h) <span class="hint" id="recent-count"></span></h2>
+        <input type="search" id="recent-q" placeholder="filter by IP, page, country…" class="ml-auto w-64 max-w-full py-1.5 text-sm">
+      </div>
+      <div id="recent"></div>
+      <div class="mt-3 flex justify-center"><button id="recent-more" hidden>Show more</button></div>
+    </div>
+    <p class="small muted mt-4">IP addresses are kept 30 days for security and abuse prevention, then erased. No cookies. Unique visitors are counted per day.</p>
   </div>
 </main>
 <script>
@@ -81,7 +91,8 @@
   const country = (c) => { if (!c || c === "XX" || c === "T1") return c === "T1" ? "Tor" : "Unknown"; try { return region ? region.of(c) : c; } catch { return c; } };
   const ago = (iso) => { const s = Math.max(0, (Date.now() - new Date(iso)) / 1000); return s < 60 ? "just now" : s < 3600 ? `${Math.floor(s / 60)}m ago` : `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m ago`; };
   const TOKEN_KEY = "radar.analytics.token";
-  let token = null, bots = false, timer = null, excludedMe = false;
+  let token = null, who = "humans", timer = null, excludedMe = false, recentRows = [], recentShown = 100;
+  try { who = sessionStorage.getItem("radar.analytics.who") || "humans"; } catch { /* storage blocked */ }
   const charts = {};
   try { token = sessionStorage.getItem(TOKEN_KEY); } catch { /* storage blocked */ }
 
@@ -132,8 +143,8 @@
       [fmt(k.buffered), "Buffer", "events not yet saved"],
     ]);
     barChart("timeline", d.timeline.map((t) => t.hour), [
-      { label: "Humans", data: d.timeline.map((t) => t.humans), backgroundColor: css("--accent") },
-      ...(d.include_bots ? [{ label: "Bots", data: d.timeline.map((t) => t.bots), backgroundColor: css("--accent-2") }] : []),
+      ...(d.who !== "bots" ? [{ label: "Humans", data: d.timeline.map((t) => t.humans), backgroundColor: css("--accent") }] : []),
+      ...(d.who !== "humans" ? [{ label: "Bots", data: d.timeline.map((t) => t.bots), backgroundColor: css("--accent-2") }] : []),
     ]);
     table("#top_pages", d.top_pages, "Page");
     table("#referrers", d.referrers, "Source");
@@ -150,8 +161,13 @@
     bars("#statuses", d.statuses, (s) => ({ 200: "200 OK", 204: "204 No content", 301: "301 Moved", 303: "303 Redirect", 304: "304 Not modified", 401: "401 Unauthorised", 404: "404 Not found", 405: "405 Method", 422: "422 Invalid", 429: "429 Too many", 500: "500 Error", 502: "502 Bad gateway" }[s] || s));
     table("#top_api", d.top_api, "Endpoint");
     $("#consumers").innerHTML = d.consumers.length
-      ? `<table><tr><th>Who</th><th>Country</th><th style="text-align:right">Requests</th><th style="text-align:right">Data</th></tr>${d.consumers.map((c) => `<tr><td class="${c.bot ? "muted" : ""}">${esc(c.who)}</td><td>${esc(country(c.country))}</td><td class="n">${fmt(c.requests)}</td><td class="n">${mb(c.bytes)}</td></tr>`).join("")}</table>`
+      ? `<table><tr><th>IP</th><th>Who</th><th>Country</th><th style="text-align:right">Requests</th><th style="text-align:right">Data</th></tr>${d.consumers.map((c) => `<tr><td><code>${esc(c.who)}</code></td><td>${whoBadge(c.bot, c.agent)}</td><td>${esc(country(c.country))}</td><td class="n">${fmt(c.requests)}</td><td class="n">${mb(c.bytes)}</td></tr>`).join("")}</table>`
       : `<div class="empty">No data yet</div>`;
+    const rd = d.redirects || { count: 0, items: [] };
+    $("#redirect-count").textContent = `${fmt(rd.count)} served`;
+    $("#redirects").innerHTML = rd.items.length
+      ? `<table><tr><th>From</th><th>Code</th><th>To</th><th style="text-align:right">Hits</th><th>Last</th></tr>${rd.items.map((r) => `<tr><td>${esc(r.path)}</td><td>${r.status}</td><td class="break-all">${esc(r.to || "-")}</td><td class="n">${fmt(r.hits)}</td><td class="whitespace-nowrap">${ago(r.last)}</td></tr>`).join("")}</table>`
+      : `<div class="empty">No redirects in the last 24 hours</div>`;
 
     tiles("#alltime", [
       [fmt(a.hits), "Total hits", `${fmt(a.humans)} human · ${fmt(a.bots)} bot`],
@@ -167,13 +183,26 @@
     table("#at_referrers", a.top_referrers, "Source");
     table("#at_pages", a.top_pages, "Page");
 
-    $("#recent").innerHTML = d.recent.length
-      ? `<table><tr><th>Time</th><th>Visitor</th><th>Page</th><th>Status</th><th>Speed</th><th>Size</th><th>Referrer</th><th>UTM</th><th>Country</th><th>Browser</th><th>Device</th></tr>${d.recent.map((r) => `<tr><td>${ago(r.ts)}</td><td>${esc(r.visitor)}</td><td>${esc(r.event && r.event !== "nav" ? r.event + " " : "")}${esc(r.path)}</td><td>${r.status}</td><td>${r.ms} ms</td><td>${r.bytes ? mb(r.bytes) : "-"}</td><td>${esc(r.referrer || "-")}</td><td>${esc(r.utm || "-")}</td><td>${esc(country(r.country))}</td><td>${esc(r.browser)}</td><td>${esc(r.device)}</td></tr>`).join("")}</table>`
-      : `<div class="empty">No visits yet</div>`;
+    recentRows = d.recent;
+    $("#recent-count").textContent = d.recent_total > d.recent.length ? `latest ${fmt(d.recent.length)} of ${fmt(d.recent_total)}` : `${fmt(d.recent_total)}`;
+    paintRecent();
+  }
+  function whoBadge(bot, agent) {
+    return bot ? `<span class="pill-s bot" title="${esc(agent || "")}">Bot${agent ? " · " + esc(agent) : ""}</span>` : `<span class="pill-s human">Human</span>`;
+  }
+  function paintRecent() {
+    const q = $("#recent-q").value.trim().toLowerCase();
+    const rows = q ? recentRows.filter((r) => [r.ip, r.path, r.to, r.country, country(r.country), r.browser, r.os, r.referrer, r.event].some((v) => v && String(v).toLowerCase().includes(q))) : recentRows;
+    const show = rows.slice(0, recentShown);
+    $("#recent").innerHTML = show.length
+      ? `<table><tr><th>Time</th><th>IP</th><th>Who</th><th>Page</th><th>Status</th><th>Speed</th><th>Size</th><th>Referrer</th><th>Country</th><th>Browser</th><th>Device</th></tr>${show.map((r) => `<tr><td class="whitespace-nowrap" title="${esc(new Date(r.ts).toLocaleString("en-GB"))}">${ago(r.ts)}</td><td><code>${esc(r.ip || r.visitor)}</code></td><td>${whoBadge(r.bot, r.browser)}</td><td>${esc(r.event && r.event !== "nav" ? r.event + " " : "")}${esc(r.path)}${r.to ? ` <span class="muted">→ ${esc(r.to)}</span>` : ""}</td><td>${r.status}</td><td>${r.ms} ms</td><td>${r.bytes ? mb(r.bytes) : "-"}</td><td>${esc(r.referrer || r.utm || "-")}</td><td>${esc(country(r.country))}</td><td>${esc(r.bot ? "-" : [r.browser, r.os].filter(Boolean).join(" · "))}</td><td>${esc(r.device)}</td></tr>`).join("")}</table>`
+      : `<div class="empty">${q ? "No visits match" : "No visits yet"}</div>`;
+    $("#recent-more").hidden = rows.length <= recentShown;
+    $("#recent-more").textContent = `Show more (${fmt(rows.length - recentShown)} left)`;
   }
 
   async function load() {
-    const r = await fetch(`/api/admin/analytics${bots ? "?bots=true" : ""}`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+    const r = await fetch(`/api/admin/analytics?who=${who}&recent=2000`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
     if (r.status === 401 || r.status === 404) { signOut(r.status === 404 ? "The admin token is not configured on this server." : "That token was not accepted."); return; }
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     render(await r.json());
@@ -198,7 +227,16 @@
     if (r.ok) { const j = await r.json(); if (j.excluded && j.forgotten) $("#stamp").textContent = `removed ${j.forgotten} of today's visits from this browser`; }
     load().catch(() => {});
   });
-  $("#bots").addEventListener("click", () => { bots = !bots; $("#bots").classList.toggle("on", bots); load().catch(() => {}); });
+  const paintWho = () => document.querySelectorAll("#who button").forEach((b) => b.classList.toggle("on", b.dataset.who === who));
+  paintWho();
+  $("#who").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-who]"); if (!b || b.dataset.who === who) return;
+    who = b.dataset.who; paintWho(); recentShown = 100;
+    try { sessionStorage.setItem("radar.analytics.who", who); } catch { /* storage blocked */ }
+    load().catch(() => {});
+  });
+  $("#recent-more").addEventListener("click", () => { recentShown += 200; paintRecent(); });
+  let rq; $("#recent-q").addEventListener("input", () => { clearTimeout(rq); rq = setTimeout(() => { recentShown = 100; paintRecent(); }, 150); });
   $("#refresh").addEventListener("click", () => load().catch(() => {}));
   $("#logout").addEventListener("click", () => signOut());
   if (token) start(); else signOut();

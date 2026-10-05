@@ -20,6 +20,7 @@
       
       
       "ov.skills": "Most requested skills",
+      "ov.quick": "Filter by what each posting actually asks", "ov.q.en": "No Dutch required", "ov.q.visa": "Visa sponsorship", "ov.q.exp": "Up to 1 year of experience", "ov.q.deg": "No degree mentioned", "ov.q.remote": "Remote or hybrid", "ov.q.noagency": "Employers only, no agencies", "ov.q.small": "Under 50 employees", "ov.q.week": "Posted this week", "ov.q.all": "All filters",
       "ov.graph": "Skills asked for together",
       "ov.matches": "Best matches for you",
       "ov.matches.empty": 'Add your skills under <a href="#profile">Profile</a> to see matches.',
@@ -128,6 +129,7 @@
       
       
       "ov.skills": "Meest gevraagde skills",
+      "ov.quick": "Filter op wat de vacature echt vraagt", "ov.q.en": "Geen Nederlands vereist", "ov.q.visa": "Visumsponsoring", "ov.q.exp": "Maximaal 1 jaar ervaring", "ov.q.deg": "Geen opleiding genoemd", "ov.q.remote": "Thuis of hybride", "ov.q.noagency": "Alleen werkgevers, geen bureaus", "ov.q.small": "Minder dan 50 medewerkers", "ov.q.week": "Deze week geplaatst", "ov.q.all": "Alle filters",
       "ov.graph": "Skills die samen gevraagd worden",
       "ov.matches": "Beste matches voor jou",
       "ov.matches.empty": 'Voeg je skills toe onder <a href="#profile">Profiel</a> om matches te zien.',

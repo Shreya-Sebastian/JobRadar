@@ -238,6 +238,7 @@ def refresh(session, limit: int = 120, now: datetime | None = None, client: http
     client = client or _client()
     found = missing = 0
     domains = known_domains()
+    slugs = {c.slug for c in known.values()}
     errors = 0
     for company in due:
         ats, slug, url, _ = best[company]
@@ -254,7 +255,16 @@ def refresh(session, limit: int = 120, now: datetime | None = None, client: http
                 break
             continue
         errors = 0
-        row = known.get(company) or CompanyLogo(company=company, slug=slug_of(company))
+        row = known.get(company)
+        if row is None:
+            # "DeepHealth" and "Deephealth" are two names to the radar but one slug: number the second
+            slug = base = slug_of(company)
+            n = 1
+            while slug in slugs:
+                n += 1
+                slug = f"{base}-{n}"
+            slugs.add(slug)
+            row = CompanyLogo(company=company, slug=slug)
         row.fetched_at, row.page_url = now, (page or "")[:500]
         if got:
             row.status, row.image_url, row.content_type, row.data = "ok", got[0][:500], got[1], got[2]
@@ -262,9 +272,13 @@ def refresh(session, limit: int = 120, now: datetime | None = None, client: http
         elif row.status != "ok":  # keep an older logo when a later lookup fails
             row.status, row.data = "none", None
             missing += 1
-        session.add(row)
-        session.commit()
-        session.expunge(row)  # the image is stored; keep it out of memory
+        try:
+            session.add(row)
+            session.commit()
+            session.expunge(row)  # the image is stored; keep it out of memory
+        except Exception as e:
+            session.rollback()
+            log.warning("logo for %s not saved: %s", company, e)
     _known.clear()
     return {"looked_up": len(due), "found": found, "missing": missing, "errors": errors}
 

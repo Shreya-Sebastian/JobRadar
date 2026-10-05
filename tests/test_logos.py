@@ -47,3 +47,25 @@ def test_logo_is_served_from_this_site_and_named_on_postings(fresh_db):
     assert client.get("/logo/nobody").status_code == 404
     with session_scope() as s:
         assert logos.known(s) == {"Acme": "acme"}
+
+
+def test_names_that_differ_only_in_case_get_their_own_logo_address(fresh_db):
+    from radar.models import Posting, Source
+
+    now = datetime.utcnow()
+    with session_scope() as s:
+        for n, name in enumerate(["DeepHealth", "Deephealth"]):
+            src = Source(company=name, ats="recruitee", slug=f"deephealth{n}", kind="employer")
+            s.add(src)
+            s.flush()
+            s.add(Posting(source_id=src.id, external_id=str(n), title="Engineer", company=name, url=f"https://x/{n}",
+                          content_hash=str(n), dedup_key=str(n), first_seen=now, last_seen=now, is_tech=True))
+    with session_scope() as s:
+        original = logos.find_logo
+        logos.find_logo = lambda url, client, depth=0: ("https://img/x.png", "image/png", PNG)
+        try:
+            out = logos.refresh(s, now=now, client=object())
+        finally:
+            logos.find_logo = original
+        assert out["found"] == 2
+        assert sorted(c.slug for c in s.query(CompanyLogo)) == ["deephealth", "deephealth-2"]

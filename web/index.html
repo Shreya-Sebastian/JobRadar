@@ -23,7 +23,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="/static/app.css?v=7">
+<link rel="stylesheet" href="/static/app.css?v=8">
 <script src="/static/vendor/chart.umd.min.js"></script>
 <script src="/static/vendor/d3.min.js"></script>
 </head>
@@ -48,8 +48,8 @@
     </div>
   </div>
   <nav class="wrap tabs" id="tabs">
-    <a href="#overview" data-tab="overview" data-i18n="tab.overview">Overview</a>
     <a href="#jobs" data-tab="jobs" data-i18n="tab.jobs">Jobs</a>
+    <a href="#overview" data-tab="overview" data-i18n="tab.overview">Overview</a>
     <a href="#market" data-tab="market" data-i18n="tab.market">Market</a>
     <a href="#profile" data-tab="profile" data-i18n="tab.profile">Profile</a>
   </nav>
@@ -98,50 +98,33 @@
 
 <!-- ============ JOBS ============ -->
 <section class="tab" data-tab="jobs">
-  <div class="card filters">
-    <div class="filter-row">
-      <div class="field grow"><label data-i18n="f.search">Search</label><input type="search" id="f-q" data-i18n-placeholder="f.search.ph" placeholder="title or company"></div>
-      <div class="field"><label data-i18n="f.window">Window</label><select id="f-days"><option value="" data-i18n="f.window.all">All live</option><option value="1" data-i18n="f.window.1">Last 24 h</option><option value="7" data-i18n="f.window.7">Last 7 days</option><option value="30" data-i18n="f.window.30">Last 30 days</option><option value="90" data-i18n="f.window.90">Last 90 days</option></select></div>
-      <div class="field"><label data-i18n="f.language">Languages you speak</label><select id="f-language" data-i18n-title="f.language.hint" title="We hide jobs that ask for a language you did not pick."><option value="" data-i18n="f.language.any" selected>Dutch and English</option><option value="nl" data-i18n="f.language.nl">Dutch only</option><option value="en" data-i18n="f.language.en">English only</option></select></div>
-      <div class="field"><label data-i18n="f.sort">Sort</label><select id="f-sort"><option value="newest" data-i18n="f.sort.newest">Newest</option><option value="match" data-i18n="f.sort.match">Best match</option><option value="size_small" data-i18n="f.sort.small">Smaller organisations first</option><option value="size_large" data-i18n="f.sort.large">Larger organisations first</option></select></div>
-    </div>
-    <div class="filter-row">
-      <div class="field"><label data-i18n="f.role">Role</label><div class="chips toggles" id="f-roles"></div></div>
-    </div>
-    <div class="filter-row">
-      <div class="field grow"><label data-i18n="f.position">Position</label><div class="chipinput" id="f-position"></div></div>
-    </div>
-    <div class="filter-row">
-      <div class="field"><label data-i18n="f.level">Level</label><div class="chips toggles" id="f-levels"></div></div>
-      <div class="field"><label data-i18n="f.exp">Experience asked</label><div class="chips toggles" id="f-exp"></div></div>
-      <div class="field"><label data-i18n="f.degree">Degree asked</label><div class="chips toggles" id="f-degree"></div></div>
-      <div class="field"><label data-i18n="f.sector">Sector</label><div class="chips toggles" id="f-sector"></div></div>
-      <div class="field"><label data-i18n="f.emp">Company size (employees)</label><div class="chips toggles" id="f-emp"></div></div>
-      <div class="field"><label data-i18n="f.size">Hiring activity (open roles)</label><div class="chips toggles" id="f-size"></div></div>
-      <div class="field"><label data-i18n="f.remote">Remote</label><div class="chips toggles" id="f-remote"></div></div>
-    </div>
-    <div class="filter-row">
-      <div class="field grow"><label data-i18n="f.cities">Cities</label><div class="chipinput" id="f-cities"></div></div>
-      <label class="check"><input type="checkbox" id="f-visa"> <span data-i18n="f.visa">Visa sponsorship mentioned</span></label>
-      <label class="check"><input type="checkbox" id="f-agencies"> <span data-i18n="f.agencies">Hide agencies</span></label>
-      <label class="check"><input type="checkbox" id="f-confirmed"> <span data-i18n="f.confirmed">Only confirmed on the employer's site in the last 7 days</span></label>
-      <label class="check"><input type="checkbox" id="f-noenrol"> <span data-i18n="f.noenrol">Exclude internships that require enrolment</span></label>
-      <label class="check"><input type="checkbox" id="f-saved"> <span data-i18n="f.saved">Saved only</span></label>
-    </div>
-    <div class="filter-row">
-      <div class="active-skill" id="active-skill" hidden><span data-i18n="f.skill">Skill</span>: <b id="active-skill-name"></b> <button id="clear-skill" title="clear">×</button></div>
-      <span class="count" id="count"></span>
-      <button class="link" id="f-profile" data-i18n="f.profile" hidden>Use my profile</button>
-      <button class="link" id="f-reset" data-i18n="f.reset">Reset filters</button>
-    </div>
+  <div class="search">
+    <label class="search-q"><svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.45 4.39l3.08 3.08a.75.75 0 11-1.06 1.06l-3.08-3.08A7 7 0 012 9z" clip-rule="evenodd"/></svg><input type="search" id="f-q" data-i18n-placeholder="f.search.ph" placeholder="title or company" data-i18n-title="f.search" title="Search"></label>
+    <div class="search-city"><svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M9.69 18.93l.03.02a.75.75 0 00.56 0l.03-.02.1-.05c.08-.05.2-.11.34-.2.28-.16.68-.41 1.14-.74A16.1 16.1 0 0015.5 13.6C16.82 12.06 18 10.07 18 7.75a8 8 0 00-16 0c0 2.32 1.18 4.31 2.5 5.85a16.1 16.1 0 003.6 3.1c.46.33.86.58 1.14.74l.34.2.1.05zM10 10.5a2.75 2.75 0 100-5.5 2.75 2.75 0 000 5.5z" clip-rule="evenodd"/></svg><div class="chipinput" id="f-cities"></div></div>
   </div>
-  <div class="card">
-    <table class="table postings" id="postings">
-      <thead><tr><th></th><th data-i18n="th.age">Age</th><th data-i18n="th.title">Title</th><th data-i18n="th.company">Company</th><th data-i18n="th.city">City</th><th data-i18n="th.level">Level</th><th data-i18n="th.exp">Experience</th><th data-i18n="th.skills">Skills</th><th data-i18n="th.match">Match</th><th data-i18n="th.lang">Language</th><th data-i18n="th.visa">Visa</th></tr></thead>
-      <tbody></tbody>
-    </table>
-    <div class="pager"><button id="prev" data-i18n="pager.prev">‹ Prev</button><span id="page-info"></span><button id="next" data-i18n="pager.next">Next ›</button></div>
+  <div class="pillbar" id="pillbar">
+    <button type="button" class="pill" data-pop="lang" aria-expanded="false"><span data-i18n="pill.lang">Language</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><label class="pill"><input type="checkbox" id="f-visa" class="sr-only"> <span data-i18n="pill.visa">Visa sponsorship</span></label><button type="button" class="pill" data-pop="exp" aria-expanded="false"><span data-i18n="pill.exp">Experience</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="level" aria-expanded="false"><span data-i18n="pill.level">Level</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="role" aria-expanded="false"><span data-i18n="pill.role">Role</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="degree" aria-expanded="false"><span data-i18n="pill.degree">Degree</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="remote" aria-expanded="false"><span data-i18n="pill.remote">Remote</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="company" aria-expanded="false"><span data-i18n="pill.company">Company</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="posted" aria-expanded="false"><span data-i18n="pill.posted">Date posted</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="more" aria-expanded="false"><span data-i18n="pill.more">More</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button>
   </div>
+  <div class="pops" id="pops">
+    <div class="pop" data-pop="lang" hidden><div class="field"><label data-i18n="f.language">Languages you speak</label><select id="f-language" data-i18n-title="f.language.hint" title="We hide jobs that ask for a language you did not pick."><option value="" data-i18n="f.language.any" selected>Dutch and English</option><option value="nl" data-i18n="f.language.nl">Dutch only</option><option value="en" data-i18n="f.language.en">English only</option></select></div></div>
+    <div class="pop" data-pop="exp" hidden><div class="field"><label data-i18n="f.exp">Experience asked</label><div class="chips toggles" id="f-exp"></div></div></div>
+    <div class="pop" data-pop="level" hidden><div class="field"><label data-i18n="f.level">Level</label><div class="chips toggles" id="f-levels"></div></div></div>
+    <div class="pop" data-pop="role" hidden><div class="field"><label data-i18n="f.role">Role</label><div class="chips toggles" id="f-roles"></div></div><div class="field"><label data-i18n="f.position">Position</label><div class="chipinput" id="f-position"></div></div></div>
+    <div class="pop" data-pop="degree" hidden><div class="field"><label data-i18n="f.degree">Degree asked</label><div class="chips toggles" id="f-degree"></div></div></div>
+    <div class="pop" data-pop="remote" hidden><div class="field"><label data-i18n="f.remote">Remote</label><div class="chips toggles" id="f-remote"></div></div></div>
+    <div class="pop" data-pop="company" hidden><div class="field"><label data-i18n="f.emp">Company size (employees)</label><div class="chips toggles" id="f-emp"></div></div><div class="field"><label data-i18n="f.sector">Sector</label><div class="chips toggles" id="f-sector"></div></div><div class="field"><label data-i18n="f.size">Hiring activity (open roles)</label><div class="chips toggles" id="f-size"></div></div><label class="check"><input type="checkbox" id="f-agencies"> <span data-i18n="f.agencies">Hide agencies</span></label></div>
+    <div class="pop" data-pop="posted" hidden><div class="field"><label data-i18n="f.window">Window</label><select id="f-days"><option value="" data-i18n="f.window.all">All live</option><option value="1" data-i18n="f.window.1">Last 24 h</option><option value="7" data-i18n="f.window.7">Last 7 days</option><option value="30" data-i18n="f.window.30">Last 30 days</option><option value="90" data-i18n="f.window.90">Last 90 days</option></select></div><label class="check"><input type="checkbox" id="f-confirmed"> <span data-i18n="f.confirmed">Only confirmed on the employer's site in the last 7 days</span></label></div>
+    <div class="pop" data-pop="more" hidden><label class="check"><input type="checkbox" id="f-noenrol"> <span data-i18n="f.noenrol">Exclude internships that require enrolment</span></label><label class="check"><input type="checkbox" id="f-saved"> <span data-i18n="f.saved">Saved only</span></label></div>
+  </div>
+  <div class="results-head">
+    <span class="count" id="count"></span>
+    <div class="active-skill" id="active-skill" hidden><span data-i18n="f.skill">Skill</span>: <b id="active-skill-name"></b> <button id="clear-skill" title="clear">×</button></div>
+    <button class="link" id="f-profile" data-i18n="f.profile" hidden>Use my profile</button>
+    <button class="link" id="f-reset" data-i18n="f.reset">Reset filters</button>
+    <label class="sort"><span data-i18n="f.sort">Sort</span> <select id="f-sort"><option value="newest" data-i18n="f.sort.newest">Newest</option><option value="match" data-i18n="f.sort.match">Best match</option><option value="size_small" data-i18n="f.sort.small">Smaller organisations first</option><option value="size_large" data-i18n="f.sort.large">Larger organisations first</option></select></label>
+  </div>
+  <ol class="jobs" id="postings"></ol>
+  <div class="pager"><button id="prev" data-i18n="pager.prev">‹ Prev</button><span id="page-info"></span><button id="next" data-i18n="pager.next">Next ›</button></div>
 </section>
 
 <!-- ============ MARKET ============ -->
@@ -298,6 +281,6 @@
   <p class="mt-6 border-t border-line pt-6"><a href="{{PRIVACY_PATH}}" data-i18n="privacy">Privacy</a> · <a href="{{FEEDBACK_PATH}}" data-i18n="feedback">Feedback</a>{{SOURCE_LINK}}</p>
  </div>
 </footer>
-<script src="/static/app.js?v=83"></script>
+<script src="/static/app.js?v=84"></script>
 </body>
 </html>

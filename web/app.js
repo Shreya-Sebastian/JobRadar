@@ -20,6 +20,7 @@
       
       
       "ov.skills": "Most requested skills",
+      "jobs.none": "No jobs match these filters. Try removing one.", "pill.lang": "Language", "pill.visa": "Visa sponsorship", "pill.exp": "Experience", "pill.level": "Level", "pill.role": "Role", "pill.degree": "Degree", "pill.remote": "Remote", "pill.company": "Company", "pill.posted": "Date posted", "pill.more": "More", "remote.label": "Remote", "fact.visa": "Visa sponsorship", "fact.nodutch": "No Dutch needed",
       "ov.quick": "Filter by what each posting actually asks", "ov.q.en": "No Dutch required", "ov.q.visa": "Visa sponsorship", "ov.q.exp": "Up to 1 year of experience", "ov.q.deg": "No degree mentioned", "ov.q.remote": "Remote or hybrid", "ov.q.noagency": "Employers only, no agencies", "ov.q.small": "Under 50 employees", "ov.q.week": "Posted this week", "ov.q.all": "All filters",
       "ov.graph": "Skills asked for together",
       "ov.matches": "Best matches for you",
@@ -129,6 +130,7 @@
       
       
       "ov.skills": "Meest gevraagde skills",
+      "jobs.none": "Geen vacatures met deze filters. Haal er een weg.", "pill.lang": "Taal", "pill.visa": "Visumsponsoring", "pill.exp": "Ervaring", "pill.level": "Niveau", "pill.role": "Functie", "pill.degree": "Opleiding", "pill.remote": "Thuiswerken", "pill.company": "Werkgever", "pill.posted": "Geplaatst", "pill.more": "Meer", "remote.label": "Thuiswerken", "fact.visa": "Visumsponsoring", "fact.nodutch": "Geen Nederlands nodig",
       "ov.quick": "Filter op wat de vacature echt vraagt", "ov.q.en": "Geen Nederlands vereist", "ov.q.visa": "Visumsponsoring", "ov.q.exp": "Maximaal 1 jaar ervaring", "ov.q.deg": "Geen opleiding genoemd", "ov.q.remote": "Thuis of hybride", "ov.q.noagency": "Alleen werkgevers, geen bureaus", "ov.q.small": "Minder dan 50 medewerkers", "ov.q.week": "Deze week geplaatst", "ov.q.all": "Alle filters",
       "ov.graph": "Skills die samen gevraagd worden",
       "ov.matches": "Beste matches voor jou",
@@ -341,7 +343,7 @@
   const emptyProfile = () => ({ roles: [], positions: [], levels: [], exp: [], degrees: [], emps: [], sectors: [], sizes: [], remote: [], cities: [], exclude: [], skills: [],
     language: "", visa: false, agencies: false, noenrol: false });
   const state = {
-    tab: "overview", page: 1, size: 40, sort: "newest", skill: null,
+    tab: "jobs", page: 1, size: 40, sort: "newest", skill: null,
     profile: Object.assign(emptyProfile(), store.get("profile", {})),
     saved: store.get("saved", []),
     options: { roles: [], positions: [], cities: [], skills: [] },
@@ -684,6 +686,37 @@
     if (state.skill) q.set("skill", state.skill);
     return q;
   }
+  // how many choices each filter pill holds (the pill is highlighted and shows the number)
+  const PILL_COUNTS = {
+    lang: (f) => (f.language ? 1 : 0), exp: (f) => f.exp.length, level: (f) => f.levels.length,
+    role: (f) => f.roles.length + (f.positions || []).length, degree: (f) => f.degrees.length, remote: (f) => f.remote.length,
+    company: (f) => f.emps.length + f.sectors.length + f.sizes.length + (f.agencies ? 1 : 0),
+    posted: (f) => (f.days ? 1 : 0) + (f.confirmed ? 1 : 0), more: (f) => (f.noenrol ? 1 : 0) + (f.savedOnly ? 1 : 0),
+  };
+  function paintPills() {
+    const f = currentJobFilters();
+    $$("#pillbar .pill[data-pop]").forEach((b) => {
+      const n = PILL_COUNTS[b.dataset.pop](f);
+      b.classList.toggle("on", n > 0); $(".n", b).textContent = n > 0 ? n : "";
+    });
+  }
+  function openPop(key) {
+    $$("#pops .pop").forEach((p) => { p.hidden = p.dataset.pop !== key; });
+    $$("#pillbar .pill[data-pop]").forEach((b) => { const on = b.dataset.pop === key; b.classList.toggle("open", on); b.setAttribute("aria-expanded", on); });
+    if (!key) return;
+    const pill = $(`#pillbar .pill[data-pop="${key}"]`), pop = $(`#pops .pop[data-pop="${key}"]`), host = $("#pops");
+    const left = pill.getBoundingClientRect().left - host.getBoundingClientRect().left;
+    pop.style.left = Math.max(0, Math.min(left, host.clientWidth - pop.offsetWidth)) + "px";
+  }
+  function bindPills() {
+    $("#pillbar").addEventListener("click", (e) => {
+      const b = e.target.closest(".pill[data-pop]"); if (!b) return;
+      openPop(b.classList.contains("open") ? null : b.dataset.pop);
+    });
+    $("#pillbar").addEventListener("scroll", () => openPop(null), { passive: true });
+    document.addEventListener("click", (e) => { if (!e.target.closest("#pillbar, #pops")) openPop(null); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") openPop(null); });
+  }
   let jobsBuilt = false;
   function buildJobsFilters() {
     const f = currentJobFilters();
@@ -701,8 +734,10 @@
     $("#f-language").value = f.language || ""; $("#f-visa").checked = f.visa; $("#f-agencies").checked = f.agencies; $("#f-noenrol").checked = !!f.noenrol; $("#f-confirmed").checked = !!f.confirmed;
     $("#f-saved").checked = f.savedOnly; $("#f-q").value = f.q; $("#f-days").value = f.days;
     $("#f-sort").value = state.sort;
+    paintPills();
     if (!jobsBuilt) {
       jobsBuilt = true;
+      bindPills();
       [["#f-visa", "visa"], ["#f-agencies", "agencies"], ["#f-noenrol", "noenrol"], ["#f-confirmed", "confirmed"], ["#f-saved", "savedOnly"]]
         .forEach(([id, key]) => $(id).addEventListener("change", (e) => { currentJobFilters()[key] = e.target.checked; refreshJobs(true); }));
       $("#f-language").addEventListener("change", (e) => { currentJobFilters().language = e.target.value; refreshJobs(true); });
@@ -714,7 +749,7 @@
       $("#f-profile").addEventListener("click", () => { store.set("jobsUseProfile", true); jobFilters = profileJobFilters(); state.skill = null; buildJobsFilters(); refreshJobs(true); });
       $("#prev").addEventListener("click", () => { state.page--; refreshJobs(); });
       $("#next").addEventListener("click", () => { state.page++; refreshJobs(); });
-      $("#postings tbody").addEventListener("click", (e) => { const b = e.target.closest(".star"); if (b) toggleSaved(Number(b.dataset.id), b); });
+      $("#postings").addEventListener("click", (e) => { const b = e.target.closest(".star"); if (b) toggleSaved(Number(b.dataset.id), b); });
     }
   }
   function trustText(i) {
@@ -744,19 +779,41 @@
     $("#count").textContent = d.total === 1 ? t("jobs.match.one") : t("jobs.match", { n: fmt(d.total) });
     $("#page-info").textContent = t("page", { p: d.page, t: pages });
     $("#prev").disabled = d.page <= 1; $("#next").disabled = d.page >= pages;
-    $("#postings tbody").innerHTML = d.items.map((i) => `<tr>
-      <td><button class="star${state.saved.includes(i.id) ? " on" : ""}" data-id="${i.id}" title="${t("save")}">${state.saved.includes(i.id) ? "★" : "☆"}</button></td>
-      <td class="muted" title="${esc(i.posted_at)}">${age(i)}${i.age_days > 365 ? `<span class="badge stale" title="${t("old.year.title")}">${t("old.year")}</span>` : i.age_days > 90 ? `<span class="badge stale">${t("old")}</span>` : ""}</td>
-      <td><a href="${jobPath(i)}" data-pid="${i.id}" target="_blank" title="${esc(trustText(i))}">${esc(i.title)}</a>${trustBadge(i)}</td>
-      <td>${companyLink(i.company)}${i.via_agency ? ` <span class="chip more">${t("agency")}</span>` : ""}</td>
-      <td>${esc(i.city ? cityLabel(i.city) : (i.remote ? "Remote" : ""))}${i.also_in && i.also_in.length ? ` <span class="more-cities" title="${esc(t("also.in", { c: i.also_in.map(cityLabel).join(", ") }))}">+${i.also_in.length}</span>` : ""}</td>
-      <td>${levelCell(i)}</td>
-      <td>${expCell(i)}</td>
-      <td><div class="chips">${i.skills.slice(0, 6).map((s) => `<span class="chip${have.includes(s) ? " have" : ""}">${esc(s)}</span>`).join("")}${i.skills.length > 6 ? `<span class="chip more">+${i.skills.length - 6}</span>` : ""}</div></td>
-      <td>${i.match != null ? `<span class="match-bar" title="${Math.round(i.match * 100)}%"><i style="width:${Math.round(i.match * 100)}%"></i></span>` : '<span class="muted">-</span>'}</td>
-      <td>${langCell(i)}</td>
-      <td>${i.visa === true ? `<span class="ok">${t("visa.yes")}</span>` : i.visa === false ? `<span class="bad">${t("visa.no")}</span>` : `<span class="muted">${t("visa.unknown")}</span>`}</td>
-    </tr>`).join("");
+    paintPills();
+    $("#postings").innerHTML = d.items.length ? d.items.map(jobCard).join("") : `<li class="jobs-empty muted">${t("jobs.none")}</li>`;
+  }
+  // a letter tile in place of a logo: the employer's initials on a colour of its own
+  const initials = (c) => (c || "?").replace(/\b(B\.?V\.?|N\.?V\.?|Group|Nederland|Netherlands)\b/gi, "").replace(/[^\p{L}\p{N} ]/gu, " ")
+    .trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?";
+  const hue = (s) => [...(s || "")].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
+  function jobCard(i) {
+    const have = state.profile.skills, saved = state.saved.includes(i.id);
+    const place = i.city ? cityLabel(i.city) : (i.remote ? t("remote.label") : "");
+    const more = i.also_in && i.also_in.length ? ` <span class="more-cities" title="${esc(t("also.in", { c: i.also_in.map(cityLabel).join(", ") }))}">+${i.also_in.length}</span>` : "";
+    const policy = i.remote_policy && i.remote_policy !== "onsite" && i.remote_policy !== "unknown" ? remoteLabel(i.remote_policy) : "";
+    const exp = expCell(i);
+    const facts = [
+      levelCell(i) && `<span class="fact">${levelCell(i)}</span>`,
+      !exp.includes('class="muted"') && `<span class="fact">${exp}</span>`,
+      i.english_only ? `<span class="fact good" title="${t("lang.en.title")}">${t("fact.nodutch")}</span>` : `<span class="fact" title="${t("lang." + langKey(i) + ".title")}">${t("lang." + langKey(i))}</span>`,
+      i.visa === true && `<span class="fact good">${t("fact.visa")}</span>`,
+      policy && `<span class="fact">${esc(policy)}</span>`,
+    ].filter(Boolean).join("");
+    const old = i.age_days > 365 ? `<span class="badge stale" title="${t("old.year.title")}">${t("old.year")}</span>` : i.age_days > 90 ? `<span class="badge stale">${t("old")}</span>` : "";
+    return `<li class="job">
+      <span class="job-logo" style="--h:${hue(i.company)}" aria-hidden="true">${esc(initials(i.company))}</span>
+      <div class="job-body">
+        <div class="job-top"><a class="job-title" href="${jobPath(i)}" data-pid="${i.id}" target="_blank" title="${esc(trustText(i))}">${esc(i.title)}</a>${trustBadge(i)}
+          <span class="job-age" title="${esc(i.posted_at)}">${age(i)}${old}</span></div>
+        <div class="job-meta">${companyLink(i.company)}${i.via_agency ? ` <span class="chip more">${t("agency")}</span>` : ""}${place ? ` · ${esc(place)}${more}` : ""}</div>
+        <div class="job-facts">${facts}</div>
+        ${i.skills.length ? `<div class="chips">${i.skills.slice(0, 6).map((s) => `<span class="chip${have.includes(s) ? " have" : ""}">${esc(s)}</span>`).join("")}${i.skills.length > 6 ? `<span class="chip more">+${i.skills.length - 6}</span>` : ""}</div>` : ""}
+      </div>
+      <div class="job-side">
+        <button class="star${saved ? " on" : ""}" data-id="${i.id}" title="${t("save")}">${saved ? "★" : "☆"}</button>
+        ${i.match != null ? `<span class="match-bar" title="${Math.round(i.match * 100)}%"><i style="width:${Math.round(i.match * 100)}%"></i></span>` : ""}
+      </div>
+    </li>`;
   }
   function toggleSaved(id, btn) {
     const i = state.saved.indexOf(id);
@@ -1021,7 +1078,7 @@
   async function route() {
     if (!firstRoute) beacon("nav");
     firstRoute = false;
-    let raw = (location.hash || "#overview").slice(1);
+    let raw = (location.hash || "#jobs").slice(1);
     const qi = raw.indexOf("?");
     if (qi >= 0) {
       const q = new URLSearchParams(raw.slice(qi + 1));
@@ -1035,7 +1092,7 @@
     const eq = raw.indexOf("=");
     const tab = eq >= 0 ? raw.slice(0, eq) : raw;
     state.routeArg = eq >= 0 ? decodeURIComponent(raw.slice(eq + 1)) : null;
-    state.tab = renderers[tab] ? tab : "overview";
+    state.tab = renderers[tab] ? tab : "jobs";
     $$("#tabs a").forEach((a) => a.classList.toggle("on", a.dataset.tab === state.tab));
     $$(".tab").forEach((s) => s.classList.toggle("on", s.dataset.tab === state.tab));
     $("#f-profile").hidden = !hasProfileFilters();
@@ -1049,14 +1106,14 @@
   $("#brand").addEventListener("click", (e) => {
     e.preventDefault();
     const target = LANG === "nl" ? "/nl/" : "/";
-    if (location.pathname === target) { location.hash = "#overview"; window.scrollTo(0, 0); } else location.href = target;
+    if (location.pathname === target) { location.hash = "#jobs"; window.scrollTo(0, 0); } else location.href = target;
   });
   $("#langswitch").addEventListener("click", (e) => {
     const b = e.target.closest("button"); if (!b || b.dataset.lang === LANG) return;
     LANG = b.dataset.lang; store.set("lang", LANG); applyI18n(); renderAccount(); renderHeader(); jobsBuilt = false; profileBuilt = false; route();
   });
   applyI18n();
-  $("#kpis").hidden = !["", "#overview"].includes(location.hash);  // no placeholder flash on other tabs
+  $("#kpis").hidden = location.hash !== "#overview";  // no placeholder flash on other tabs
   bindAccount();
   account.load().then(() => { renderAccount(); jobFilters = null; }).then(loadHeader).then(route).catch((e) => { $("#kpis").hidden = false; $("#kpis").innerHTML = `<div class="kpi bad"><b>!</b><span>${esc(t("fail", { e: e.message }))}</span></div>`; });
 })();

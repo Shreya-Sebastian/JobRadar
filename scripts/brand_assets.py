@@ -61,11 +61,10 @@ def card() -> Image.Image:
     d.rectangle((0, 0, 1200, 12), fill=ACCENT)
     img.paste(logo(150), (90, 150), logo(150))
     d.text((270, 160), "Tech Jobs Radar", font=font(True, 76), fill=INK)
-    d.text((272, 258), "Straight from Dutch employers", font=font(False, 40), fill=INK)
-    d.text((92, 410), "Read from the employers' own career sites, updated daily.", font=font(False, 34), fill=MUTED)
-    d.text((92, 460), "Software, data, AI, cloud and security. Filter on English-speaking,", font=font(False, 34),
-           fill=MUTED)
-    d.text((92, 506), "visa sponsorship, junior roles and city.", font=font(False, 34), fill=MUTED)
+    d.text((272, 258), "IT jobs in the Netherlands, filtered by what they ask", font=font(False, 36), fill=INK)
+    d.text((92, 410), "Dutch or English, visa sponsorship, years of experience,", font=font(False, 34), fill=MUTED)
+    d.text((92, 458), "degree, position, company size and city.", font=font(False, 34), fill=MUTED)
+    d.text((92, 506), "Straight from employers' own career sites, updated daily.", font=font(False, 34), fill=MUTED)
     d.text((92, 568), "techjobsradar.nl", font=font(True, 30), fill=ACCENT)
     return img
 

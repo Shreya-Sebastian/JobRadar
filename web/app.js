@@ -49,7 +49,7 @@
      
       // dynamic strings
       "kpi.live": "live tech postings", "kpi.employers": "employers", "kpi.crawl": "last crawl",
-      "title": "Straight from Dutch employers",
+      "title": "Filter IT Jobs in the Netherlands by Language, Visa & Experience",
      
       
      
@@ -156,7 +156,7 @@
      
      
       "kpi.live": "open techvacatures", "kpi.employers": "werkgevers", "kpi.crawl": "laatste crawl",
-      "title": "Rechtstreeks van Nederlandse werkgevers",
+      "title": "IT vacatures in Nederland filteren op taal, visum en ervaring",
      
       
      
@@ -553,7 +553,7 @@
       [fmt(o.live_tech_postings), t("kpi.live")], [fmt(o.companies), t("kpi.employers")],
       [last, t("kpi.crawl")],
     ].map(([v, l]) => `<div class="kpi"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join("");
-    document.title = `${document.title.split(" | ")[0].split(":")[0]} | ${t("title")}`;
+    document.title = `${t("title")} | ${document.title.split(" | ").pop()}`;
   }
 
   // ---------- OVERVIEW ----------
@@ -612,7 +612,7 @@
     doughnut("co-lang", lang.items.map((i) => t("lang.chart." + i.key) === "lang.chart." + i.key ? i.key : t("lang.chart." + i.key)), lang.items.map((i) => i.count));
     $("#co-count").textContent = fmt(jobs.total);
     $("#co-permalink").href = "/company/" + name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-    document.title = `${document.title.split(" | ")[0].split(":")[0]} | ${t("co.title", { c: name })}`;
+    document.title = `${t("co.title", { c: name })} | ${document.title.split(" | ").pop()}`;
     $("#co-jobs tbody").innerHTML = items.length ? items.map((i) => `<tr>
       <td class="muted" title="${esc(i.posted_at)}">${age(i)}</td>
       <td><a href="${jobPath(i)}" data-pid="${i.id}" target="_blank">${esc(i.title)}</a></td>

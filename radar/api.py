@@ -619,17 +619,17 @@ def _render_index(session: Session | None = None, lang: str = "en") -> str:
     if session is not None:
         _rows, pages = _pages_objects(session)
         links = seo.popular_links(pages, lang)
-    # the brand line, not a running count: a count dates within hours and reads like an advert
+    # what the site does, not a running count: a count dates within hours and reads like an advert
     if lang == "nl":
-        title = f"{settings.site_name} | {settings.site_slogan_nl}"
-        desc = ("ICT- en techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers en dagelijks "
-                "bijgewerkt: developer, data, AI, cloud en security. Filter op Engelstalige functies, visumsponsoring, "
-                "junior en stad.")
+        title = f"{settings.site_headline_nl} | {settings.site_name}"
+        desc = ("Filter op wat de vacature echt vraagt: Nederlands of Engels, visumsponsoring, jaren ervaring en "
+                "opleiding. Plus functie, skills, bedrijfsgrootte en stad. Rechtstreeks van de carrièresites van "
+                "werkgevers, dagelijks bijgewerkt.")
     else:
-        title = f"{settings.site_name} | {settings.site_slogan}"
-        desc = ("Tech and IT jobs in the Netherlands, read directly from employers' own career sites and updated "
-                "daily: software, data, AI, cloud and security. Filter on English-speaking roles, visa sponsorship, "
-                "junior positions and city.")
+        title = f"{settings.site_headline} | {settings.site_name}"
+        desc = ("Filter by what each posting actually asks: Dutch or English, visa sponsorship, years of experience "
+                "and degree. Plus position, skills, company size and city. Straight from employers' own career "
+                "sites, updated daily.")
     base = settings.site_url.rstrip("/")
     ld = {"@context": "https://schema.org", "@graph": [
         {"@type": "WebSite", "@id": f"{base}/#website", "name": settings.site_name, "alternateName": aliases,
@@ -637,7 +637,7 @@ def _render_index(session: Session | None = None, lang: str = "en") -> str:
          "publisher": {"@id": f"{base}/#organization"}},
         {"@type": "Organization", "@id": f"{base}/#organization", "name": settings.site_name, "url": settings.site_url,
          "logo": {"@type": "ImageObject", "url": f"{base}/static/icon-512.png", "width": 512, "height": 512},
-         "slogan": settings.site_slogan, "email": "contact@techjobsradar.nl"},
+         "email": "contact@techjobsradar.nl"},
     ]}
     return (html.replace("{{SITE_NAME}}", settings.site_name)
                 .replace("{{SITE_URL}}", settings.site_url.rstrip("/"))

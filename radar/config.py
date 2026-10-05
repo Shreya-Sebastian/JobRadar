@@ -32,10 +32,11 @@ class Settings(BaseSettings):
     # Google Search Console verification token (the content of its <meta name="google-site-verification">)
     google_site_verification: str | None = None
     # the brand line: page titles, search snippets and the share card (no counts, nothing that dates)
-    site_slogan: str = "Straight from Dutch employers"  # the name already says "tech jobs"
-    site_slogan_nl: str = "Rechtstreeks van Nederlandse werkgevers"
-    site_tagline: str = ("Tech jobs from Dutch employers' own career sites, with the skills, language and visa "
-                         "details of every listing.")
+    # home page title, before the name: what the site does and where, in the words people search with
+    site_headline: str = "Filter IT Jobs in the Netherlands by Language, Visa & Experience"
+    site_headline_nl: str = "IT vacatures in Nederland filteren op taal, visum en ervaring"
+    site_tagline: str = ("Tech jobs from Dutch employers' own career sites, filtered by what each posting asks: "
+                         "Dutch or English, visa sponsorship, years of experience and degree.")
     # The crawler names itself, with a page explaining it and a contact address; robots.txt rules for
     # "TechJobsRadar" apply to it (radar/robots.py). Sites that refuse it are not crawled.
     user_agent: str = "TechJobsRadar/1.0 (+https://techjobsradar.nl/privacy; contact@techjobsradar.nl)"

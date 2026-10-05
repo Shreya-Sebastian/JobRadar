@@ -80,6 +80,11 @@ THEMES = {  # key: (filter kwargs, nl slug, en slug, nl title, en title)
 CITY_NL = {"The Hague": "Den Haag", "'s-Hertogenbosch": "Den Bosch"}
 
 
+def doc_title(title: str) -> str:
+    """The <title>: the page title, then the site name, unless the title already says "tech jobs" (it is the name)."""
+    return title if "tech jobs" in title.lower() else f"{title} | {settings.site_name}"
+
+
 def city_nl(c: str) -> str:
     return CITY_NL.get(c, c)
 
@@ -416,6 +421,7 @@ def render(page: Page, lang: str, rows: list[stats.Row], pages: list[Page]) -> s
     reps = {
         "{{LANG}}": lang,
         "{{TITLE}}": escape(title),
+        "{{DOC_TITLE}}": escape(doc_title(title)),
         "{{COUNT}}": str(n),
         "{{SITE_NAME}}": escape(settings.site_name),
         "{{SITE_URL}}": base,

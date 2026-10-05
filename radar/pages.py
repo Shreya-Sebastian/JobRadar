@@ -75,7 +75,7 @@ def _brand(html: str) -> str:
 
 _TEXT = {
     "en": {
-        "title": "{c}: tech jobs in the Netherlands", "subtitle": "tech jobs in the Netherlands",
+        "title": "{c} jobs in the Netherlands", "subtitle": "tech jobs in the Netherlands",
         "open": "open tech roles", "nodutch": "need no Dutch", "visa": "mention visa sponsorship",
         "employees": "employees", "cities": "Cities", "skills": "Skills asked for",
         "interactive": "Open the interactive view",
@@ -90,7 +90,7 @@ _TEXT = {
         "today": "today", "yesterday": "yesterday", "days": "{d}d ago",
     },
     "nl": {
-        "title": "{c}: techvacatures in Nederland", "subtitle": "techvacatures in Nederland",
+        "title": "{c} vacatures in Nederland", "subtitle": "techvacatures in Nederland",
         "open": "open techvacatures", "nodutch": "zonder Nederlands", "visa": "noemen visumsponsoring",
         "employees": "medewerkers", "cities": "Steden", "skills": "Gevraagde skills",
         "interactive": "Open de interactieve weergave",

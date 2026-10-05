@@ -26,15 +26,16 @@ class Settings(BaseSettings):
     cors_origins: str = "*"  # comma-separated; set to the public domain in production
     # Branding and search: the site name goes into the title, headings and structured data; the aliases are
     # phrases people may search for ("TechJobsNL"); the URL is the canonical public address.
-    site_name: str = "Tech Jobs Radar"
-    site_aliases: str = "TechJobsRadar, TechJobsNL, Tech Jobs NL, ICT vacatures, IT vacatures, tech jobs Netherlands"
+    site_name: str = "Tech Jobs"
+    site_aliases: str = ("Tech Jobs Radar, TechJobsRadar, techjobsradar.nl, TechJobsNL, Tech Jobs NL, ICT vacatures, "
+                         "IT vacatures, tech jobs Netherlands")
     site_url: str = "https://techjobsradar.nl"
     # Google Search Console verification token (the content of its <meta name="google-site-verification">)
     google_site_verification: str | None = None
     # the brand line: page titles, search snippets and the share card (no counts, nothing that dates)
-    # home page title, before the name: what the site does and where, in the words people search with
-    site_headline: str = "Filter IT Jobs in the Netherlands by Language, Visa & Experience"
-    site_headline_nl: str = "IT vacatures in Nederland filteren op taal, visum en ervaring"
+    # the home page title on its own (it starts with the name): what the site does and where, in search words
+    site_headline: str = "Tech Jobs in the Netherlands: Filter by Language, Visa & Experience"
+    site_headline_nl: str = "Techvacatures in Nederland: filter op taal, visum en ervaring"
     site_tagline: str = ("Tech jobs from Dutch employers' own career sites, filtered by what each posting asks: "
                          "Dutch or English, visa sponsorship, years of experience and degree.")
     # The crawler names itself, with a page explaining it and a contact address; robots.txt rules for
@@ -63,7 +64,7 @@ class Settings(BaseSettings):
     # accounts (radar/auth.py): the login link is e-mailed. "console" logs it instead of sending (local use);
     # "smtp" sends through RADAR_SMTP_HOST, e.g. Amazon SES's SMTP endpoint
     mail_backend: str = "console"
-    mail_from: str = "Tech Jobs Radar <login@techjobsradar.nl>"
+    mail_from: str = "Tech Jobs <login@techjobsradar.nl>"
     # where alerts go (crawling stalled, nightly quality check failed); empty = only logged
     alert_email: str | None = "contact@techjobsradar.nl"
     smtp_host: str = "localhost"

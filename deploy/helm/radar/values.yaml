@@ -16,7 +16,7 @@ admin:
 # Login e-mails (radar/auth.py). With backend "console" links only appear in the API log.
 mail:
   backend: console            # console | smtp
-  from: "Tech Jobs Radar <login@techjobsradar.nl>"
+  from: "Tech Jobs <login@techjobsradar.nl>"
   smtpHost: email-smtp.eu-west-1.amazonaws.com
   smtpPort: 587
   existingSecret: ""          # Secret with keys RADAR_SMTP_USER and RADAR_SMTP_PASSWORD

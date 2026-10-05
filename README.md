@@ -1,4 +1,4 @@
-# Tech Jobs Radar
+# Tech Jobs
 
 A job board for tech, software, data and IT vacancies in the Netherlands, read directly from employers' own career
 sites. Each posting is tagged with the skills, seniority, experience and degree it asks for, its language, whether

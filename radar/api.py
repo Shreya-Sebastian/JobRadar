@@ -621,12 +621,12 @@ def _render_index(session: Session | None = None, lang: str = "en") -> str:
         links = seo.popular_links(pages, lang)
     # what the site does, not a running count: a count dates within hours and reads like an advert
     if lang == "nl":
-        title = f"{settings.site_headline_nl} | {settings.site_name}"
+        title = settings.site_headline_nl
         desc = ("Filter op wat de vacature echt vraagt: Nederlands of Engels, visumsponsoring, jaren ervaring en "
                 "opleiding. Plus functie, skills, bedrijfsgrootte en stad. Rechtstreeks van de carrièresites van "
                 "werkgevers, dagelijks bijgewerkt.")
     else:
-        title = f"{settings.site_headline} | {settings.site_name}"
+        title = settings.site_headline
         desc = ("Filter by what each posting actually asks: Dutch or English, visa sponsorship, years of experience "
                 "and degree. Plus position, skills, company size and city. Straight from employers' own career "
                 "sites, updated daily.")
@@ -647,7 +647,7 @@ def _render_index(session: Session | None = None, lang: str = "en") -> str:
                 .replace("{{HTML_LANG}}", lang)
                 .replace("{{HOME_PATH}}", "/nl/" if lang == "nl" else "/")
                 .replace("{{H1_SUFFIX}}",
-                         ": techvacatures in Nederland" if lang == "nl" else ": tech jobs in the Netherlands")
+                         " in Nederland" if lang == "nl" else " in the Netherlands")
                 .replace("{{PAGE_TITLE}}", title)
                 .replace("{{META_DESCRIPTION}}", desc)
                 .replace("{{VERIFY}}", seo.verification_meta())

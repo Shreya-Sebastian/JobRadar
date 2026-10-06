@@ -19,12 +19,12 @@ MUTED = (100, 116, 139)
 BG = (248, 250, 252)
 WHITE = (255, 255, 255)
 
-# the logo: a pyramid of diamonds (4, 3, 2 and 1) in a night-blue tile. The other jobs are dim, one path of bright
-# diamonds (cyan to green) climbs to the match, an orange diamond lifted off the top
+# the logo: a pyramid of diamonds (4, 3, 2 and 1) in a near-black tile. The jobs are rows of teal, one path of orange
+# diamonds, warming as it climbs, leads to the match: an orange diamond lifted off the top
 TILE = "#020617"  # near black: the diamonds stand out most
-DIM = ("#186c82", "#1d6c6d", "#206c5c")  # rows from the bottom: the path colours at 45% on the tile, clear but quieter
-PATH = ("#22d3ee", "#2dd4bf", "#34d399")
-MATCH = "#fb923c"
+DIM = ("#1aa3bc", "#22a596", "#28a676")  # the rows, from the bottom: cyan, teal, green
+PATH = ("#fed7aa", "#fdba74", "#fb923c")  # the path warms to the match
+MATCH = "#f97316"
 ON_PATH = (2, 1, 1)  # which diamond in each row lies on the path
 HALF = 1.95  # half the diagonal of a diamond, before its corners are rounded by ROUND
 ROUND = 0.65

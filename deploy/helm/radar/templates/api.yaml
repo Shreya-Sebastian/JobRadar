@@ -55,6 +55,10 @@ spec:
             - name: http
               containerPort: 8000
           env: {{- include "radar.env" . | nindent 12 }}
+          # keep answering for a few seconds after the stop signal, until the router has taken the pod out of rotation
+          lifecycle:
+            preStop:
+              sleep: {seconds: 5}
           readinessProbe:
             httpGet: {path: /readyz, port: http}
             periodSeconds: 10

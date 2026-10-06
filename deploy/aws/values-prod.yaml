@@ -40,9 +40,10 @@ api:
   replicas: 1
   autoscaling:
     enabled: false
-  # stop the old pod first: a deploy costs ~30 s of downtime, but never runs two API processes at once
+  # start the new pod before stopping the old one, so a deploy never takes the site down. Two API processes run
+  # side by side for under a minute; the node has room for that since the second crawl worker went (6 Oct 2026)
   strategy:
-    rollingUpdate: {maxSurge: 0, maxUnavailable: 1}
+    rollingUpdate: {maxSurge: 1, maxUnavailable: 0}
   resources:
     requests: {cpu: 100m, memory: 200Mi}
     limits: {cpu: "1", memory: 450Mi}

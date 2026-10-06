@@ -818,8 +818,8 @@
     return fresh ? ` <span class="ok small" title="${esc(trustText(i))}">✓</span>` : "";
   }
   function age(i) { return i.age_days === 0 ? t("today") : i.age_days === 1 ? t("yesterday") : t("days.ago", { d: i.age_days }); }
-  // the list while a search runs: placeholder rows once it takes a moment, and only the latest search's answer is shown
-  const SKELETON = '<li class="job skel" aria-hidden="true"><span class="job-logo"></span><div class="job-body"><i class="bar w-3/5"></i><i class="bar w-2/5"></i><i class="bar w-4/5"></i></div></li>'.repeat(5);
+  // the list while a search runs: a loading bar once it takes a moment, and only the latest search's answer is shown
+  const loadingRow = () => `<li class="jobs-loading" role="status"><span class="load-track"><span class="load-bar"></span></span><span>${t("loading")}</span></li>`;
   let jobsRequest = 0;
   async function refreshJobs(resetPage = false) {
     if (resetPage) state.page = 1;
@@ -832,7 +832,7 @@
     if (state.sort !== "match" || have.length) p.set("sort", state.sort);
     syncJobsUrl();
     list.setAttribute("aria-busy", "true");
-    const slow = setTimeout(() => { if (mine === jobsRequest) { list.innerHTML = SKELETON; $("#count").textContent = t("loading"); } }, 150);
+    const slow = setTimeout(() => { if (mine === jobsRequest) { list.innerHTML = loadingRow(); $("#count").textContent = ""; } }, 150);
     let d;
     try { d = await api("/api/postings", p); }
     catch (e) {

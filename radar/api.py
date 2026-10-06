@@ -146,11 +146,14 @@ def filters(
     sector: str | None = None,
     position: str | None = None,
     exclude_ids: str | None = Query(None, max_length=6000),
+    commute_from: str | None = Query(None, max_length=60),
+    commute_max: int | None = Query(None, ge=10, le=240),
+    commute_remote: bool = True,
 ) -> stats.Filters:
     return stats.Filters(role, seniority, city, company, english_only, sponsorship, remote, days, q, skill,
                          include_closed, exclude_agencies, exclude_companies, since, skills_any, ids, language,
                          experience, enrollment, org_size, confirmed_days, degree, employees, sector, position,
-                         exclude_ids)
+                         exclude_ids, commute_from, commute_max, commute_remote)
 
 
 def _rows(session: Session, f: stats.Filters) -> list[stats.Row]:
@@ -234,6 +237,19 @@ def postings(request: Request, page: int = Query(1, ge=1), size: int = Query(50,
     return {**out, "items": [{**i, "logo": (marks.get(i["company"]) or {}).get("slug"),
                               "logo_dark": (marks.get(i["company"]) or {}).get("dark", False),
                               "logo_v": (marks.get(i["company"]) or {}).get("v")} for i in out["items"]]}
+
+
+@app.get("/api/commute")
+def commute_times(origin: str | None = Query(None, alias="from", max_length=60)):
+    """Estimated train minutes from one job city to every other (radar/commute.py); without `from`, the cities."""
+    from radar import commute
+
+    if not origin:
+        return {"origins": commute.origins()}
+    times = commute.from_city(origin)
+    if not times:
+        raise HTTPException(404, "unknown city")
+    return {"from": origin, "minutes": times}
 
 
 @app.get("/logo/{slug}", include_in_schema=False)

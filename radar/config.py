@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     cors_origins: str = "*"  # comma-separated; set to the public domain in production
     # Branding and search: the site name goes into the title, headings and structured data; the aliases are
     # phrases people may search for ("TechJobsNL"); the URL is the canonical public address.
-    site_name: str = "Rolera"
+    site_name: str = "TechJar"
     site_aliases: str = ("Tech Jobs, Tech Jobs Radar, TechJobsRadar, techjobsradar.nl, TechJobsNL, Tech Jobs NL, "
                          "ICT vacatures, IT vacatures, tech jobs Netherlands")
     site_url: str = "https://techjobsradar.nl"
@@ -64,7 +64,7 @@ class Settings(BaseSettings):
     # accounts (radar/auth.py): the login link is e-mailed. "console" logs it instead of sending (local use);
     # "smtp" sends through RADAR_SMTP_HOST, e.g. Amazon SES's SMTP endpoint
     mail_backend: str = "console"
-    mail_from: str = "Rolera <login@techjobsradar.nl>"
+    mail_from: str = "TechJar <login@techjobsradar.nl>"
     # where alerts go (crawling stalled, nightly quality check failed); empty = only logged
     alert_email: str | None = "contact@techjobsradar.nl"
     smtp_host: str = "localhost"

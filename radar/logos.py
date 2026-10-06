@@ -85,23 +85,60 @@ def candidates(html: str, page_url: str) -> list[str]:
             rel = " ".join(link.get("rel") or []).lower()
             if "apple-touch-icon" in rel:
                 icons.append((0, -_size(link.get("sizes")), link["href"]))
-            elif "icon" in rel:
+            elif "icon" in rel and "mask-icon" not in rel:  # Safari's pinned-tab icon is a one-colour silhouette
                 svg = (link.get("type") or "").endswith("svg") or link["href"].lower().endswith(".svg")
                 size = _size(link.get("sizes"))
                 icons.append((1 if svg or size >= 48 else 2, -size, link["href"]))
         for _, _, href in sorted(icons):
             add(href)
+    brand = _brand_word(page_url)
     for img in soup.find_all("img"):
-        attrs = " ".join(str(img.get(k) or "") for k in ("class", "id", "alt", "src"))
-        if _LOGO_HINT.search(attrs):
-            add(img.get("src") or img.get("data-src"))
-    # in page data, a square logo fits the card's tile better than a wide wordmark
-    for m in sorted(_JSON_LOGO.finditer(html), key=lambda m: "square" not in m.group(0).lower()):
+        src = img.get("src") or img.get("data-src") or ""
+        attrs = " ".join(str(img.get(k) or "") for k in ("class", "id", "alt")) + " " + urlparse(src).path
+        if not _LOGO_HINT.search(attrs) or _WIDGETS.search(urljoin(page_url, src)):
+            continue
+        # on an employer's own site, only its own logo: in the page's header or navigation (not a card's header in
+        # the content), linking home, or named after it. Homepages show strips of customers' and partners' logos
+        # ("Terumo" on Cegeka's, "Volkswagen Group" in Salesforce's customer stories)
+        top = img.find_parent(["header", "nav"])
+        in_header = top is not None and top.find_parent(["main", "article", "section"]) is None
+        # the name in the file name next to "logo" ("logo-salesforce.svg"), not anywhere in it: a news image is
+        # named after both companies ("volare_shipping_-_euronext_growth_oslo.png" on Euronext's)
+        file = urlparse(src).path.rsplit("/", 1)[-1].lower()
+        named = brand and brand in file and "logo" in file
+        if own_site and not (_links_home(img, page_url) or in_header or named):
+            continue
+        add(src)
+    # in page data, a square logo fits the card's tile better than a wide wordmark. Only on a tracking system's
+    # board: an employer's own site carries other organisations' logos in its data (news, customer cases)
+    data_logos = [] if own_site else list(_JSON_LOGO.finditer(html))
+    for m in sorted(data_logos, key=lambda m: "square" not in m.group(0).lower()):
         add(m.group(1).encode().decode("unicode_escape") if "\\u" in m.group(1) else m.group(1))
     found = found[:6]
     if own_site:  # always the last try, also when the page lists icons that are gone (Deloitte's are all 404s)
         add("/favicon.ico")
     return found
+
+
+# review, rating and social widgets: their images are someone else's logo (Google's, Trustpilot's)
+_WIDGETS = re.compile(r"trustindex|trustpilot|kiyoh|feedbackcompany|google\.|gstatic|facebook|linkedin|twitter|"
+                      r"glassdoor|indeed|youtube|instagram|klaviyo|hotjar|cookiebot|onetrust", re.I)
+
+
+def _brand_word(page_url: str) -> str:
+    """The distinctive part of a site's host: "salesforce" for www.salesforce.com, "werkenbijkpmg" for ..."""
+    host = urlparse(page_url).netloc.lower().removeprefix("www.")
+    parts = host.split(".")
+    return parts[-2] if len(parts) >= 2 and len(parts[-2]) >= 3 else ""
+
+
+def _links_home(img, page_url: str) -> bool:
+    a = img.find_parent("a", href=True)
+    if not a:
+        return False
+    href = urljoin(page_url, a["href"])
+    u, home = urlparse(href), urlparse(page_url)
+    return u.netloc == home.netloc and u.path.rstrip("/") in ("", "/en", "/nl", "/en-nl", "/nl-nl")
 
 
 def _ats_brand(url: str) -> bool:
@@ -413,11 +450,12 @@ MANUAL_TYPES = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg"
 
 
 def manual_files() -> dict[str, Path]:
-    """data/logos/<slug>.<ext>: logos chosen by hand, which win over any lookup (named by slug_of(company))."""
+    """data/logos/<slug>.<ext>: logos chosen by hand, which win over any lookup (named by slug_of(company)).
+    <slug>.dark.<ext> is one drawn for a dark background, shown on a dark plate."""
     folder = Path(settings.data_dir) / "logos"
     if not folder.is_dir():
         return {}
-    return {f.stem: f for f in folder.iterdir() if f.suffix.lower() in MANUAL_TYPES}
+    return {f.stem.removesuffix(".dark"): f for f in folder.iterdir() if f.suffix.lower() in MANUAL_TYPES}
 
 
 def import_manual(session) -> dict:
@@ -441,7 +479,8 @@ def import_manual(session) -> dict:
             skipped += 1
             continue
         row = session.get(CompanyLogo, company) or CompanyLogo(company=company, slug=slug_of(company))
-        row.status, row.content_type, row.data, row.dark = "ok", got[0], got[1], got[2]
+        row.status, row.content_type, row.data = "ok", got[0], got[1]
+        row.dark = got[2] or f.stem.endswith(".dark")
         row.image_url, row.page_url, row.fetched_at = f"manual:{f.name}", None, datetime.utcnow()
         session.add(row)
         session.commit()

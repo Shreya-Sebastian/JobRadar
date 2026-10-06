@@ -148,3 +148,47 @@ def test_hand_chosen_logos_win_and_are_kept(fresh_db, tmp_path, monkeypatch):
         # a later lookup leaves it alone, also with retry_missing
         assert logos.refresh(s, now=now, client=object(), retry_missing=True)["looked_up"] == 0
         assert logos.recheck(s)["kept"] == 0
+
+
+def test_a_homepage_strip_of_customer_logos_is_not_the_employers_logo():
+    html = ('<header><a href="/"><img class="site-logo" src="/img/own-logo.svg" alt="Home"></a></header>'
+            '<section><img class="customer-logo" src="/img/volkswagen-group-logo.png" alt="Volkswagen Group logo">'
+            '<img src="/img/salesforce-logo-big.png" alt="logo"></section>')
+    got = logos.candidates(html, "https://www.salesforce.com/")
+    assert "https://www.salesforce.com/img/own-logo.svg" in got and "https://www.salesforce.com/img/salesforce-logo-big.png" in got
+    assert not any("volkswagen" in u for u in got)
+
+
+def test_customer_logos_on_the_same_site_and_widget_logos_are_not_taken():
+    html = ('<section><img class="logo" src="https://www.cegeka.com/hubfs/logos/Terumo-Europe.png"></section>'
+            '<div><img src="https://cdn.trustindex.io/assets/platform/Google/logo.svg"></div>'
+            '<script>{"logoUrl":"https://www.cegeka.com/news/partner-logo.png"}</script>'
+            '<header><img alt="Cegeka logo" src="/img/brand.svg"></header>')
+    got = logos.candidates(html, "https://www.cegeka.com/")
+    assert got[0] == "https://www.cegeka.com/img/brand.svg" and not any("terumo" in u.lower() for u in got)
+    assert not any("trustindex" in u or "partner-logo" in u for u in got)
+
+
+def test_a_logo_in_a_cards_header_or_named_after_two_companies_is_not_taken():
+    html = ('<main><section><header><img class="logo" src="https://cdn.example.net/card-logo-volkswagen.png">'
+            '</header></section></main><div><img class="logo" alt="logo" src="/news/volare_-_euronext_growth.png">'
+            '<img class="logo" src="/themes/euronext/logo.svg"></div>'
+            '<header><a href="/"><img class="logo" src="/themes/euronext/logo.svg"></a></header>')
+    got = logos.candidates(html, "https://www.euronext.com/")
+    assert got[0] == "https://www.euronext.com/themes/euronext/logo.svg"
+    assert not any("volkswagen" in u or "volare" in u for u in got)
+
+
+def test_a_hand_chosen_logo_for_a_dark_background_is_named_dark(tmp_path, monkeypatch):
+    from radar.config import settings
+
+    (tmp_path / "logos").mkdir()
+    (tmp_path / "logos" / "acme.dark.svg").write_text('<svg><path fill="url(#g)"/></svg>')
+    monkeypatch.setattr(settings, "data_dir", tmp_path)
+    assert logos.manual_files()["acme"].name == "acme.dark.svg"
+
+
+def test_safaris_one_colour_pinned_tab_icon_is_not_taken():
+    html = '<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#000"><link rel="icon" href="/icon-192.png" sizes="192x192">'
+    got = logos.candidates(html, "https://www.cosun.com/")
+    assert "https://www.cosun.com/icon-192.png" in got and not any("pinned" in u for u in got)

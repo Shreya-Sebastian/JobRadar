@@ -57,6 +57,8 @@ def find(entry: dict, domains: dict[str, str], client) -> tuple[str, str, tuple]
     if got and logos.quality(got[1:]) >= 100:
         return domain, got[0], got[1:]
     icon = google_icon(domain, client)
+    if icon and logos.quality(icon) < 96:
+        icon = None  # Google only had a small icon: blurred in a card
     if icon and (not got or logos.quality(icon) > logos.quality(got[1:])):
         return domain, f"google-s2:{domain}", icon
     return (domain, got[0], got[1:]) if got else None

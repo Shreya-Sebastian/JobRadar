@@ -99,7 +99,7 @@
     <div class="pop" data-pop="role" hidden><div class="field"><label data-i18n="f.role">Field</label><div class="chips toggles" id="f-roles"></div></div><div class="field"><label data-i18n="f.position">Job title</label><div class="chipinput" id="f-position"></div></div></div>
     <div class="pop" data-pop="degree" hidden><div class="field"><label data-i18n="f.degree">Education</label><div class="chips toggles" id="f-degree"></div></div></div>
     <div class="pop" data-pop="remote" hidden><div class="field"><label data-i18n="f.remote">Remote</label><div class="chips toggles" id="f-remote"></div></div></div>
-    <div class="pop" data-pop="company" hidden><div class="field"><label data-i18n="f.emp">Company size</label><div class="chips toggles" id="f-emp"></div></div><div class="field"><label data-i18n="f.sector">Sector</label><div class="chips toggles" id="f-sector"></div></div><div class="field"><label data-i18n="f.size">Open jobs at the company</label><div class="chips toggles" id="f-size"></div></div><label class="check"><input type="checkbox" id="f-agencies"> <span data-i18n="f.agencies">Hide recruitment agencies</span></label></div>
+    <div class="pop" data-pop="company" hidden><div class="field"><label data-i18n="f.emp">Company size</label><div class="chips toggles" id="f-emp"></div></div><div class="field"><label data-i18n="f.sector">Sector</label><div class="chips toggles" id="f-sector"></div></div><label class="check"><input type="checkbox" id="f-agencies"> <span data-i18n="f.agencies">Hide recruitment agencies</span></label></div>
     <div class="pop" data-pop="posted" hidden><div class="field"><label data-i18n="f.window">Date posted</label><select id="f-days"><option value="" data-i18n="f.window.all">Any time</option><option value="1" data-i18n="f.window.1">Past 24 hours</option><option value="7" data-i18n="f.window.7">Past week</option><option value="30" data-i18n="f.window.30">Past month</option><option value="90" data-i18n="f.window.90">Past 3 months</option></select></div><label class="check"><input type="checkbox" id="f-confirmed"> <span data-i18n="f.confirmed">Verified on the employer's site in the past week</span></label></div>
     <div class="pop" data-pop="more" hidden><label class="check"><input type="checkbox" id="f-noenrol"> <span data-i18n="f.noenrol">Hide internships for enrolled students only</span></label><label class="check"><input type="checkbox" id="f-saved"> <span data-i18n="f.saved">Saved jobs only</span></label></div>
   </div>
@@ -183,7 +183,6 @@
       <fieldset class="group"><legend data-i18n="p.g.employer">Employer</legend>
         <div class="field"><label data-i18n="f.sector">Sector</label><div class="chips toggles" id="p-sector"></div></div>
         <div class="field"><label data-i18n="f.emp">Company size</label><div class="chips toggles" id="p-emp"></div></div>
-        <div class="field"><label data-i18n="f.size">Open jobs at the company</label><div class="chips toggles" id="p-size"></div></div>
         <div class="field"><label data-i18n="p.exclude">Employers to hide</label><div class="chipinput" id="p-exclude"></div></div>
         <label class="check"><input type="checkbox" id="p-agencies"> <span data-i18n="p.agencies">Hide recruitment agencies</span></label>
       </fieldset>
@@ -305,6 +304,6 @@
   <p class="foot-bottom"><a href="{{PRIVACY_PATH}}" data-i18n="privacy">Privacy</a> · <a href="{{FEEDBACK_PATH}}" data-i18n="feedback">Feedback</a>{{SOURCE_LINK}}</p>
  </div>
 </footer>
-<script src="/static/app.js?v=129"></script>
+<script src="/static/app.js?v=130"></script>
 </body>
 </html>

@@ -11,7 +11,6 @@
   const REMOTE = ["remote", "hybrid", "onsite"];
   const EXP = ["none", "1", "2-3", "4-5", "6+", "unspecified"];
   const DEGREES = ["bachelor", "master", "phd", "mbo", "unstated"];
-  const SIZES = ["small", "medium", "large"];
   const EMPS = ["1-49", "50-249", "250-4999", "5000+", "unknown"];
 
   // ---------- translations ----------
@@ -113,11 +112,10 @@
       "adm.force": "Ignore the 10-minute cool-down", "adm.due": "Crawl sources that are due", "adm.one": "Crawl this employer", "adm.all": "Crawl everything",
      
       "f.exp": "Years of experience", "p.exp": "Years of experience", "mk.exp": "Years of experience", "yrs": "yrs",
-      "f.size": "Open jobs at the company", "f.sort.small": "Smallest companies first", "f.sort.large": "Largest companies first",
+      "f.sort.small": "Smallest companies first", "f.sort.large": "Largest companies first",
       "f.emp": "Company size", "f.sector": "Sector", "mk.sector": "Sectors", "f.position": "Job title", "mk.position": "Most common job titles", "ph.position": "e.g. data engineer…", "pos.unknown": "Pick a position from the list", "pos.phd_research": "PhD / research", "pos.product_manager": "Product manager", "pos.product_owner": "Product owner", "pos.scrum_agile": "Scrum master / agile coach", "pos.project_manager": "IT project / programme manager", "pos.engineering_manager": "Engineering manager", "pos.ux_designer": "UX / UI designer", "pos.security_officer": "Security officer / GRC", "pos.security_engineer": "Security engineer / analyst", "pos.data_scientist": "Data scientist", "pos.ml_engineer": "AI / ML engineer", "pos.data_consultant": "Data / AI consultant", "pos.data_architect": "Data architect", "pos.bi_analyst": "BI / data analyst", "pos.data_engineer": "Data engineer", "pos.business_analyst": "Business / IT analyst", "pos.architect": "Solution / enterprise architect", "pos.sales_engineer": "Solutions / sales engineer", "pos.low_code": "Low-code developer", "pos.embedded": "Embedded / firmware engineer", "pos.plc_automation": "PLC / industrial automation engineer", "pos.hardware": "Hardware / electronics engineer", "pos.simulation": "Simulation / modelling engineer", "pos.qa_test": "QA / test engineer", "pos.devops": "DevOps engineer", "pos.platform_sre": "Platform / SRE engineer", "pos.cloud": "Cloud engineer", "pos.network": "Network engineer", "pos.systems": "Systems / infrastructure engineer", "pos.app_admin": "Application administrator", "pos.it_support": "IT support / workplace", "pos.it_consultant": "IT / ERP consultant", "pos.mobile": "Mobile developer", "pos.frontend": "Frontend developer", "pos.fullstack": "Full-stack developer", "pos.software_engineer": "Software engineer / developer", "pos.other": "Other", "sector.software": "Software & internet", "sector.consultancy": "Consultancy & IT services", "sector.hardware": "Semiconductors & hardware", "sector.finance": "Banking, finance & insurance", "sector.pharma": "Pharma & life sciences", "sector.health": "Healthcare", "sector.government": "Government & public sector", "sector.education": "Education & research", "sector.energy": "Energy & utilities", "sector.transport": "Transport & logistics", "sector.engineering": "Engineering & construction", "sector.industry": "Industry & manufacturing", "sector.retail": "Retail & consumer goods", "sector.telecom_media": "Telecom & media", "sector.staffing": "Recruitment agencies", "sector.other": "Other",
       "emp.1-49": "1-49 employees", "emp.50-249": "50-249", "emp.250-4999": "250-4,999", "emp.5000+": "5,000+", "emp.unknown": "Unknown",
      
-      "size.small": "Under 10", "size.medium": "10-99", "size.large": "100 or more",
       "f.noenrol": "Hide internships for enrolled students only",
       "enrol.required": "enrolment required", "enrol.open": "open to graduates",
       "f.degree": "Education",
@@ -226,11 +224,10 @@
       "adm.force": "Wachttijd van 10 minuten negeren", "adm.due": "Bronnen verversen die aan de beurt zijn", "adm.one": "Deze werkgever verversen", "adm.all": "Alles verversen",
      
       "f.exp": "Jaren ervaring", "p.exp": "Jaren ervaring", "mk.exp": "Jaren ervaring", "yrs": "jr",
-      "f.size": "Openstaande vacatures bij het bedrijf", "f.sort.small": "Kleinste bedrijven eerst", "f.sort.large": "Grootste bedrijven eerst",
+      "f.sort.small": "Kleinste bedrijven eerst", "f.sort.large": "Grootste bedrijven eerst",
       "f.emp": "Bedrijfsgrootte", "f.sector": "Sector", "mk.sector": "Sectoren", "f.position": "Functietitel", "mk.position": "Meest voorkomende functietitels", "ph.position": "bijv. data engineer…", "pos.unknown": "Kies een functie uit de lijst", "pos.phd_research": "PhD / onderzoek", "pos.product_manager": "Productmanager", "pos.product_owner": "Product owner", "pos.scrum_agile": "Scrum master / agile coach", "pos.project_manager": "IT-project- / programmamanager", "pos.engineering_manager": "Engineering manager", "pos.ux_designer": "UX- / UI-designer", "pos.security_officer": "Security officer / GRC", "pos.security_engineer": "Security engineer / analist", "pos.data_scientist": "Data scientist", "pos.ml_engineer": "AI- / ML-engineer", "pos.data_consultant": "Data- / AI-consultant", "pos.data_architect": "Data-architect", "pos.bi_analyst": "BI- / data-analist", "pos.data_engineer": "Data engineer", "pos.business_analyst": "Business- / IT-analist", "pos.architect": "Solution- / enterprise-architect", "pos.sales_engineer": "Solutions- / sales engineer", "pos.low_code": "Low-code developer", "pos.embedded": "Embedded- / firmware-engineer", "pos.plc_automation": "PLC- / industriële automatisering", "pos.hardware": "Hardware- / elektronica-engineer", "pos.simulation": "Simulatie- / modelleringsengineer", "pos.qa_test": "QA- / testengineer", "pos.devops": "DevOps-engineer", "pos.platform_sre": "Platform- / SRE-engineer", "pos.cloud": "Cloud-engineer", "pos.network": "Netwerkengineer", "pos.systems": "Systeem- / infrastructuurengineer", "pos.app_admin": "Applicatie- / functioneel beheerder", "pos.it_support": "IT-support / werkplek", "pos.it_consultant": "IT- / ERP-consultant", "pos.mobile": "Mobiele developer", "pos.frontend": "Frontend developer", "pos.fullstack": "Full-stack developer", "pos.software_engineer": "Software engineer / developer", "pos.other": "Overig", "sector.software": "Software & internet", "sector.consultancy": "Consultancy & IT-dienstverlening", "sector.hardware": "Halfgeleiders & hardware", "sector.finance": "Bank, financiën & verzekeringen", "sector.pharma": "Farma & life sciences", "sector.health": "Zorg", "sector.government": "Overheid & publieke sector", "sector.education": "Onderwijs & onderzoek", "sector.energy": "Energie & nutsbedrijven", "sector.transport": "Transport & logistiek", "sector.engineering": "Ingenieursdiensten & bouw", "sector.industry": "Industrie & productie", "sector.retail": "Retail & consumentengoederen", "sector.telecom_media": "Telecom & media", "sector.staffing": "Werving & detachering", "sector.other": "Overig",
       "emp.1-49": "1-49 medewerkers", "emp.50-249": "50-249", "emp.250-4999": "250-4.999", "emp.5000+": "5.000+", "emp.unknown": "Onbekend",
      
-      "size.small": "Minder dan 10", "size.medium": "10-99", "size.large": "100 of meer",
       "f.noenrol": "Stages alleen voor ingeschreven studenten verbergen",
       "enrol.required": "inschrijving vereist", "enrol.open": "ook voor afgestudeerden",
       "f.degree": "Opleiding",
@@ -317,7 +314,6 @@
   const remoteLabel = (r) => t("remote." + r);
   const expLabel = (e) => t("exp." + e);
   const degreeLabel = (d) => t("deg." + d);
-  const sizeLabel = (z) => t("size." + z);
   const empLabel = (e) => t("emp." + e);
   const sectorLabel = (s) => t("sector." + s);
   // the employer's sector as a small icon on a tint of its own colour: the card's marker when there is no logo
@@ -378,7 +374,7 @@
   }
 
   // ---------- state ----------
-  const emptyProfile = () => ({ roles: [], positions: [], levels: [], exp: [], degrees: [], emps: [], sectors: [], sizes: [], remote: [], cities: [], exclude: [], skills: [],
+  const emptyProfile = () => ({ roles: [], positions: [], levels: [], exp: [], degrees: [], emps: [], sectors: [], remote: [], cities: [], exclude: [], skills: [],
     language: "", visa: false, agencies: false, noenrol: false });
   const state = {
     tab: "jobs", page: 1, size: 40, sort: "size_large", skill: null,  // larger organisations first, by default
@@ -392,7 +388,6 @@
   if (!Array.isArray(state.profile.exp)) state.profile.exp = [];
   if (!Array.isArray(state.profile.degrees)) state.profile.degrees = [];
   if (!Array.isArray(state.profile.emps)) state.profile.emps = [];
-  if (!Array.isArray(state.profile.sizes)) state.profile.sizes = [];
   let jobFilters = null;
 
   // ---------- helpers ----------
@@ -413,7 +408,6 @@
     if (p.emps.length) q.set("employees", p.emps.join(","));
     if (p.sectors && p.sectors.length) q.set("sector", p.sectors.join(","));
     if (p.positions && p.positions.length) q.set("position", p.positions.join(","));
-    if (p.sizes.length) q.set("org_size", p.sizes.join(","));
     if (p.remote.length) q.set("remote", p.remote.join(","));
     if (p.cities.length) q.set("city", p.cities.join(","));
     if (p.exclude.length) q.set("exclude_companies", p.exclude.join(","));
@@ -689,9 +683,9 @@
   // ---------- JOBS ----------
   function profileJobFilters() {
     const p = state.profile;
-    return { roles: [...p.roles], positions: [...(p.positions || [])], levels: [...p.levels], exp: [...p.exp], degrees: [...p.degrees], emps: [...p.emps], sectors: [...(p.sectors || [])], sizes: [...p.sizes], remote: [...p.remote], cities: [...p.cities], language: p.language, visa: p.visa, agencies: p.agencies, noenrol: !!p.noenrol, confirmed: false, q: "", days: "", savedOnly: false, exclude: [...p.exclude] };
+    return { roles: [...p.roles], positions: [...(p.positions || [])], levels: [...p.levels], exp: [...p.exp], degrees: [...p.degrees], emps: [...p.emps], sectors: [...(p.sectors || [])], remote: [...p.remote], cities: [...p.cities], language: p.language, visa: p.visa, agencies: p.agencies, noenrol: !!p.noenrol, confirmed: false, q: "", days: "", savedOnly: false, exclude: [...p.exclude] };
   }
-  const emptyJobFilters = () => ({ roles: [], positions: [], levels: [], exp: [], degrees: [], emps: [], sectors: [], sizes: [], remote: [], cities: [], language: "", visa: false, agencies: false, noenrol: false, confirmed: false, q: "", days: "", savedOnly: false, exclude: [] });
+  const emptyJobFilters = () => ({ roles: [], positions: [], levels: [], exp: [], degrees: [], emps: [], sectors: [], remote: [], cities: [], language: "", visa: false, agencies: false, noenrol: false, confirmed: false, q: "", days: "", savedOnly: false, exclude: [] });
   // the Jobs tab opens with the saved profile's filters. "Reset filters" turns that off for this browser (it is
   // remembered, so a reload does not bring them back); "Use my profile" and saving the profile turn it on again.
   function currentJobFilters() {
@@ -702,7 +696,7 @@
     const list = (k) => (q.get(k) || "").split(",").map((s) => s.trim()).filter(Boolean);
     return Object.assign(emptyJobFilters(), {
       roles: list("role"), positions: list("position"), levels: list("seniority"), exp: list("experience"), degrees: list("degree"),
-      emps: list("employees"), sectors: list("sector"), sizes: list("org_size"), remote: list("remote"), cities: list("city"),
+      emps: list("employees"), sectors: list("sector"), remote: list("remote"), cities: list("city"),
       exclude: list("exclude_companies"), language: q.get("language") || "", visa: q.get("sponsorship") === "true",
       agencies: q.get("exclude_agencies") === "true", noenrol: q.get("enrollment") === "open", confirmed: !!q.get("confirmed_days"),
       q: q.get("q") || "", days: q.get("days") || "", savedOnly: q.get("saved") === "1",
@@ -734,7 +728,6 @@
     if (f.emps.length) q.set("employees", f.emps.join(","));
     if (f.sectors && f.sectors.length) q.set("sector", f.sectors.join(","));
     if (f.positions && f.positions.length) q.set("position", f.positions.join(","));
-    if (f.sizes.length) q.set("org_size", f.sizes.join(","));
     if (f.remote.length) q.set("remote", f.remote.join(","));
     if (f.cities.length) q.set("city", f.cities.join(","));
     if (f.exclude && f.exclude.length) q.set("exclude_companies", f.exclude.join(","));
@@ -753,7 +746,7 @@
   const PILL_COUNTS = {
     lang: (f) => (f.language ? 1 : 0), exp: (f) => f.exp.length + f.levels.length,
     role: (f) => f.roles.length + (f.positions || []).length, degree: (f) => f.degrees.length, remote: (f) => f.remote.length,
-    company: (f) => f.emps.length + f.sectors.length + f.sizes.length + (f.agencies ? 1 : 0),
+    company: (f) => f.emps.length + f.sectors.length + (f.agencies ? 1 : 0),
     posted: (f) => (f.days ? 1 : 0) + (f.confirmed ? 1 : 0), more: (f) => (f.noenrol ? 1 : 0) + (f.savedOnly ? 1 : 0),
   };
   function paintPills() {
@@ -798,7 +791,6 @@
     toggles($("#f-degree"), DEGREES, f.degrees, degreeLabel, () => refreshJobs(true));
     toggles($("#f-sector"), state.options.sectors, f.sectors, sectorLabel, () => refreshJobs(true));
     toggles($("#f-emp"), EMPS, f.emps, empLabel, () => refreshJobs(true));
-    toggles($("#f-size"), SIZES, f.sizes, sizeLabel, () => refreshJobs(true));
     toggles($("#f-remote"), REMOTE, f.remote, remoteLabel, () => refreshJobs(true));
     chipInput($("#f-cities"), f.cities, [...state.options.cities, "Remote"], () => refreshJobs(true), t("ph.city"), null, cityLabel);
     $("#f-language").value = f.language || ""; $("#f-visa").checked = f.visa; $("#f-agencies").checked = f.agencies; $("#f-noenrol").checked = !!f.noenrol; $("#f-confirmed").checked = !!f.confirmed;
@@ -1083,7 +1075,6 @@
     if (!p.sectors) p.sectors = [];
     toggles($("#p-sector"), state.options.sectors, p.sectors, sectorLabel);
     toggles($("#p-emp"), EMPS, p.emps, empLabel);
-    toggles($("#p-size"), SIZES, p.sizes, sizeLabel);
     toggles($("#p-remote"), REMOTE, p.remote, remoteLabel);
     chipInput($("#p-cities"), p.cities, [...state.options.cities, "Remote"], null, t("ph.city"), null, cityLabel);
     chipInput($("#p-exclude"), p.exclude, [], null, t("ph.employer"));

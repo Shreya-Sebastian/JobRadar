@@ -1086,13 +1086,16 @@
       const fixed = []; p.skills.forEach((s) => { const c = m[s] || s; if (!fixed.includes(c)) fixed.push(c); });
       if (JSON.stringify(fixed) !== JSON.stringify(p.skills)) { p.skills.splice(0, p.skills.length, ...fixed); store.set("profile", p); chipInput($("#p-skills"), p.skills, state.options.skills, null, t("ph.skill"), skillTransform); }
     });
-    $("#p-save").addEventListener("click", () => {
+    // one save for the whole profile, from the button under the preferences or the one under the skills
+    const saveProfile = (status) => {
       p.language = $("#p-language").value; p.visa = $("#p-visa").checked; p.agencies = $("#p-agencies").checked; p.noenrol = $("#p-noenrol").checked;
       delete p.english;
       store.set("profile", p); store.set("jobsUseProfile", true); jobFilters = null; beacon("profile_save");
-      $("#p-status").textContent = t("p.saved.status"); setTimeout(() => $("#p-status").textContent = "", 3000);
+      status.textContent = t("p.saved.status"); setTimeout(() => status.textContent = "", 3000);
       loadHeader();
-    });
+    };
+    $("#p-save").addEventListener("click", () => saveProfile($("#p-status")));
+    $("#p-save-skills").addEventListener("click", () => saveProfile($("#p-skills-status")));
     $("#p-reset").addEventListener("click", () => { state.profile = emptyProfile(); store.set("profile", state.profile); jobFilters = null; renderProfile(); });
     $("#p-export").addEventListener("click", () => {
       const blob = new Blob([JSON.stringify({ profile: state.profile, saved: state.saved }, null, 2)], { type: "application/json" });

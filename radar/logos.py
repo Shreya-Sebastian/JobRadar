@@ -310,7 +310,8 @@ def refresh(session, limit: int = 120, now: datetime | None = None, client: http
         if not company:
             continue
         total[company] = total.get(company, 0) + n
-        own = kind == "employer" or slug_of(source_company or "") == slug_of(company)
+        # "Fridayrecruitment" and "Friday Recruitment" are one name: compare without spaces and dashes
+        own = kind == "employer" or slug_of(source_company or "").replace("-", "") == slug_of(company).replace("-", "")
         cand = (ats, slug, url, n) if own else (None, None, None, 0)
         if company not in best or cand[3] > best[company][3]:
             best[company] = cand

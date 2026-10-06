@@ -168,9 +168,9 @@ class Filters:
     sector: str | None = None  # comma list of radar.sectors.SECTORS: the employer's sector
     position: str | None = None  # comma list of radar.positions.POSITIONS: the position type of the title
     exclude_ids: str | None = None  # posting ids to leave out (the ones a visitor opened or applied to)
-    commute_from: str | None = None  # a job city: keep jobs within commute_max train minutes (radar/commute.py)
-    commute_max: int | None = None
-    commute_remote: bool = True  # with a commute filter, keep remote jobs too
+    distance_from: str | None = None  # a job city: keep jobs within distance_km of it (radar/distance.py)
+    distance_km: int | None = None
+    distance_remote: bool = True  # with a distance filter, keep remote jobs too
 
     def apply(self, rows: list[Row]) -> list[Row]:
         out = rows
@@ -179,14 +179,15 @@ class Filters:
         if self.ids:
             wanted = {int(i) for i in self.ids.split(",") if i.strip().isdigit()}
             out = [r for r in out if r.id in wanted]
-        if self.commute_from and self.commute_max:
-            from radar.commute import minutes
+        if self.distance_from and self.distance_km:
+            from radar.distance import km
 
             def near(r) -> bool:
-                if r.remote or r.ex.get("remote_policy") == "remote":
-                    return self.commute_remote
-                t = minutes(self.commute_from, r.city)
-                return t is not None and t <= self.commute_max
+                policy = r.ex.get("remote_policy") or ("remote" if r.remote else "")
+                if policy == "remote":  # hybrid and on-site jobs still need the office to be near
+                    return self.distance_remote
+                d = km(self.distance_from, r.city)
+                return d is not None and d <= self.distance_km
 
             out = [r for r in out if near(r)]
         if self.exclude_ids:

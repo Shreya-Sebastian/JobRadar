@@ -34,7 +34,7 @@
       "f.language": "Language", "f.language.any": "All jobs", "f.language.nl": "Dutch-speaking jobs", "f.language.en": "No Dutch required", "f.language.hint": "\"No Dutch required\" hides jobs that ask for Dutch.",
       "f.sort": "Sort by", "f.sort.newest": "Most recent", "f.sort.match": "Best match", "f.role": "Field", "f.level": "Experience level", "f.remote": "Remote",
       "f.cities": "Cities", "f.visa": "Can sponsor a visa (mentioned, or a recognised sponsor)", "f.agencies": "Hide recruitment agencies", 
-      "pill.commute": "Commute", "f.commute.from": "From", "f.commute.none": "Any place", "f.commute.max": "Travel time by train", "f.commute.30": "Up to 30 minutes", "f.commute.45": "Up to 45 minutes", "f.commute.60": "Up to an hour", "f.commute.90": "Up to an hour and a half", "f.commute.remote": "Include remote jobs", "f.commute.note": "Estimated station-to-station times by train between city centres.", "commute.min": "~{m} min by train", "ss.commute": "{m} min from {c}", "f.saved": "Saved jobs only", "f.hideseen": "Hide jobs I've opened", "f.hideapplied": "Hide jobs I've applied to or archived", "f.skill": "Skill", "quiz.open": "Quick start", "f.reset": "Clear filters", "f.profile": "Use my profile",
+      "pill.distance": "Distance", "f.distance.from": "From", "f.distance.none": "Any place", "f.distance.km": "Distance", "f.distance.10": "Within 10 km", "f.distance.25": "Within 25 km", "f.distance.50": "Within 50 km", "f.distance.100": "Within 100 km", "f.distance.remote": "Include remote jobs", "f.distance.note": "Straight-line distance between city centres.", "distance.km": "{k} km", "ss.distance": "within {k} km of {c}", "f.saved": "Saved jobs only", "f.hideseen": "Hide jobs I've opened", "f.hideapplied": "Hide jobs I've applied to or archived", "f.skill": "Skill", "quiz.open": "Quick start", "f.reset": "Clear filters", "f.profile": "Use my profile",
       "th.age": "Posted", "th.title": "Title", "th.company": "Company", "th.city": "City", "th.level": "Level", "th.exp": "Experience", "expcell.none": "None required", "th.skills": "Skills",
       "th.match": "Match", "th.lang": "Language", "th.visa": "Visa", "th.employer": "Employer", "th.open": "Open tech roles", "th.share": "Share",
       "th.sector": "Sector", "th.status": "Status", "th.livetech": "Live tech postings", "th.platform": "Platform", "th.kind": "Kind", "th.postings": "Postings",
@@ -147,7 +147,7 @@
       "f.language": "Taal", "f.language.any": "Alle vacatures", "f.language.nl": "Nederlandstalige vacatures", "f.language.en": "Geen Nederlands vereist", "f.language.hint": "\"Geen Nederlands vereist\" verbergt vacatures die om Nederlands vragen.",
       "f.sort": "Sorteren op", "f.sort.newest": "Meest recent", "f.sort.match": "Beste match", "f.role": "Vakgebied", "f.level": "Ervaringsniveau", "f.remote": "Remote",
       "f.cities": "Steden", "f.visa": "Kan een visum sponsoren (genoemd, of erkend referent)", "f.agencies": "Wervingsbureaus verbergen", 
-      "pill.commute": "Reistijd", "f.commute.from": "Vanaf", "f.commute.none": "Elke plaats", "f.commute.max": "Reistijd met de trein", "f.commute.30": "Tot 30 minuten", "f.commute.45": "Tot 45 minuten", "f.commute.60": "Tot een uur", "f.commute.90": "Tot anderhalf uur", "f.commute.remote": "Ook remote vacatures", "f.commute.note": "Geschatte reistijden met de trein, van station tot station tussen de stadscentra.", "commute.min": "~{m} min met de trein", "ss.commute": "{m} min vanaf {c}", "f.saved": "Alleen bewaarde vacatures", "f.hideseen": "Vacatures verbergen die ik heb geopend", "f.hideapplied": "Vacatures verbergen waarop ik heb gesolliciteerd of die ik heb gearchiveerd", "f.skill": "Skill", "quiz.open": "Snel starten", "f.reset": "Filters wissen", "f.profile": "Mijn profiel gebruiken",
+      "pill.distance": "Afstand", "f.distance.from": "Vanaf", "f.distance.none": "Elke plaats", "f.distance.km": "Afstand", "f.distance.10": "Binnen 10 km", "f.distance.25": "Binnen 25 km", "f.distance.50": "Binnen 50 km", "f.distance.100": "Binnen 100 km", "f.distance.remote": "Ook remote vacatures", "f.distance.note": "Hemelsbreed, tussen de stadscentra.", "distance.km": "{k} km", "ss.distance": "binnen {k} km van {c}", "f.saved": "Alleen bewaarde vacatures", "f.hideseen": "Vacatures verbergen die ik heb geopend", "f.hideapplied": "Vacatures verbergen waarop ik heb gesolliciteerd of die ik heb gearchiveerd", "f.skill": "Skill", "quiz.open": "Snel starten", "f.reset": "Filters wissen", "f.profile": "Mijn profiel gebruiken",
       "th.age": "Geplaatst", "th.title": "Functie", "th.company": "Werkgever", "th.city": "Plaats", "th.level": "Niveau", "th.exp": "Ervaring", "expcell.none": "Niet vereist", "th.skills": "Skills",
       "th.match": "Match", "th.lang": "Taal", "th.visa": "Visum", "th.employer": "Werkgever", "th.open": "Open techvacatures", "th.share": "Aandeel",
       "th.sector": "Sector", "th.status": "Status", "th.livetech": "Open techvacatures", "th.platform": "Platform", "th.kind": "Soort", "th.postings": "Vacatures",
@@ -721,7 +721,7 @@
       agencies: q.get("exclude_agencies") === "true", noenrol: q.get("enrollment") === "open", confirmed: !!q.get("confirmed_days"),
       q: q.get("q") || "", days: q.get("days") || "", savedOnly: q.get("saved") === "1",
       hideSeen: (q.get("hide") || "").split(",").includes("seen"), hideApplied: (q.get("hide") || "").split(",").includes("applied"),
-      commuteFrom: q.get("commute_from") || "", commuteMax: q.get("commute_max") || "60", commuteRemote: q.get("commute_remote") !== "false",
+      distanceFrom: q.get("distance_from") || "", distanceKm: q.get("distance_km") || "25", distanceRemote: q.get("distance_remote") !== "false",
     });
   }
   // the current search as a link, so it can be bookmarked or shared (saved jobs stay out of it: they are personal)
@@ -763,9 +763,9 @@
     if (f.q) q.set("q", f.q);
     if (f.days) q.set("days", f.days);
     if (f.savedOnly) q.set("ids", state.saved.join(",") || "0");
-    if (f.commuteFrom) {
-      q.set("commute_from", f.commuteFrom); q.set("commute_max", f.commuteMax || "60");
-      if (f.commuteRemote === false) q.set("commute_remote", "false");
+    if (f.distanceFrom) {
+      q.set("distance_from", f.distanceFrom); q.set("distance_km", f.distanceKm || "25");
+      if (f.distanceRemote === false) q.set("distance_remote", "false");
     }
     // the opened jobs, and the ones moved to Applied or Archived on the board, when the visitor hides them
     const out = [...(f.hideSeen ? state.seen : []),
@@ -777,7 +777,7 @@
   // how many choices each filter pill holds (the pill is highlighted and shows the number)
   const PILL_COUNTS = {
     lang: (f) => (f.language ? 1 : 0), exp: (f) => f.exp.length + f.levels.length,
-    role: (f) => f.roles.length + (f.positions || []).length, degree: (f) => f.degrees.length, commute: (f) => (f.commuteFrom ? 1 : 0), remote: (f) => f.remote.length,
+    role: (f) => f.roles.length + (f.positions || []).length, degree: (f) => f.degrees.length, distance: (f) => (f.distanceFrom ? 1 : 0), remote: (f) => f.remote.length,
     company: (f) => f.emps.length + f.sectors.length + (f.agencies ? 1 : 0),
     posted: (f) => (f.days ? 1 : 0) + (f.confirmed ? 1 : 0), more: (f) => (f.noenrol ? 1 : 0) + (f.savedOnly ? 1 : 0) + (f.hideSeen ? 1 : 0) + (f.hideApplied ? 1 : 0),
   };
@@ -828,7 +828,7 @@
     $("#f-language").value = f.language || ""; $("#f-visa").checked = f.visa; $("#f-agencies").checked = f.agencies; $("#f-noenrol").checked = !!f.noenrol; $("#f-confirmed").checked = !!f.confirmed;
     $("#f-saved").checked = f.savedOnly; $("#f-q").value = f.q; $("#f-days").value = f.days;
     $("#f-hideseen").checked = !!f.hideSeen; $("#f-hideapplied").checked = !!f.hideApplied;
-    fillCommute(f);
+    fillDistance(f);
     $("#f-sort").value = state.sort;
     paintPills();
     if (!jobsBuilt) {
@@ -838,9 +838,9 @@
        ["#f-hideseen", "hideSeen"], ["#f-hideapplied", "hideApplied"]]
         .forEach(([id, key]) => $(id).addEventListener("change", (e) => { currentJobFilters()[key] = e.target.checked; refreshJobs(true); }));
       $("#f-language").addEventListener("change", (e) => { currentJobFilters().language = e.target.value; refreshJobs(true); });
-      $("#f-commute-from").addEventListener("change", (e) => { currentJobFilters().commuteFrom = e.target.value; loadCommute().then(() => refreshJobs(true)); });
-      $("#f-commute-max").addEventListener("change", (e) => { currentJobFilters().commuteMax = e.target.value; refreshJobs(true); });
-      $("#f-commute-remote").addEventListener("change", (e) => { currentJobFilters().commuteRemote = e.target.checked; refreshJobs(true); });
+      $("#f-distance-from").addEventListener("change", (e) => { currentJobFilters().distanceFrom = e.target.value; loadDistances().then(() => refreshJobs(true)); });
+      $("#f-distance-km").addEventListener("change", (e) => { currentJobFilters().distanceKm = e.target.value; refreshJobs(true); });
+      $("#f-distance-remote").addEventListener("change", (e) => { currentJobFilters().distanceRemote = e.target.checked; refreshJobs(true); });
       $("#f-days").addEventListener("change", (e) => { currentJobFilters().days = e.target.value; refreshJobs(true); });
       $("#f-sort").addEventListener("change", (e) => { state.sort = e.target.value; refreshJobs(true); });
       let tm; $("#f-q").addEventListener("input", (e) => { clearTimeout(tm); tm = setTimeout(() => { currentJobFilters().q = e.target.value.trim(); refreshJobs(true); }, 350); });
@@ -928,30 +928,30 @@
   const cap = (s) => s ? s[0].toUpperCase() + s.slice(1) : s;
   // one job: the employer's logo (its sector's icon where it has none), title, employer and place, then one line of what the posting asks, then the skills as quiet text.
   // Colour only where it decides: green when no Dutch is needed, orange when it mentions visa sponsorship.
-  // the commute filter: the place list comes from the travel-time table, and the cards show the time from that place
-  let commuteOrigins = null, commuteTimes = { from: null, minutes: {} };
-  async function fillCommute(f) {
-    const sel = $("#f-commute-from");
-    if (!commuteOrigins) {
-      commuteOrigins = api("/api/commute").then((d) => d.origins, () => []).then((list) => {
+  // the distance filter: the place list comes from the server, and the cards show how far each job is from that place
+  let distanceOrigins = null, distances = { from: null, km: {} };
+  async function fillDistance(f) {
+    const sel = $("#f-distance-from");
+    if (!distanceOrigins) {
+      distanceOrigins = api("/api/distance").then((d) => d.origins, () => []).then((list) => {
         sel.insertAdjacentHTML("beforeend", list.map((c) => `<option value="${esc(c)}">${esc(cityLabel(c))}</option>`).join(""));
       });
     }
-    await commuteOrigins;
-    sel.value = f.commuteFrom || ""; $("#f-commute-max").value = f.commuteMax || "60"; $("#f-commute-remote").checked = f.commuteRemote !== false;
-    if (f.commuteFrom) await loadCommute();
+    await distanceOrigins;
+    sel.value = f.distanceFrom || ""; $("#f-distance-km").value = f.distanceKm || "25"; $("#f-distance-remote").checked = f.distanceRemote !== false;
+    if (f.distanceFrom) await loadDistances();
   }
-  async function loadCommute() {
-    const from = currentJobFilters().commuteFrom;
-    if (!from) { commuteTimes = { from: null, minutes: {} }; return; }
-    if (commuteTimes.from === from) return;
-    try { commuteTimes = { from, minutes: (await api("/api/commute", new URLSearchParams({ from }))).minutes }; }
-    catch { commuteTimes = { from: null, minutes: {} }; }
+  async function loadDistances() {
+    const from = currentJobFilters().distanceFrom;
+    if (!from) { distances = { from: null, km: {} }; return; }
+    if (distances.from === from) return;
+    try { distances = { from, km: (await api("/api/distance", new URLSearchParams({ from }))).km }; }
+    catch { distances = { from: null, km: {} }; }
   }
   function jobCard(i) {
     const have = state.profile.skills, saved = state.saved.includes(i.id);
-    const travel = commuteTimes.from && i.city && commuteTimes.minutes[i.city] != null && currentJobFilters().commuteFrom
-      ? ` · ${t("commute.min", { m: commuteTimes.minutes[i.city] })}` : "";
+    const away = distances.from && currentJobFilters().distanceFrom ? distances.km[i.city] : null;
+    const travel = away ? ` · ${t("distance.km", { k: away })}` : "";  // nothing for the chosen city itself
     const place = (i.city ? cityLabel(i.city) : (i.remote ? t("remote.label") : "")) + travel;
     const more = i.also_in && i.also_in.length ? ` <span class="more-cities" title="${esc(t("also.in", { c: i.also_in.map(cityLabel).join(", ") }))}">+${i.also_in.length}</span>` : "";
     const policy = i.remote_policy && i.remote_policy !== "onsite" && i.remote_policy !== "unknown" ? remoteLabel(i.remote_policy) : "";
@@ -1526,7 +1526,7 @@
     if (f.roles.length) parts.push(f.roles.slice(0, 2).map(roleLabel).join(", "));
     if (f.cities.length) parts.push(f.cities.slice(0, 2).map(cityLabel).join(", "));
     if (f.remote.includes("remote")) parts.push(t("remote.label"));
-    if (f.commuteFrom) parts.push(t("ss.commute", { m: f.commuteMax || 60, c: cityLabel(f.commuteFrom) }));
+    if (f.distanceFrom) parts.push(t("ss.distance", { k: f.distanceKm || 25, c: cityLabel(f.distanceFrom) }));
     if (f.language === "en") parts.push(t("fact.nodutch"));
     if (f.visa) parts.push(t("fact.visa"));
     if (f.q) parts.push(`"${f.q}"`);

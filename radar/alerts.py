@@ -62,9 +62,9 @@ def search_filters(query: str, since: datetime) -> stats.Filters:
     q = {k: v[-1] for k, v in parse_qs(query or "", keep_blank_values=False).items()}
     kw = {k: v for k, v in q.items() if k in _SEARCH_KEYS and v}
     kw.update({k: True for k in _SEARCH_FLAGS if q.get(k) == "true"})
-    if q.get("commute_from") and q.get("commute_max", "").isdigit():  # travel time from a place (radar/commute.py)
-        kw.update(commute_from=q["commute_from"], commute_max=int(q["commute_max"]),
-                  commute_remote=q.get("commute_remote") != "false")
+    if q.get("distance_from") and q.get("distance_km", "").isdigit():  # distance from a place (radar/distance.py)
+        kw.update(distance_from=q["distance_from"], distance_km=int(q["distance_km"]),
+                  distance_remote=q.get("distance_remote") != "false")
     return stats.Filters(**kw, since=since.isoformat())
 
 

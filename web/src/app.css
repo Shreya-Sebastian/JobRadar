@@ -336,7 +336,7 @@
   .pill[data-pop="role"] { --pc: var(--c-violet); --pb: var(--c-violet-bg); }
   .pill[data-pop="degree"] { --pc: var(--c-rose); --pb: var(--c-rose-bg); }
   .pill[data-pop="remote"] { --pc: var(--c-teal); --pb: var(--c-teal-bg); }
-  .pill[data-pop="commute"] { --pc: var(--c-sky); --pb: var(--c-sky-bg); }
+  .pill[data-pop="distance"] { --pc: var(--c-sky); --pb: var(--c-sky-bg); }
   .pill[data-pop="company"] { --pc: var(--c-violet); --pb: var(--c-violet-bg); }
   .pill[data-pop="posted"] { --pc: var(--c-sky); --pb: var(--c-sky-bg); }
   .pill.on, .pill:has(input:checked) { color: var(--pc, var(--accent)); border-color: var(--pc, var(--accent));

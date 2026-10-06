@@ -58,7 +58,7 @@
       --c-violet-bg: oklch(0.31 0.045 305); --c-rose-bg: oklch(0.31 0.045 12);
       --c-amber-bg: oklch(0.31 0.045 70);
       --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
-      --hero-bg: linear-gradient(135deg, color-mix(in oklab, #34d399 27%, #131c2e) 0%, color-mix(in oklab, #2dd4bf 22%, #131c2e) 50%, color-mix(in oklab, #38bdf8 24%, #131c2e) 100%);
+      --hero-bg: linear-gradient(135deg, color-mix(in oklab, #34d399 22%, #131c2e) 0%, color-mix(in oklab, #2dd4bf 17%, #131c2e) 50%, color-mix(in oklab, #38bdf8 19%, #131c2e) 100%);
       --c-sky: oklch(0.8 0.1 235); --c-indigo: oklch(0.8 0.1 275); --c-teal: oklch(0.8 0.1 190); --c-emerald: oklch(0.8 0.1 160); --c-violet: oklch(0.8 0.1 305);
       --hero-a: #064e3b; --hero-b: #065f46; --hero-c: #164e63; --faint: #7f8da3; --logo-edge: #475569;
       --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
@@ -77,7 +77,7 @@
       --c-violet-bg: oklch(0.31 0.045 305); --c-rose-bg: oklch(0.31 0.045 12);
       --c-amber-bg: oklch(0.31 0.045 70);
       --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
-      --hero-bg: linear-gradient(135deg, color-mix(in oklab, #34d399 27%, #131c2e) 0%, color-mix(in oklab, #2dd4bf 22%, #131c2e) 50%, color-mix(in oklab, #38bdf8 24%, #131c2e) 100%);
+      --hero-bg: linear-gradient(135deg, color-mix(in oklab, #34d399 22%, #131c2e) 0%, color-mix(in oklab, #2dd4bf 17%, #131c2e) 50%, color-mix(in oklab, #38bdf8 19%, #131c2e) 100%);
       --c-sky: oklch(0.8 0.1 235); --c-indigo: oklch(0.8 0.1 275); --c-teal: oklch(0.8 0.1 190); --c-emerald: oklch(0.8 0.1 160); --c-violet: oklch(0.8 0.1 305);
       --hero-a: #064e3b; --hero-b: #065f46; --hero-c: #164e63; --faint: #7f8da3; --logo-edge: #475569;
       --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);

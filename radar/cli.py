@@ -554,6 +554,32 @@ def cmd_eval(args: argparse.Namespace) -> None:
         sys.exit(1)
 
 
+def cmd_logo_gaps(args: argparse.Namespace) -> None:
+    """The top employers by live tech jobs, with their logo status and pages, as JSON (for scripts/logo_gaps.py)."""
+    import json
+
+    from sqlalchemy import func, select
+
+    from radar import logos
+    from radar.db import init_db, session_scope
+    from radar.models import CompanyLogo, Posting, Source
+
+    init_db()
+    with session_scope() as s:
+        rows = s.execute(select(Posting.company, func.count(Posting.id)).where(
+            Posting.closed_at.is_(None), Posting.is_tech.is_(True), Posting.duplicate_of.is_(None))
+            .group_by(Posting.company).order_by(func.count(Posting.id).desc()).limit(args.top)).all()
+        status = dict(s.execute(select(CompanyLogo.company, CompanyLogo.status)).all())
+        out = []
+        for company, jobs in rows:
+            pages = {logos.board_url(a, sl, u) for a, sl, u in s.execute(
+                select(Source.ats, Source.slug, Source.url).join(Posting, Posting.source_id == Source.id)
+                .where(Posting.company == company, Source.kind == "employer").distinct()).all()}
+            out.append({"company": company, "jobs": jobs, "status": status.get(company),
+                        "pages": sorted(p for p in pages if p)})
+    print(json.dumps(out, ensure_ascii=False))
+
+
 def cmd_logos(args: argparse.Namespace) -> None:
     """Look up employer logos now (the worker does a batch daily)."""
     from radar import logos
@@ -785,6 +811,9 @@ def main(argv: list[str] | None = None) -> None:
     p.set_defaults(fn=cmd_register_probed)
 
     sub.add_parser("sectors", help="recompute every employer's sector").set_defaults(fn=cmd_sectors)
+    p = sub.add_parser("logo-gaps", help="top employers with their logo status, as JSON")
+    p.add_argument("--top", type=int, default=500)
+    p.set_defaults(fn=cmd_logo_gaps)
     p = sub.add_parser("logos", help="look up employer logos for the job cards")
     p.add_argument("--limit", type=int, default=120)
     p.add_argument("--retry-missing", action="store_true", help="look again for employers that have none")

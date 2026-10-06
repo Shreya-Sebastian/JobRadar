@@ -7,7 +7,6 @@
   const palette = [css("--accent") || "#047857", css("--accent-2") || "#f97316", "#2a6f97", "#8e44ad", "#c0392b", "#16a085", "#f39c12", "#34495e",
     "#7f8c8d", "#27ae60", "#d35400", "#2980b9"];
   // the site's colour set, for charts that show one colour per item (the same tokens as the tags and tabs)
-  const SPREAD = ["--accent", "--c-sky", "--c-violet", "--c-teal", "--c-indigo", "--c-rose"].map((v) => css(v));
   const LEVELS = ["intern", "trainee", "junior", "medior", "senior", "lead", "staff", "manager"];
   const REMOTE = ["remote", "hybrid", "onsite"];
   const EXP = ["none", "1", "2-3", "4-5", "6+", "unspecified"];
@@ -18,14 +17,14 @@
   // ---------- translations ----------
   const I18N = {
     en: {
-      "tab.overview": "Overview", "tab.jobs": "Jobs", "tab.market": "Market", "tab.profile": "Profile",
+      "tab.overview": "Overview", "tab.jobs": "Discover", "tab.market": "Market", "tab.profile": "Profile",
       
       
-      "ov.skills": "Most requested skills",
+      "ov.skills": "Most requested skills", "key.yours": "In your profile",
       "rep.title": "Weekly market report", "rep.open": "View full report →", "rep.range": "Jobs posted {a} to {b}, compared with the previous week",
       "rep.new": "new jobs", "rep.before": "the week before: {n}", "rep.nodutch": "no Dutch required", "rep.visa": "mention visa sponsorship",
       "rep.salary": "median stated salary", "rep.skills": "Most requested skills", "rep.positions": "Most common job titles", "rep.change": "change in share compared with the previous week",
-      "tab.tracker": "My jobs", "tr.title": "My jobs", "tr.hint": "Save jobs with the star, then move them along as your application progresses.", "col.saved": "Saved", "col.interested": "Interested", "col.applied": "Applied", "col.archived": "Archived", "tr.move": "Move to", "tr.delete": "Remove", "tr.removed": "Job removed.", "tr.undo": "Undo", "tr.empty": "No saved jobs yet. Save a job with the star in the Jobs tab to track it here.", "tr.col.empty": "Drag a job here", "tr.applied.on": "Applied {d}", "tr.moved.on": "Since {d}", "tr.closed": "Closed", "hero.title": "Find tech jobs in the Netherlands", "hero.sub": "{n} open jobs at {c} companies · updated {d}", "foot.tag": "Tech jobs in the Netherlands, read straight from employers' own career sites and updated every day.",
+      "tab.tracker": "Saved jobs", "tr.title": "Saved jobs", "tr.hint": "Save jobs with the star, then move them along as your application progresses.", "col.saved": "Saved", "col.interested": "Interested", "col.applied": "Applied", "col.archived": "Archived", "tr.move": "Move to", "tr.delete": "Remove", "tr.removed": "Job removed.", "tr.undo": "Undo", "tr.empty": "No saved jobs yet. Save a job with the star in the Jobs tab to track it here.", "tr.col.empty": "Drag a job here", "tr.applied.on": "Applied {d}", "tr.moved.on": "Since {d}", "tr.closed": "Closed", "hero.title": "Find tech jobs in the Netherlands", "hero.sub": "{n} open jobs at {c} companies · updated {d}", "foot.tag": "Tech jobs in the Netherlands, read straight from employers' own career sites and updated every day.",
       "jobs.none": "No jobs match these filters. Try removing one.", "rss.title": "Your current search as an RSS feed", "rss.label": "RSS feed of your search", "pill.lang": "Language", "pill.visa": "Visa sponsorship", "pill.exp": "Experience", "pill.level": "Experience level", "pill.role": "Field", "pill.degree": "Education", "pill.remote": "Remote", "pill.company": "Company", "pill.posted": "Date posted", "pill.more": "More", "remote.label": "Remote", "sal.from": "from {v}", "fact.noexp": "No experience required", "sal.upto": "up to {v}", "sal.title": "Salary stated in the posting (per year, gross)", "fact.visa": "Visa sponsorship", "fact.nodutch": "No Dutch required",
       "ov.graph": "Skills often requested together",
       "kpi.week": "posted in the last 7 days", "kpi.week.vs": "previous 7 days: {m}", "kpi.week.title": "Jobs posted in the last 7 days, by the date employers posted them, against the 7 days before",
@@ -40,7 +39,7 @@
       "th.age": "Posted", "th.title": "Title", "th.company": "Company", "th.city": "City", "th.level": "Level", "th.exp": "Experience", "expcell.none": "None required", "th.skills": "Skills",
       "th.match": "Match", "th.lang": "Language", "th.visa": "Visa", "th.employer": "Employer", "th.open": "Open tech roles", "th.share": "Share",
       "th.sector": "Sector", "th.status": "Status", "th.livetech": "Live tech postings", "th.platform": "Platform", "th.kind": "Kind", "th.postings": "Postings",
-      "pager.prev": "‹ Prev", "pager.next": "Next ›",
+      "pager.prev": "‹ Prev", "pager.next": "Next ›", "pager.label": "Pages",
       "mk.trend": "New postings per week", "mk.trend.hint": "and the skills you follow", "mk.cities": "Cities", "mk.seniority": "Experience level",
       "mk.roles": "Field", "mk.hiring": "Who is hiring", "mk.salary": "Salaries (where stated)", "mk.salary.hint": "per year",
       "mk.lang": "Job ad language", "mk.remote": "Remote work",
@@ -132,14 +131,14 @@
      
     },
     nl: {
-      "tab.overview": "Overzicht", "tab.jobs": "Vacatures", "tab.market": "Markt", "tab.profile": "Profiel",
+      "tab.overview": "Overzicht", "tab.jobs": "Ontdekken", "tab.market": "Markt", "tab.profile": "Profiel",
       
       
-      "ov.skills": "Meest gevraagde skills",
+      "ov.skills": "Meest gevraagde skills", "key.yours": "In je profiel",
       "rep.title": "Wekelijks marktrapport", "rep.open": "Volledig rapport bekijken →", "rep.range": "Vacatures geplaatst van {a} tot {b}, vergeleken met de week ervoor",
       "rep.new": "nieuwe vacatures", "rep.before": "de week ervoor: {n}", "rep.nodutch": "geen Nederlands vereist", "rep.visa": "noemen visumsponsoring",
       "rep.salary": "mediaan vermeld salaris", "rep.skills": "Meest gevraagde skills", "rep.positions": "Meest voorkomende functietitels", "rep.change": "verschil in aandeel met de week ervoor",
-      "tab.tracker": "Mijn vacatures", "tr.title": "Mijn vacatures", "tr.hint": "Bewaar vacatures met de ster en verplaats ze naarmate je sollicitatie vordert.", "col.saved": "Bewaard", "col.interested": "Interessant", "col.applied": "Gesolliciteerd", "col.archived": "Gearchiveerd", "tr.move": "Verplaats naar", "tr.delete": "Verwijderen", "tr.removed": "Vacature verwijderd.", "tr.undo": "Ongedaan maken", "tr.empty": "Nog geen bewaarde vacatures. Bewaar een vacature met de ster in het tabblad Vacatures om hem hier te volgen.", "tr.col.empty": "Sleep een vacature hierheen", "tr.applied.on": "Gesolliciteerd {d}", "tr.moved.on": "Sinds {d}", "tr.closed": "Gesloten", "hero.title": "Vind techvacatures in Nederland", "hero.sub": "{n} open vacatures bij {c} bedrijven · bijgewerkt {d}", "foot.tag": "Techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers en elke dag bijgewerkt.",
+      "tab.tracker": "Bewaarde vacatures", "tr.title": "Bewaarde vacatures", "tr.hint": "Bewaar vacatures met de ster en verplaats ze naarmate je sollicitatie vordert.", "col.saved": "Bewaard", "col.interested": "Interessant", "col.applied": "Gesolliciteerd", "col.archived": "Gearchiveerd", "tr.move": "Verplaats naar", "tr.delete": "Verwijderen", "tr.removed": "Vacature verwijderd.", "tr.undo": "Ongedaan maken", "tr.empty": "Nog geen bewaarde vacatures. Bewaar een vacature met de ster in het tabblad Vacatures om hem hier te volgen.", "tr.col.empty": "Sleep een vacature hierheen", "tr.applied.on": "Gesolliciteerd {d}", "tr.moved.on": "Sinds {d}", "tr.closed": "Gesloten", "hero.title": "Vind techvacatures in Nederland", "hero.sub": "{n} open vacatures bij {c} bedrijven · bijgewerkt {d}", "foot.tag": "Techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers en elke dag bijgewerkt.",
       "jobs.none": "Geen vacatures met deze filters. Haal er een weg.", "rss.title": "Je huidige zoekopdracht als RSS-feed", "rss.label": "RSS-feed van je zoekopdracht", "pill.lang": "Taal", "pill.visa": "Visumsponsoring", "pill.exp": "Ervaring", "pill.level": "Ervaringsniveau", "pill.role": "Vakgebied", "pill.degree": "Opleiding", "pill.remote": "Remote", "pill.company": "Werkgever", "pill.posted": "Geplaatst", "pill.more": "Meer", "remote.label": "Remote", "sal.from": "vanaf {v}", "fact.noexp": "Geen ervaring vereist", "sal.upto": "tot {v}", "sal.title": "Salaris volgens de vacature (per jaar, bruto)", "fact.visa": "Visumsponsoring", "fact.nodutch": "Geen Nederlands vereist",
       "ov.graph": "Skills die vaak samen gevraagd worden",
       "kpi.week": "geplaatst in de laatste 7 dagen", "kpi.week.vs": "7 dagen daarvoor: {m}", "kpi.week.title": "Vacatures geplaatst in de laatste 7 dagen, op de datum van de werkgever, tegenover de 7 dagen daarvoor",
@@ -154,7 +153,7 @@
       "th.age": "Geplaatst", "th.title": "Functie", "th.company": "Werkgever", "th.city": "Plaats", "th.level": "Niveau", "th.exp": "Ervaring", "expcell.none": "Niet vereist", "th.skills": "Skills",
       "th.match": "Match", "th.lang": "Taal", "th.visa": "Visum", "th.employer": "Werkgever", "th.open": "Open techvacatures", "th.share": "Aandeel",
       "th.sector": "Sector", "th.status": "Status", "th.livetech": "Open techvacatures", "th.platform": "Platform", "th.kind": "Soort", "th.postings": "Vacatures",
-      "pager.prev": "‹ Vorige", "pager.next": "Volgende ›",
+      "pager.prev": "‹ Vorige", "pager.next": "Volgende ›", "pager.label": "Pagina's",
       "mk.trend": "Nieuwe vacatures per week", "mk.trend.hint": "en de skills die je volgt", "mk.cities": "Steden", "mk.seniority": "Ervaringsniveau",
       "mk.roles": "Vakgebied", "mk.hiring": "Wie neemt aan", "mk.salary": "Salarissen (indien vermeld)", "mk.salary.hint": "per jaar",
       "mk.lang": "Taal van de vacature", "mk.remote": "Remote werken",
@@ -501,9 +500,16 @@
     node.append("circle").attr("r", (d) => r(d.count)).attr("fill", (d) => have.has(d.id) ? css("--accent-2") : css("--accent"))
       .attr("stroke", css("--card")).attr("stroke-width", 1.5);
     node.append("title").text((d) => `${d.id}: ${d.count}`);
-    node.append("text").attr("dy", (d) => r(d.count) + 11).attr("text-anchor", "middle").text((d) => d.id);
+    node.append("text").attr("dy", (d) => r(d.count) + 11).attr("text-anchor", "middle").text((d) => d.id)
+      .each(function (d) { d.half = Math.max(r(d.count), this.getComputedTextLength() / 2); });  // half the label's width
+    // keep each dot and the label under it inside the frame, and draw the lines to where the dots really are
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
     sim.on("tick", () => {
-      node.attr("transform", (d) => `translate(${Math.max(20, Math.min(w - 20, d.x))},${Math.max(20, Math.min(h - 20, d.y))})`);
+      for (const d of data.nodes) {
+        d.x = clamp(d.x, d.half + 4, w - d.half - 4);
+        d.y = clamp(d.y, r(d.count) + 4, h - r(d.count) - 18);
+      }
+      node.attr("transform", (d) => `translate(${d.x},${d.y})`);
       link.attr("x1", (d) => d.source.x).attr("y1", (d) => d.source.y).attr("x2", (d) => d.target.x).attr("y2", (d) => d.target.y);
     });
   }
@@ -609,7 +615,9 @@
     const [skills, co] = await Promise.all([api("/api/skills", withParams(p, { top: 30 })), api("/api/cooccurrence", withParams(p, { top: 28 }))]);
     const have = new Set(state.profile.skills);
     barChart("ov-skills", skills.skills.map((s) => s.skill), skills.skills.map((s) => Math.round(s.share * 100)),
-      { pct: true, onClick: (s) => openJobsWithSkill(s), color: skills.skills.map((s, k) => have.has(s.skill) ? palette[1] : SPREAD[k % SPREAD.length]) });
+      { pct: true, onClick: (s) => openJobsWithSkill(s), color: skills.skills.map((s) => have.has(s.skill) ? palette[1] : palette[0]) });
+    // one colour for every skill; orange marks the ones in the visitor's profile, explained under the charts
+    $$("[data-skill-key]").forEach((k) => { k.hidden = !skills.skills.some((s) => have.has(s.skill)); });
     graph($("#ov-graph"), co, (s) => openJobsWithSkill(s));
   }
   // best matches for the profile's skills, at the top of the Profile tab
@@ -800,8 +808,11 @@
       $("#clear-skill").addEventListener("click", () => { state.skill = null; refreshJobs(true); });
       $("#f-reset").addEventListener("click", () => { store.set("jobsUseProfile", false); jobFilters = emptyJobFilters(); state.skill = null; state.sort = "size_large"; buildJobsFilters(); refreshJobs(true); });
       $("#f-profile").addEventListener("click", () => { store.set("jobsUseProfile", true); jobFilters = profileJobFilters(); state.skill = null; buildJobsFilters(); refreshJobs(true); });
-      $("#prev").addEventListener("click", () => { state.page--; refreshJobs(); });
-      $("#next").addEventListener("click", () => { state.page++; refreshJobs(); });
+      // another page: back to the top of the results, so the list starts where the eye is
+      const toPage = (n) => { state.page = n; $(".results-head").scrollIntoView({ block: "start" }); refreshJobs(); };
+      $("#prev").addEventListener("click", () => toPage(state.page - 1));
+      $("#next").addEventListener("click", () => toPage(state.page + 1));
+      $("#pages").addEventListener("click", (e) => { const b = e.target.closest("button[data-page]"); if (b) toPage(Number(b.dataset.page)); });
       $("#postings").addEventListener("click", (e) => { const b = e.target.closest(".star"); if (b) toggleSaved(Number(b.dataset.id), b); });
     }
   }
@@ -853,7 +864,14 @@
   function showJobs(d) {
     const pages = Math.max(1, Math.ceil(d.total / d.size));
     $("#count").textContent = d.total === 1 ? t("jobs.match.one") : t("jobs.match", { n: fmt(d.total) });
-    $("#page-info").textContent = t("page", { p: d.page, t: pages });
+    // five page numbers around the current one, sliding along as you page
+    const first = Math.max(1, Math.min(d.page - 2, pages - 4)), last = Math.min(pages, first + 4);
+    let nums = "";
+    for (let n = first; n <= last; n++) {
+      nums += `<button data-page="${n}"${n === d.page ? ' class="on" aria-current="page"' : ""} aria-label="${esc(t("page", { p: n, t: pages }))}">${fmt(n)}</button>`;
+    }
+    $("#pages").innerHTML = nums;
+    $("#pager").setAttribute("aria-label", t("pager.label"));
     $("#prev").disabled = d.page <= 1; $("#next").disabled = d.page >= pages;
     paintPills();
     $("#postings").innerHTML = d.items.length ? d.items.map(jobCard).join("") : `<li class="jobs-empty muted">${t("jobs.none")}</li>`;

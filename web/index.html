@@ -24,7 +24,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="/static/app.css?v=27">
+<link rel="stylesheet" href="/static/app.css?v=28">
 <script src="/static/vendor/chart.umd.min.js"></script>
 <script src="/static/vendor/d3.min.js"></script>
 <script src="/static/theme.js?v=1"></script>
@@ -50,10 +50,10 @@
     </div>
   </div>
   <nav class="wrap tabs" id="tabs">
-    <a href="#jobs" data-tab="jobs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h18v12H3zM9 8V5h6v3"/></svg><span data-i18n="tab.jobs">Jobs</span></a>
-    <a href="#tracker" data-tab="tracker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h4v16H4zM10 4h4v10h-4zM16 4h4v13h-4z"/></svg><span data-i18n="tab.tracker">My jobs</span></a>
-    <a href="#market" data-tab="market"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg><span data-i18n="tab.market">Market</span></a>
-    <a href="#profile" data-tab="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0"/></svg><span data-i18n="tab.profile">Profile</span></a>
+    <a href="#jobs" data-tab="jobs"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm3.9 6.1l-2.3 5.5-5.5 2.3 2.3-5.5z"/></svg><span data-i18n="tab.jobs">Discover</span></a>
+    <a href="#tracker" data-tab="tracker"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.5 2.5h11A1.5 1.5 0 0 1 19 4v17a.9.9 0 0 1-1.4.75L12 17.9l-5.6 3.85A.9.9 0 0 1 5 21V4a1.5 1.5 0 0 1 1.5-1.5z"/></svg><span data-i18n="tab.tracker">Saved jobs</span></a>
+    <a href="#market" data-tab="market"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3.5" y="12" width="4.5" height="9" rx="1.2"/><rect x="9.75" y="7" width="4.5" height="14" rx="1.2"/><rect x="16" y="3" width="4.5" height="18" rx="1.2"/></svg><span data-i18n="tab.market">Market</span></a>
+    <a href="#profile" data-tab="profile"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="7.5" r="4.5"/><path d="M3.5 20.3c0-4.4 3.8-7.3 8.5-7.3s8.5 2.9 8.5 7.3c0 .66-.54 1.2-1.2 1.2H4.7c-.66 0-1.2-.54-1.2-1.2z"/></svg><span data-i18n="tab.profile">Profile</span></a>
   </nav>
 </header>
 
@@ -68,7 +68,7 @@
 <!-- ============ TRACKER ============ -->
 <section class="tab" data-tab="tracker">
   <div class="board-head">
-    <h2 class="m-0 text-lg" data-i18n="tr.title">My jobs</h2>
+    <h2 class="m-0 text-lg" data-i18n="tr.title">Saved jobs</h2>
     <p class="m-0 text-sm text-muted" data-i18n="tr.hint">Save jobs with the star, then move them along as your application progresses.</p>
   </div>
   <div class="board" id="board"></div>
@@ -108,7 +108,7 @@
   <ol class="jobs" id="postings">
     <li class="jobs-loading" role="status"><span class="load-track"><span class="load-bar"></span></span><span data-i18n="loading">Loading the latest jobs…</span></li>
   </ol>
-  <div class="pager"><button id="prev" data-i18n="pager.prev">‹ Prev</button><span id="page-info"></span><button id="next" data-i18n="pager.next">Next ›</button></div>
+  <nav class="pager" id="pager" aria-label="Pages"><button id="prev" data-i18n="pager.prev">‹ Prev</button><span class="pages" id="pages"></span><button id="next" data-i18n="pager.next">Next ›</button></nav>
 </section>
 
 <!-- ============ MARKET ============ -->
@@ -129,10 +129,12 @@
     <div class="card">
       <h2><span data-i18n="ov.skills">Most requested skills</span></h2>
       <div class="chart tall"><canvas id="ov-skills"></canvas></div>
+      <p class="chart-key" data-skill-key hidden><i aria-hidden="true"></i><span data-i18n="key.yours">In your profile</span></p>
     </div>
     <div class="card">
       <h2 data-i18n="ov.graph">Skills often requested together</h2>
       <div class="chart tall" id="ov-graph"></div>
+      <p class="chart-key" data-skill-key hidden><i aria-hidden="true"></i><span data-i18n="key.yours">In your profile</span></p>
     </div>
   </div>
   <div class="grid three">
@@ -297,6 +299,6 @@
   <p class="foot-bottom"><a href="{{PRIVACY_PATH}}" data-i18n="privacy">Privacy</a> · <a href="{{FEEDBACK_PATH}}" data-i18n="feedback">Feedback</a>{{SOURCE_LINK}}</p>
  </div>
 </footer>
-<script src="/static/app.js?v=111"></script>
+<script src="/static/app.js?v=116"></script>
 </body>
 </html>

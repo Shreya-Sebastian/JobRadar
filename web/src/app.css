@@ -144,7 +144,8 @@
   .tabs a.on { @apply text-ink; border-color: var(--tab); }
   /* each tab in a colour of its own: its icon, and its underline when open */
   .tabs a { @apply inline-flex items-center gap-1.5; }
-  .tabs a svg { @apply size-4 shrink-0; color: var(--tab); }
+  .tabs a svg { @apply size-[1.1rem] shrink-0; color: var(--tab); }
+  .tabs a:not(.on) svg { opacity: .7; }  /* solid icons: the open tab's at full strength */
   .tabs a[data-tab="jobs"] { --tab: var(--accent); }
   .tabs a[data-tab="tracker"] { --tab: var(--c-violet); }
   .tabs a[data-tab="overview"] { --tab: var(--c-sky); }
@@ -186,6 +187,8 @@
   .grid.three { grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); }
   .grid > .card { @apply mt-0; }
   .hint { @apply ml-1.5 text-xs font-normal text-muted; }
+  .chart-key { @apply mt-2 mb-0 flex items-center gap-1.5 text-xs text-muted; }
+  .chart-key i { @apply inline-block size-2.5 rounded-full; background: var(--accent-2); }
   .chart { @apply relative h-[260px]; }
   .chart.tall { @apply h-[360px] md:h-[440px]; }
   .chart.xtall { @apply h-[620px]; }
@@ -252,7 +255,11 @@
   .match-bar i { @apply block h-full rounded-full bg-accent; }
   .more-cities { @apply cursor-help border-b border-dotted border-muted text-xs text-muted; }
   .lang-nl, .lang-en, .lang-both { @apply text-xs text-muted; }
-  .pager { @apply mt-4 flex items-center justify-center gap-3 text-sm text-muted; }
+  .pager { @apply mt-4 flex flex-wrap items-center justify-center gap-2 text-sm text-muted; }
+  .pages { @apply flex items-center gap-1; }
+  .pages button { @apply min-w-9 rounded-lg border border-transparent bg-transparent px-2 py-1.5 text-sm font-medium text-muted; }
+  .pages button:hover { @apply border-line text-ink; }
+  .pages button.on { @apply border-accent bg-accent text-on-accent; }
 
   /* ---------- jobs: header band, search bar, filter pills, job cards ---------- */
   /* the header band: a light green-teal tint under the search */
@@ -306,7 +313,7 @@
   .pops { @apply relative z-30; }
   .pop { @apply absolute top-1.5 flex w-[min(32rem,100%)] flex-col gap-4 rounded-2xl border border-line bg-card p-4 shadow-xl; }
   .pop .field > label { @apply text-sm font-semibold text-ink; }
-  .results-head { @apply mt-5 mb-2.5 flex flex-wrap items-center gap-x-3 gap-y-2; }
+  .results-head { @apply mt-5 mb-2.5 flex flex-wrap items-center gap-x-3 gap-y-2; scroll-margin-top: 8.5rem; }  /* clear of the sticky header */
   .results-head .count { @apply mr-auto ml-0 text-sm font-semibold text-ink; }
   .sort { @apply flex items-center gap-2 text-sm text-muted; }
   /* ---------- weekly report: one bar per item ---------- */
@@ -482,6 +489,7 @@
   /* the header scrolls away instead of covering half the screen, the "Personalised" switch gets its own row above
      the tabs, and the five tabs fit without sideways scrolling */
   .top { position: static; }
+  .results-head { scroll-margin-top: .5rem; }  /* the header scrolls away on phones */
   .topbar { height: 3.5rem; }
   .brand h1 { font-size: 1.15rem; }
   .brand .logo { width: 2.125rem; height: 2.125rem; }

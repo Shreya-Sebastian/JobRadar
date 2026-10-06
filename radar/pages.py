@@ -81,7 +81,7 @@ _TEXT = {
         "interactive": "Open the interactive view",
         "roles": "Open tech roles",
         "age": "Posted", "t_title": "Title", "city": "City", "level": "Level", "skills_col": "Skills",
-        "language": "Language", "all": "All employers", "overview": "Overview", "jobs": "Jobs", "market": "Market",
+        "language": "Language", "all": "All employers", "overview": "Overview", "jobs": "Discover", "market": "Market",
         "employers": "Employers", "empty": "No open tech roles right now.",
         "footer": "lists tech vacancies in the Netherlands read directly from employers' career sites.",
         "desc": "Open tech jobs at {c} in the Netherlands", "desc_in": ", in {x}",
@@ -96,7 +96,7 @@ _TEXT = {
         "interactive": "Open de interactieve weergave",
         "roles": "Open techvacatures",
         "age": "Geplaatst", "t_title": "Functie", "city": "Plaats", "level": "Niveau", "skills_col": "Skills",
-        "language": "Taal", "all": "Alle werkgevers", "overview": "Overzicht", "jobs": "Vacatures",
+        "language": "Taal", "all": "Alle werkgevers", "overview": "Overzicht", "jobs": "Ontdekken",
         "market": "Markt", "employers": "Werkgevers",
         "empty": "Op dit moment geen open techvacatures.",
         "footer": "toont techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers.",
@@ -199,7 +199,7 @@ def job_path(posting_id: int, title: str, lang: str = "en") -> str:
 
 _JOB_TEXT = {
     "en": {
-        "overview": "Overview", "jobs": "Jobs", "market": "Market", "employers": "Employers",
+        "overview": "Overview", "jobs": "Discover", "market": "Market", "employers": "Employers",
         "back": "← All jobs", "apply": "View and apply on", "more_at": "More jobs at",
         "description": "Job description",
         "credit": "From {c}'s job posting, as published on {h}. The text belongs to {c}; read the original at {u}.",
@@ -225,7 +225,7 @@ _JOB_TEXT = {
         "home_crumb": "Tech jobs", "skills_short": "Skills",
     },
     "nl": {
-        "overview": "Overzicht", "jobs": "Vacatures", "market": "Markt", "employers": "Werkgevers",
+        "overview": "Overzicht", "jobs": "Ontdekken", "market": "Markt", "employers": "Werkgevers",
         "back": "← Alle vacatures", "apply": "Bekijk en solliciteer op", "more_at": "Meer vacatures bij",
         "description": "Vacaturetekst",
         "credit": "Uit de vacature van {c}, zoals gepubliceerd op {h}. De tekst is van {c}; lees het origineel op {u}.",

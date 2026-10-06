@@ -48,7 +48,7 @@
       "p.visa": "Only jobs that mention visa sponsorship", "p.agencies": "Hide recruitment agencies", "p.save": "Save profile", "p.export": "Export",
       "p.import": "Import", "p.clear": "Clear", "p.skills": "Skills",
       "p.extract": "Add skills from your CV", "p.cv.ph": "Paste your CV text", "p.extract.btn": "Extract",
-      "p.gap": "Skills gap", "p.gap.btn": "Analyse", "p.saved": "Saved jobs",
+      "p.gap": "Skills gap", "p.gap.btn": "Analyse",
      
      
      
@@ -69,7 +69,7 @@
       "lang.chart.en": "English", "lang.chart.nl": "Dutch", "lang.chart.other": "Other",
       "remote.remote": "Remote", "remote.hybrid": "Hybrid", "remote.onsite": "On-site", "remote.unknown": "Not stated",
       "trend.all": "all new postings",
-      "p.saved.empty": "None yet.", "p.saved.status": "Saved. Discover now opens with these filters.", "p.imported": "Imported.",
+      "p.saved.status": "Saved. Discover now opens with these filters.", "p.imported": "Imported.",
       "p.import.fail": "Could not read that file.", "p.more.text": "Paste a bit more text first.", "p.extracting": "Extracting…",
       "p.extracted": "{n} skills found; press Save profile to keep them.", "p.add.skills": "Add some skills first.", "p.analysing": "Analysing…",
       "p.considered": "{n} postings considered", "p.coverage": "Your skills cover {p}% of all skill mentions in these postings. The most demanded skills you do not list:",
@@ -162,7 +162,7 @@
       "p.visa": "Alleen vacatures die visumsponsoring noemen", "p.agencies": "Wervingsbureaus verbergen", "p.save": "Profiel opslaan", "p.export": "Exporteren",
       "p.import": "Importeren", "p.clear": "Wissen", "p.skills": "Skills",
       "p.extract": "Skills uit je cv halen", "p.cv.ph": "Plak je cv-tekst", "p.extract.btn": "Herkennen",
-      "p.gap": "Ontbrekende skills", "p.gap.btn": "Analyseren", "p.saved": "Bewaarde vacatures",
+      "p.gap": "Ontbrekende skills", "p.gap.btn": "Analyseren",
      
      
      
@@ -182,7 +182,7 @@
       "lang.chart.en": "Engels", "lang.chart.nl": "Nederlands", "lang.chart.other": "Anders",
       "remote.remote": "Remote", "remote.hybrid": "Hybride", "remote.onsite": "Op kantoor", "remote.unknown": "Niet vermeld",
       "trend.all": "alle nieuwe vacatures",
-      "p.saved.empty": "Nog geen.", "p.saved.status": "Opgeslagen. Persoonlijke weergave staat aan.", "p.imported": "Geïmporteerd.",
+      "p.saved.status": "Opgeslagen. Persoonlijke weergave staat aan.", "p.imported": "Geïmporteerd.",
       "p.import.fail": "Kon dat bestand niet lezen.", "p.more.text": "Plak eerst wat meer tekst.", "p.extracting": "Bezig met herkennen…",
       "p.extracted": "{n} skills gevonden; klik op Profiel opslaan om ze te bewaren.", "p.add.skills": "Voeg eerst wat skills toe.", "p.analysing": "Bezig met analyseren…",
       "p.considered": "{n} vacatures bekeken", "p.coverage": "Je skills dekken {p}% van alle skillvermeldingen in deze vacatures. De meest gevraagde skills die je niet noemt:",
@@ -1076,7 +1076,6 @@
     chipInput($("#p-exclude"), p.exclude, [], null, t("ph.employer"));
     chipInput($("#p-skills"), p.skills, state.options.skills, null, t("ph.skill"), skillTransform);
     $("#p-language").value = p.language || ""; $("#p-visa").checked = p.visa; $("#p-agencies").checked = p.agencies; $("#p-noenrol").checked = !!p.noenrol;
-    renderSaved();
     if (profileBuilt) return;
     profileBuilt = true;
     canonicalSkills(p.skills).then((m) => {
@@ -1124,13 +1123,6 @@
       $("#p-gap-coverage").textContent = t("p.coverage", { p: Math.round(g.demand_coverage * 100) });
       barChart("p-gap-chart", g.missing.map((m) => m.skill), g.missing.map((m) => Math.round(m.share * 100)), { pct: true, color: palette[1], onClick: (s) => openJobsWithSkill(s) });
     });
-    $("#p-saved").addEventListener("click", (e) => { const b = e.target.closest(".star"); if (b) { toggleSaved(Number(b.dataset.id)); renderSaved(); } });
-  }
-  async function renderSaved() {
-    $("#p-saved-count").textContent = `${state.saved.length}`;
-    if (!state.saved.length) { $("#p-saved").innerHTML = `<li class="muted">${t("p.saved.empty")}</li>`; return; }
-    const d = await api("/api/postings", new URLSearchParams({ ids: state.saved.join(","), size: 200, include_closed: "true", skills_have: state.profile.skills.join(",") }));
-    $("#p-saved").innerHTML = d.items.map((i) => `<li><button class="star on" data-id="${i.id}" title="${t("remove")}">★</button> <a href="${jobPath(i)}" data-pid="${i.id}" target="_blank">${esc(i.title)}</a> · ${esc(i.company)}${i.city ? " · " + esc(cityLabel(i.city)) : ""}${i.closed ? ` <span class="chip more">${t("closed")}</span>` : ""}<div class="m">${esc(i.posted_at)} · ${(i.skills || []).slice(0, 6).join(", ")}</div></li>`).join("");
   }
 
   function renderAccount() {
@@ -1313,9 +1305,11 @@
     $("#kpis").hidden = state.tab !== "market";  // the key figures open the Market tab
     window.scrollTo(0, 0);
     const bar = $("#progress"), slow = setTimeout(() => { bar.hidden = false; }, 150);  // only when it takes a moment
-    try { await renderers[state.tab](); } catch (e) { console.error(e); $("#kpis").hidden = false; $("#kpis").insertAdjacentHTML("beforeend", `<div class="kpi bad"><b>!</b><span>${esc(e.message)}</span></div>`); }
+    // a tab opened before the first load has finished waits for it
+    try { if (booting) await booting; await renderers[state.tab](); } catch (e) { console.error(e); $("#kpis").hidden = false; $("#kpis").insertAdjacentHTML("beforeend", `<div class="kpi bad"><b>!</b><span>${esc(e.message)}</span></div>`); }
     finally { clearTimeout(slow); bar.hidden = true; $("#boot").hidden = true; }
   }
+  let booting = null;  // the first load (account, then the filter options); every tab needs it
   window.addEventListener("hashchange", route);
   window.addEventListener("themechange", () => { const r = renderers[state.tab]; if (r && state.tab !== "jobs") Promise.resolve(r()).catch(() => {}); });
   $("#brand").addEventListener("click", (e) => {
@@ -1334,5 +1328,6 @@
   if (["", "#jobs"].includes(location.hash.split("?")[0])) $("#boot").hidden = true;
   else $('.tab[data-tab="jobs"]').classList.remove("on");
   bindAccount();
-  account.load().then(() => { renderAccount(); jobFilters = null; }).then(loadHeader).then(route).catch((e) => { $("#kpis").hidden = false; $("#kpis").innerHTML = `<div class="kpi bad"><b>!</b><span>${esc(t("fail", { e: e.message }))}</span></div>`; });
+  booting = account.load().then(() => { renderAccount(); jobFilters = null; }).then(loadHeader);
+  booting.then(() => { booting = null; }).then(route).catch((e) => { $("#kpis").hidden = false; $("#kpis").innerHTML = `<div class="kpi bad"><b>!</b><span>${esc(t("fail", { e: e.message }))}</span></div>`; });
 })();

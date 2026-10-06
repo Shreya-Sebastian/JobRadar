@@ -93,7 +93,7 @@
       "pw.save": "Save password", "pw.cancel": "Cancel", "pw.mismatch": "The two passwords are not the same.", "pw.saved": "Password saved.",
       "pw.removed": "Password removed.", "pw.wrong": "The current password is not right.", "pw.short": "Use at least 10 characters.",
       "pw.confirm": "Remove your password? You can still sign in with an e-mail link or Google.",
-      "alerts.label": "Job alerts by e-mail", "alerts.off": "Off", "alerts.daily": "Daily", "alerts.weekly": "Weekly",
+      "ss.save": "Save this search", "ss.name": "Name", "ss.freq": "E-mail me new matches", "ss.freq.off": "No e-mails", "ss.store": "Save", "ss.cancel": "Cancel", "ss.saved": "Search saved. You'll find it under Account settings.", "ss.login": "Log in to save searches and get new matches by e-mail.", "ss.title": "Saved searches", "ss.none": "No saved searches yet. Use \u201cSave this search\u201d on Discover.", "ss.delete": "Delete", "ss.full": "You can keep at most 10 saved searches.", "ss.default": "My search", "alerts.label": "Job alerts by e-mail", "alerts.off": "Off", "alerts.daily": "Daily", "alerts.weekly": "Weekly",
       "alerts.saved": "Saved.",
       "alerts.noprofile": "Saved. Set roles, cities or skills in your profile below, or the alert matches every new job.",
       "acct.login": "Log in", "acct.settings": "Account settings", "acct.none.title": "You are not logged in",
@@ -205,7 +205,7 @@
       "pw.save": "Wachtwoord opslaan", "pw.cancel": "Annuleren", "pw.mismatch": "De twee wachtwoorden zijn niet gelijk.", "pw.saved": "Wachtwoord opgeslagen.",
       "pw.removed": "Wachtwoord verwijderd.", "pw.wrong": "Het huidige wachtwoord klopt niet.", "pw.short": "Gebruik minstens 10 tekens.",
       "pw.confirm": "Je wachtwoord verwijderen? Je kunt nog steeds inloggen met een e-maillink of Google.",
-      "alerts.label": "Vacature-alerts per e-mail", "alerts.off": "Uit", "alerts.daily": "Dagelijks", "alerts.weekly": "Wekelijks",
+      "ss.save": "Zoekopdracht bewaren", "ss.name": "Naam", "ss.freq": "Mail me nieuwe vacatures", "ss.freq.off": "Geen e-mails", "ss.store": "Bewaren", "ss.cancel": "Annuleren", "ss.saved": "Zoekopdracht bewaard. Je vindt hem onder Accountinstellingen.", "ss.login": "Log in om zoekopdrachten te bewaren en nieuwe vacatures per e-mail te krijgen.", "ss.title": "Bewaarde zoekopdrachten", "ss.none": "Nog geen bewaarde zoekopdrachten. Gebruik \u201cZoekopdracht bewaren\u201d op Ontdekken.", "ss.delete": "Verwijderen", "ss.full": "Je kunt hooguit 10 zoekopdrachten bewaren.", "ss.default": "Mijn zoekopdracht", "alerts.label": "Vacature-alerts per e-mail", "alerts.off": "Uit", "alerts.daily": "Dagelijks", "alerts.weekly": "Wekelijks",
       "alerts.saved": "Opgeslagen.",
       "alerts.noprofile": "Opgeslagen. Kies functies, steden of skills in je profiel hieronder, anders past elke nieuwe vacature.",
       "acct.login": "Inloggen", "acct.settings": "Accountinstellingen", "acct.none.title": "Je bent niet ingelogd",
@@ -1182,6 +1182,7 @@
       $("#pw-user").value = me.email;
       fetch("/api/me/alerts", { credentials: "same-origin" }).then((r) => r.ok ? r.json() : null)
         .then((a) => { if (a) $("#acct-alerts").value = a.frequency; }).catch(() => {});
+      renderSearches();
     }
   }
   function closeMenu() { $("#acct-menu").hidden = true; $("#acct-avatar").setAttribute("aria-expanded", "false"); }
@@ -1486,6 +1487,60 @@
     openQuiz();
   }
 
+
+  // ---------- SAVED SEARCHES: a Discover search kept on the account, each with its own e-mail alert ----------
+  const searchQuery = () => { const h = location.hash, i = h.indexOf("?"); return i >= 0 ? h.slice(i + 1) : ""; };
+  function defaultSearchName() {
+    const f = currentJobFilters(), parts = [];
+    if (f.roles.length) parts.push(f.roles.slice(0, 2).map(roleLabel).join(", "));
+    if (f.cities.length) parts.push(f.cities.slice(0, 2).map(cityLabel).join(", "));
+    if (f.remote.includes("remote")) parts.push(t("remote.label"));
+    if (f.language === "en") parts.push(t("fact.nodutch"));
+    if (f.visa) parts.push(t("fact.visa"));
+    if (f.q) parts.push(`"${f.q}"`);
+    return (parts.join(" · ") || t("ss.default")).slice(0, 80);
+  }
+  async function renderSearches() {
+    const list = $("#acct-searches");
+    if (!list || !account.me) return;
+    let d;
+    try { const r = await fetch("/api/me/searches", { credentials: "same-origin" }); if (!r.ok) return; d = await r.json(); }
+    catch { return; }
+    $("#acct-searches-empty").hidden = d.items.length > 0;
+    const home = LANG === "nl" ? "/nl/" : "/";
+    list.innerHTML = d.items.map((x) => `<li data-id="${x.id}">
+        <a href="${home}#discover${x.query ? "?" + esc(x.query) : ""}" class="ss-name">${esc(x.name)}</a>
+        <select class="ss-freq" aria-label="${esc(t("ss.freq"))}">${["weekly", "daily", "off"].map((f) => `<option value="${f}"${f === x.frequency ? " selected" : ""}>${esc(t(f === "off" ? "ss.freq.off" : "alerts." + f))}</option>`).join("")}</select>
+        <button class="link danger ss-del">${esc(t("ss.delete"))}</button></li>`).join("");
+  }
+  function bindSavedSearches() {
+    $("#search-save").addEventListener("click", () => {
+      if (!account.me) { toast(t("ss.login"), t("acct.login"), () => { location.href = "/login"; }); return; }
+      const form = $("#search-form");
+      form.hidden = !form.hidden;
+      if (!form.hidden) { $("#ss-name").value = defaultSearchName(); $("#ss-name").focus(); $("#ss-name").select(); }
+    });
+    $("#ss-cancel").addEventListener("click", () => { $("#search-form").hidden = true; });
+    $("#search-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const r = await account.post("/api/me/searches", "POST",
+        { name: $("#ss-name").value.trim() || t("ss.default"), query: searchQuery(), frequency: $("#ss-freq").value, lang: LANG });
+      if (r.ok) { $("#search-form").hidden = true; toast(t("ss.saved")); beacon("search_save"); renderSearches(); }
+      else toast(t(r.status === 409 ? "ss.full" : "acct.fail"));
+    });
+    $("#acct-searches").addEventListener("change", async (e) => {
+      const sel = e.target.closest(".ss-freq"); if (!sel) return;
+      const id = sel.closest("li").dataset.id;
+      const r = await account.post(`/api/me/searches/${id}`, "PUT", { frequency: sel.value });
+      toast(t(r.ok ? "alerts.saved" : "acct.fail"));
+    });
+    $("#acct-searches").addEventListener("click", async (e) => {
+      const del = e.target.closest(".ss-del"); if (!del) return;
+      const r = await account.post(`/api/me/searches/${del.closest("li").dataset.id}`, "DELETE");
+      if (r.ok) renderSearches(); else toast(t("acct.fail"));
+    });
+  }
+
   let booting = null;  // the first load (account, then the filter options); every tab needs it
   window.addEventListener("hashchange", route);
   $$('#tabs a[data-tab="market"]').forEach((a) => ["pointerenter", "focus", "touchstart"].forEach((ev) =>
@@ -1514,5 +1569,6 @@
   bindAccount();
   booting = account.load().then(() => { renderAccount(); jobFilters = null; }).then(loadHeader);
   bindQuiz();
+  bindSavedSearches();
   booting.then(() => { booting = null; }).then(route).then(maybeQuiz).catch((e) => { $("#kpis").hidden = false; $("#kpis").innerHTML = `<div class="kpi bad"><b>!</b><span>${esc(t("fail", { e: e.message }))}</span></div>`; });
 })();

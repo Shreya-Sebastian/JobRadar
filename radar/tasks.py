@@ -241,5 +241,7 @@ def send_alerts() -> dict:
     init_db()
     with session_scope() as s:
         out = alerts.run(s)
+        # the saved searches share the run's mail allowance with the profile alerts
+        out["searches"] = alerts.run_searches(s, budget=max(0, alerts.MAX_PER_RUN - out.get("sent", 0)))
     log.info("alerts: %s", out)
     return out

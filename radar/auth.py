@@ -39,7 +39,7 @@ from sqlalchemy.orm import Session
 from radar import mailer, passwords
 from radar.analytics import client_ip
 from radar.config import settings
-from radar.models import LoginToken, User, UserData, UserSession
+from radar.models import LoginToken, SavedSearch, User, UserData, UserSession
 
 log = logging.getLogger(__name__)
 COOKIE = "radar_session"
@@ -507,12 +507,96 @@ def put_alerts(body: AlertsBody, request: Request, user: User = Depends(require_
     return {"frequency": u.alerts}
 
 
+MAX_SEARCHES = 10
+
+
+class SearchBody(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+    query: str = Field(default="", max_length=2000)
+    frequency: str = Field(default="weekly", pattern="^(off|daily|weekly)$")
+    lang: str = "en"
+
+
+class SearchUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=80)
+    frequency: str | None = Field(default=None, pattern="^(off|daily|weekly)$")
+
+
+def _search_out(x: SavedSearch) -> dict:
+    return {"id": x.id, "name": x.name, "query": x.query, "frequency": x.frequency,
+            "created_at": x.created_at.isoformat() if x.created_at else None}
+
+
+def _clean_query(query: str) -> str:
+    """Only the filters: no saved-job ids, page or the visitor's own opened jobs."""
+    from urllib.parse import parse_qsl
+
+    keep = [(k, v) for k, v in parse_qsl(query.lstrip("?#"), keep_blank_values=False)
+            if k not in ("ids", "exclude_ids", "page", "size", "hide", "saved", "since")]
+    return urlencode(keep, safe=",")
+
+
+@router.get("/api/me/searches")
+def list_searches(user: User = Depends(require_user), session: Session = Depends(_db)):
+    rows = session.scalars(select(SavedSearch).where(SavedSearch.user_id == user.id).order_by(SavedSearch.id)).all()
+    return {"items": [_search_out(x) for x in rows], "max": MAX_SEARCHES}
+
+
+@router.post("/api/me/searches")
+def create_search(body: SearchBody, request: Request, user: User = Depends(require_user),
+                  session: Session = Depends(_db)):
+    _require_json_header(request)
+    count = session.scalar(select(func.count()).select_from(SavedSearch).where(SavedSearch.user_id == user.id))
+    if count >= MAX_SEARCHES:
+        raise HTTPException(409, f"at most {MAX_SEARCHES} saved searches")
+    # the first alert covers jobs from now on, not the whole backlog
+    x = SavedSearch(user_id=user.id, name=body.name.strip(), query=_clean_query(body.query),
+                    frequency=body.frequency, sent_at=datetime.utcnow(), created_at=datetime.utcnow())
+    session.add(x)
+    u = session.get(User, user.id)
+    u.lang = "nl" if body.lang == "nl" else "en"
+    session.commit()
+    return _search_out(x)
+
+
+@router.put("/api/me/searches/{search_id}")
+def update_search(search_id: int, body: SearchUpdate, request: Request, user: User = Depends(require_user),
+                  session: Session = Depends(_db)):
+    _require_json_header(request)
+    x = session.get(SavedSearch, search_id)
+    if x is None or x.user_id != user.id:
+        raise HTTPException(404, "no such search")
+    if body.name is not None:
+        x.name = body.name.strip()
+    if body.frequency is not None:
+        if x.frequency == "off" and body.frequency != "off":
+            x.sent_at = datetime.utcnow()
+        x.frequency = body.frequency
+    session.commit()
+    return _search_out(x)
+
+
+@router.delete("/api/me/searches/{search_id}")
+def delete_search(search_id: int, request: Request, user: User = Depends(require_user),
+                  session: Session = Depends(_db)):
+    _require_json_header(request)
+    x = session.get(SavedSearch, search_id)
+    if x is None or x.user_id != user.id:
+        raise HTTPException(404, "no such search")
+    session.delete(x)
+    session.commit()
+    return {"ok": True}
+
+
 @router.get("/alerts/unsubscribe", include_in_schema=False)
 @router.post("/alerts/unsubscribe", include_in_schema=False)  # RFC 8058 one-click, sent by mail clients
-def alerts_unsubscribe(u: int, t: str, session: Session = Depends(_db)):
+def alerts_unsubscribe(t: str, u: int | None = None, s: int | None = None, session: Session = Depends(_db)):
     from radar import alerts
 
-    ok = alerts.unsubscribe(session, u, t)
+    if s is not None:  # one saved search's alerts
+        ok = alerts.unsubscribe_search(session, s, t)
+    else:  # the profile alerts
+        ok = u is not None and alerts.unsubscribe(session, u, t)
     msg = ("You won't get job alerts any more. You can turn them back on under Account settings." if ok
            else "This unsubscribe link is not valid. You can turn alerts off under Account settings.")
     nl = ("Je krijgt geen vacature-alerts meer. Je kunt ze weer aanzetten onder Accountinstellingen." if ok
@@ -536,7 +620,9 @@ def export(user: User = Depends(require_user), session: Session = Depends(_db)):
             "last_login_at": user.last_login_at.isoformat() if user.last_login_at else None,
             "profile": row.profile if row else {}, "saved_job_ids": row.saved if row else [],
             "application_tracker": row.board if row else {},
-            "job_alerts": user.alerts or "off"}
+            "job_alerts": user.alerts or "off",
+            "saved_searches": [_search_out(x) for x in session.scalars(
+                select(SavedSearch).where(SavedSearch.user_id == user.id)).all()]}
     return Response(content=json.dumps(body, indent=2), media_type="application/json",
                     headers={"Content-Disposition": 'attachment; filename="tech-jobs-radar-data.json"'})
 
@@ -547,6 +633,7 @@ def delete_account(request: Request, response: Response, user: User = Depends(re
     """Remove the account and everything attached to it (GDPR right to erasure)."""
     _require_json_header(request)
     session.execute(delete(UserData).where(UserData.user_id == user.id))
+    session.execute(delete(SavedSearch).where(SavedSearch.user_id == user.id))
     session.execute(delete(UserSession).where(UserSession.user_id == user.id))
     session.execute(delete(LoginToken).where(LoginToken.email == user.email))
     session.execute(delete(User).where(User.id == user.id))

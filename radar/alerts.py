@@ -49,6 +49,22 @@ def profile_filters(profile: dict, since: datetime) -> stats.Filters:
     )
 
 
+# the Discover filters a saved search may carry (the rest of its query, such as sort or page, is ignored)
+_SEARCH_KEYS = {"role", "seniority", "city", "company", "remote", "q", "skill", "exclude_companies", "language",
+                "experience", "enrollment", "degree", "employees", "sector", "position"}
+_SEARCH_FLAGS = {"sponsorship", "exclude_agencies"}
+
+
+def search_filters(query: str, since: datetime) -> stats.Filters:
+    """A saved search's query string ("role=data&city=Utrecht") as filters, for jobs first seen after `since`."""
+    from urllib.parse import parse_qs
+
+    q = {k: v[-1] for k, v in parse_qs(query or "", keep_blank_values=False).items()}
+    kw = {k: v for k, v in q.items() if k in _SEARCH_KEYS and v}
+    kw.update({k: True for k in _SEARCH_FLAGS if q.get(k) == "true"})
+    return stats.Filters(**kw, since=since.isoformat())
+
+
 def _secret(session: Session) -> bytes:
     """A random key kept in the database, so unsubscribe links cannot be forged or guessed."""
     from radar.models import Meta
@@ -63,6 +79,27 @@ def _secret(session: Session) -> bytes:
 
 def unsubscribe_token(session: Session, user) -> str:
     return hmac.new(_secret(session), f"unsub:{user.id}:{user.email}".encode(), hashlib.sha256).hexdigest()[:32]
+
+
+def search_token(session: Session, search) -> str:
+    return hmac.new(_secret(session), f"unsub-search:{search.id}:{search.user_id}".encode(),
+                    hashlib.sha256).hexdigest()[:32]
+
+
+def search_unsubscribe_url(session: Session, search) -> str:
+    return f"{settings.site_url.rstrip('/')}/alerts/unsubscribe?" + urlencode({"s": search.id,
+                                                                             "t": search_token(session, search)})
+
+
+def unsubscribe_search(session: Session, search_id: int, token: str) -> bool:
+    from radar.models import SavedSearch
+
+    search = session.get(SavedSearch, search_id)
+    if search is None or not hmac.compare_digest(token, search_token(session, search)):
+        return False
+    search.frequency = "off"
+    session.commit()
+    return True
 
 
 def unsubscribe_url(session: Session, user) -> str:
@@ -92,29 +129,45 @@ _TEXT = {
            "stop": "Geen e-mails meer", "why": "Je krijgt dit omdat je vacature-alerts ({f}) hebt aangezet op {site}."},
 }
 _FREQ_NL = {"daily": "dagelijks", "weekly": "wekelijks"}
+_SEARCH_TEXT = {
+    "en": {"subject": "{n} new tech jobs for \u201c{name}\u201d", "subject1": "1 new tech job for \u201c{name}\u201d",
+           "intro": "New since your last alert for your saved search \u201c{name}\u201d on {site}:",
+           "why": "You get this because you saved the search \u201c{name}\u201d with alerts ({f}) on {site}.",
+           "stop": "Stop alerts for this search"},
+    "nl": {"subject": "{n} nieuwe techvacatures voor \u201c{name}\u201d",
+           "subject1": "1 nieuwe techvacature voor \u201c{name}\u201d",
+           "intro": "Nieuw sinds je vorige alert voor je bewaarde zoekopdracht \u201c{name}\u201d op {site}:",
+           "why": "Je krijgt dit omdat je de zoekopdracht \u201c{name}\u201d met alerts ({f}) hebt bewaard op {site}.",
+           "stop": "Geen alerts meer voor deze zoekopdracht"},
+}
 
 
-def _compose(session: Session, user, jobs: list[stats.Row], total: int) -> tuple[str, str, str, dict]:
+def _compose(session: Session, user, jobs: list[stats.Row], total: int, search=None) -> tuple[str, str, str, dict]:
+    """The alert mail: for the user's profile, or for one of their saved searches."""
     lang = "nl" if user.lang == "nl" else "en"
-    t = _TEXT[lang]
+    t = dict(_TEXT[lang])
     site = settings.site_name
     base = settings.site_url.rstrip("/")
     home = f"{base}/nl/" if lang == "nl" else f"{base}/"
-    stop = unsubscribe_url(session, user)
-    freq = _FREQ_NL.get(user.alerts, user.alerts) if lang == "nl" else user.alerts
+    frequency = search.frequency if search is not None else user.alerts
+    stop = search_unsubscribe_url(session, search) if search is not None else unsubscribe_url(session, user)
+    freq = _FREQ_NL.get(frequency, frequency) if lang == "nl" else frequency
+    if search is not None:
+        t.update({k: v.replace("{name}", search.name) for k, v in _SEARCH_TEXT[lang].items()})
     subject = t["subject1"] if total == 1 else t["subject"].format(n=total)
     lines = [t["intro"].format(site=site), ""]
     for r in jobs:
         where = r.city or ("Remote" if r.remote else "")
         lines += [f"- {r.title} · {r.company}{' · ' + where if where else ''}", f"  {r.url}"]
+    more_url = f"{home}#discover" + (f"?{search.query}" if search is not None and search.query else "")
     if total > len(jobs):
-        lines += ["", t["more"].format(n=total - len(jobs)) + f": {home}#discover"]
+        lines += ["", t["more"].format(n=total - len(jobs)) + f": {more_url}"]
     lines += ["", f"{t['profile']}: {home}#account", f"{t['stop']}: {stop}", "", t["why"].format(f=freq, site=site)]
     items = "".join(
         f'<li style="margin:0 0 10px"><a href="{escape(r.url)}" style="font-weight:600">{escape(r.title)}</a><br>'
         f'<span style="color:#5f6b7a">{escape(r.company)}{" · " + escape(r.city or "") if r.city else ""}</span></li>'
         for r in jobs)
-    jobs_url, account_url = escape(home + "#discover"), escape(home + "#account")
+    jobs_url, account_url = escape(more_url), escape(home + "#account")
     more = (f'<p><a href="{jobs_url}">{escape(t["more"].format(n=total - len(jobs)))}</a></p>'
             if total > len(jobs) else "")
     why = escape(t["why"].format(f=freq, site=site))
@@ -168,3 +221,48 @@ def run(session: Session, now: datetime | None = None) -> dict:
     session.commit()
     log.info("alerts: due=%d sent=%d empty=%d failed=%d", len(users), sent, empty, failed)
     return {"due": len(users), "sent": sent, "empty": empty, "failed": failed}
+
+
+def search_due(search, now: datetime) -> bool:
+    if search.frequency not in _DUE_AFTER:
+        return False
+    return search.sent_at is None or now - search.sent_at >= _DUE_AFTER[search.frequency]
+
+
+def run_searches(session: Session, now: datetime | None = None, budget: int = MAX_PER_RUN) -> dict:
+    """Send the alerts for saved searches that are due, at most `budget` mails. Returns counters."""
+    from radar.models import SavedSearch, User
+
+    now = now or datetime.utcnow()
+    due_now = [x for x in session.scalars(select(SavedSearch).where(SavedSearch.frequency.in_(("daily", "weekly"))))
+               if search_due(x, now)]
+    if not due_now:
+        return {"due": 0, "sent": 0, "empty": 0, "failed": 0}
+    rows = stats.CACHE.rows(session)
+    sent = empty = failed = 0
+    for search in due_now:
+        if sent >= budget:
+            break
+        user = session.get(User, search.user_id)
+        if user is None:
+            continue
+        window = _WINDOW[search.frequency]
+        since = max(search.sent_at or now - window, now - window)
+        matched = search_filters(search.query, since).apply(rows)
+        matched.sort(key=lambda r: r.posted_at or r.first_seen, reverse=True)
+        if not matched:
+            empty += 1
+            search.sent_at = now
+            continue
+        subject, text, html, headers = _compose(session, user, matched[:MAX_JOBS], len(matched), search=search)
+        try:
+            mailer.send(user.email, subject, text, html, headers=headers)
+        except Exception as e:  # one refused address must not stop the others
+            failed += 1
+            log.error("search alert to %s not sent: %s", mailer._mask(user.email), e)
+            continue
+        search.sent_at = now
+        sent += 1
+    session.commit()
+    log.info("search alerts: due=%d sent=%d empty=%d failed=%d", len(due_now), sent, empty, failed)
+    return {"due": len(due_now), "sent": sent, "empty": empty, "failed": failed}

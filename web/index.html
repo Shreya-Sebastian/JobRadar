@@ -24,7 +24,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="/static/app.css?v=45">
+<link rel="stylesheet" href="/static/app.css?v=46">
 <script src="/static/theme.js?v=1"></script>
 </head>
 <body>
@@ -106,10 +106,16 @@
     <span class="count" id="count"></span>
     <div class="active-skill" id="active-skill" hidden><span data-i18n="f.skill">Skill</span>: <b id="active-skill-name"></b> <button id="clear-skill" title="clear">×</button></div>
     <button class="link" id="f-profile" data-i18n="f.profile" hidden>Use my profile</button>
+    <button class="link" id="search-save" data-i18n="ss.save">Save this search</button>
     <button class="link" id="quiz-open" data-i18n="quiz.open">Quick start</button>
     <button class="link" id="f-reset" data-i18n="f.reset">Clear filters</button>
     <label class="sort"><span data-i18n="f.sort">Sort by</span> <select id="f-sort"><option value="size_large" data-i18n="f.sort.large">Largest companies first</option><option value="newest" data-i18n="f.sort.newest">Most recent</option><option value="match" data-i18n="f.sort.match">Best match</option><option value="size_small" data-i18n="f.sort.small">Smallest companies first</option></select></label>
   </div>
+  <form class="card search-form" id="search-form" hidden>
+    <div class="field grow"><label for="ss-name" data-i18n="ss.name">Name</label><input id="ss-name" maxlength="80" required></div>
+    <div class="field"><label for="ss-freq" data-i18n="ss.freq">E-mail me new matches</label><select id="ss-freq"><option value="weekly" data-i18n="alerts.weekly">Weekly</option><option value="daily" data-i18n="alerts.daily">Daily</option><option value="off" data-i18n="ss.freq.off">No e-mails</option></select></div>
+    <div class="row"><button class="primary" type="submit" data-i18n="ss.store">Save</button><button type="button" class="link" id="ss-cancel" data-i18n="ss.cancel">Cancel</button></div>
+  </form>
   <ol class="jobs" id="postings">
     <li class="jobs-loading" role="status"><span class="load-track"><span class="load-bar"></span></span><span data-i18n="loading">Loading the latest jobs…</span></li>
   </ol>
@@ -234,6 +240,9 @@
       <div class="field mt"><label for="acct-alerts" data-i18n="alerts.label">Job alerts by e-mail</label>
         <div class="row"><select id="acct-alerts"><option value="off" data-i18n="alerts.off">Off</option><option value="daily" data-i18n="alerts.daily">Daily</option><option value="weekly" data-i18n="alerts.weekly">Weekly</option></select>
         <span class="muted small" id="acct-alerts-status"></span></div></div>
+      <div class="field mt"><label data-i18n="ss.title">Saved searches</label>
+        <ul class="searches" id="acct-searches"></ul>
+        <p class="muted small m-0" id="acct-searches-empty" data-i18n="ss.none">No saved searches yet. Use "Save this search" on Discover.</p></div>
       <div class="field mt"><label data-i18n="pw.label">Password</label>
         <p class="muted small" id="pw-state"></p>
         <form id="pw-form" class="pw-form" hidden autocomplete="on">
@@ -305,6 +314,6 @@
   <p class="foot-bottom"><a href="{{PRIVACY_PATH}}" data-i18n="privacy">Privacy</a> · <a href="{{FEEDBACK_PATH}}" data-i18n="feedback">Feedback</a>{{SOURCE_LINK}}</p>
  </div>
 </footer>
-<script src="/static/app.js?v=136"></script>
+<script src="/static/app.js?v=137"></script>
 </body>
 </html>

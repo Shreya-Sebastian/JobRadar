@@ -191,6 +191,10 @@
   .grid.two { grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); }
   .grid.three { grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); }
   .grid > .card { @apply mt-0; }
+  .search-form { @apply mt-0 mb-3 flex flex-wrap items-end gap-3; }
+  .searches { @apply m-0 flex list-none flex-col gap-2 p-0; }
+  .searches li { @apply flex flex-wrap items-center gap-3 rounded-xl border border-line px-3 py-2; }
+  .searches .ss-name { @apply mr-auto font-medium; }
   /* the quick start: one question at a time, big answer buttons, the matching count as it goes */
   .quiz { border-color: color-mix(in oklab, var(--accent) 40%, var(--line)); }
   .quiz-head { @apply flex items-baseline justify-between gap-3; }

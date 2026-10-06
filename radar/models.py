@@ -218,6 +218,21 @@ class UserData(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
+class SavedSearch(Base):
+    """A search a signed-in user saved from Discover, with its own job alert: the Discover filters as a query string
+    ("role=data&city=Utrecht"), mailed daily or weekly when new jobs match (radar/alerts.py run_searches)."""
+
+    __tablename__ = "saved_searches"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    name: Mapped[str] = mapped_column(String(80))
+    query: Mapped[str] = mapped_column(String(2000), default="")
+    frequency: Mapped[str] = mapped_column(String(10), default="weekly")  # off | daily | weekly
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
 class PageView(Base):
     """One request or page event, for the admin analytics page. No cookie. `ip` is kept 30 days for security and
     abuse prevention, then blanked (radar/analytics.py). `visitor` is a hash of IP and browser with a salt that

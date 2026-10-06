@@ -96,9 +96,10 @@ def candidates(html: str, page_url: str) -> list[str]:
     # in page data, a square logo fits the card's tile better than a wide wordmark
     for m in sorted(_JSON_LOGO.finditer(html), key=lambda m: "square" not in m.group(0).lower()):
         add(m.group(1).encode().decode("unicode_escape") if "\\u" in m.group(1) else m.group(1))
-    if own_site:
+    found = found[:6]
+    if own_site:  # always the last try, also when the page lists icons that are gone (Deloitte's are all 404s)
         add("/favicon.ico")
-    return found[:6]
+    return found
 
 
 def _ats_brand(url: str) -> bool:

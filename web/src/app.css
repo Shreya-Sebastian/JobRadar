@@ -147,13 +147,9 @@
   .tabs a.on { @apply text-ink; border-color: var(--tab); }
   /* each tab in a colour of its own: its icon, and its underline when open */
   .tabs a { @apply inline-flex items-center gap-1.5; }
-  .tabs a svg { @apply size-[1.1rem] shrink-0; color: var(--tab); }
-  .tabs a:not(.on) svg { opacity: .7; }  /* solid icons: the open tab's at full strength */
-  .tabs a[data-tab="jobs"] { --tab: var(--accent); }
-  .tabs a[data-tab="tracker"] { --tab: var(--c-violet); }
-  .tabs a[data-tab="overview"] { --tab: var(--c-sky); }
-  .tabs a[data-tab="market"] { --tab: var(--accent-2); }
-  .tabs a[data-tab="profile"] { --tab: var(--c-rose); }
+  .tabs a svg { @apply size-[1.1rem] shrink-0; }  /* the tab text's own colour; the open tab's in the accent */
+  .tabs a.on svg { color: var(--accent); }
+  .tabs a { --tab: var(--accent); }  /* one colour for every tab: icons and the underline */
   .tab-controls { @apply ml-auto flex items-center gap-2; }
   .tag { @apply max-w-2xl text-sm text-muted; }
 

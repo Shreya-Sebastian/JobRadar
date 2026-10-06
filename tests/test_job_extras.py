@@ -27,5 +27,5 @@ def test_job_page_shows_how_long_it_is_open_reposts_and_similar_jobs(fresh_db):
         job(3, beta, "Beta", "Senior Data Engineer", now - timedelta(days=2), now - timedelta(days=2))
     r = TestClient(app).get("/job/2/data-engineer")
     assert r.status_code == 200
-    assert "Open for 12 days" in r.text and "posted before: 1×" in r.text
+    assert "Open for 12 days" in r.text and "reposted: listed 1× before" in r.text
     assert "Similar jobs" in r.text and "/job/3/senior-data-engineer" in r.text

@@ -28,7 +28,11 @@
 @layer base {
   :root {
     color-scheme: light;
-    --bg: #f1f5f9; --card: #ffffff; --ink: #0f172a; --muted: #5b6b80; --line: #e2e8f0;
+    --bg: #f4f6f9; --card: #ffffff; --ink: #0f172a; --muted: #5b6b80; --line: #e3e8ef;
+    --c-sky-bg: #e0f2fe; --c-indigo-bg: #e0e7ff; --c-teal-bg: #ccfbf1; --c-emerald-bg: #d1fae5;
+    --c-violet-bg: #ede9fe; --c-rose-bg: #ffe4e6; --c-amber-bg: #fef3c7;
+    --shadow-card: 0 1px 2px rgb(15 23 42 / .04), 0 2px 8px rgb(15 23 42 / .05);
+    --hero-bg: linear-gradient(120deg, #ecfdf5 0%, #e6f7f4 45%, #e0f2fe 100%);
     --accent: #047857; --accent-2: #f97316; --on-accent: #ffffff; --chip: #f1f5f9; --chip-ink: #334155;
     --ok: #059669; --bad: #dc2626; --warn: #d97706;
     --tag-lang-fg: #047857; --tag-lang-bg: #d1fae5; --tag-visa-fg: #92400e; --tag-visa-bg: #fef3c7;
@@ -46,6 +50,12 @@
       --tag-lang-fg: #6ee7b7; --tag-lang-bg: #0c3b2e; --tag-visa-fg: #fcd34d; --tag-visa-bg: #3d2a07;
       --badge-bg: #fb923c; --badge-fg: #1c0a00;
       --c-rose: #fda4af; --c-amber: #fcd34d;
+      --c-sky-bg: color-mix(in oklab, #7dd3fc 16%, #131c2e); --c-indigo-bg: color-mix(in oklab, #a5b4fc 16%, #131c2e);
+      --c-teal-bg: color-mix(in oklab, #5eead4 16%, #131c2e); --c-emerald-bg: color-mix(in oklab, #6ee7b7 16%, #131c2e);
+      --c-violet-bg: color-mix(in oklab, #c4b5fd 16%, #131c2e); --c-rose-bg: color-mix(in oklab, #fda4af 16%, #131c2e);
+      --c-amber-bg: color-mix(in oklab, #fcd34d 16%, #131c2e);
+      --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
+      --hero-bg: linear-gradient(135deg, color-mix(in oklab, #34d399 16%, #131c2e) 0%, color-mix(in oklab, #5eead4 12%, #131c2e) 55%, color-mix(in oklab, #7dd3fc 12%, #131c2e) 100%);
       --c-sky: #7dd3fc; --c-indigo: #a5b4fc; --c-teal: #5eead4; --c-emerald: #6ee7b7; --c-violet: #c4b5fd;
       --hero-a: #064e3b; --hero-b: #065f46; --hero-c: #164e63; --faint: #7f8da3;
     }
@@ -58,6 +68,12 @@
       --tag-lang-fg: #6ee7b7; --tag-lang-bg: #0c3b2e; --tag-visa-fg: #fcd34d; --tag-visa-bg: #3d2a07;
       --badge-bg: #fb923c; --badge-fg: #1c0a00;
       --c-rose: #fda4af; --c-amber: #fcd34d;
+      --c-sky-bg: color-mix(in oklab, #7dd3fc 16%, #131c2e); --c-indigo-bg: color-mix(in oklab, #a5b4fc 16%, #131c2e);
+      --c-teal-bg: color-mix(in oklab, #5eead4 16%, #131c2e); --c-emerald-bg: color-mix(in oklab, #6ee7b7 16%, #131c2e);
+      --c-violet-bg: color-mix(in oklab, #c4b5fd 16%, #131c2e); --c-rose-bg: color-mix(in oklab, #fda4af 16%, #131c2e);
+      --c-amber-bg: color-mix(in oklab, #fcd34d 16%, #131c2e);
+      --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
+      --hero-bg: linear-gradient(135deg, color-mix(in oklab, #34d399 16%, #131c2e) 0%, color-mix(in oklab, #5eead4 12%, #131c2e) 55%, color-mix(in oklab, #7dd3fc 12%, #131c2e) 100%);
       --c-sky: #7dd3fc; --c-indigo: #a5b4fc; --c-teal: #5eead4; --c-emerald: #6ee7b7; --c-violet: #c4b5fd;
       --hero-a: #064e3b; --hero-b: #065f46; --hero-c: #164e63; --faint: #7f8da3;
   }
@@ -156,7 +172,7 @@
   /* ---------- cards and layout ---------- */
   .tab { display: none; }
   .tab.on { display: block; }
-  .card { @apply mt-4 min-w-0 rounded-2xl border border-line bg-card p-5 shadow-xs; }
+  .card { @apply mt-4 min-w-0 rounded-2xl border border-line bg-card p-5; box-shadow: var(--shadow-card); }
   .tab .card > h2:first-child::before, .report .card > h2::before { content: ""; @apply mr-2 inline-block size-2.5 rounded-sm align-middle;
     background: var(--hc, var(--accent)); }
   .grid > .card:nth-child(6n+2) { --hc: var(--c-sky); }
@@ -241,8 +257,7 @@
   /* ---------- jobs: header band, search bar, filter pills, job cards ---------- */
   /* the header band: a light green-teal tint under the search */
   .hero { @apply -mx-4 mt-[-1.25rem] px-4 pt-7 pb-4 sm:mx-0 sm:mt-0 sm:rounded-3xl sm:border sm:border-line sm:px-7 sm:pt-8 sm:pb-6;
-    background: linear-gradient(135deg, color-mix(in oklab, var(--accent) 16%, var(--card)) 0%,
-      color-mix(in oklab, var(--c-teal) 12%, var(--card)) 55%, color-mix(in oklab, var(--c-sky) 12%, var(--card)) 100%); }
+    background: var(--hero-bg); }
   .hero-title { @apply m-0 max-w-3xl text-[1.35rem] leading-tight font-bold tracking-tight text-ink sm:text-3xl; }
   .hero-sub { @apply mt-2 mb-4 text-sm text-muted sm:mb-5; }
   .hero .search { @apply mt-0 shadow-md; }
@@ -257,17 +272,17 @@
   .pill { @apply inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-line bg-card px-3.5 py-1.5
     text-sm font-medium whitespace-nowrap text-ink shadow-none transition-colors select-none hover:border-accent/60 hover:bg-card; }
   .pill::before { content: ""; @apply size-2 shrink-0 rounded-full; background: var(--pc, var(--muted)); }
-  .pill[data-pop="lang"] { --pc: var(--c-emerald); }
-  .pill:has(#f-visa) { --pc: var(--c-amber); }
-  .pill[data-pop="exp"] { --pc: var(--c-indigo); }
-  .pill[data-pop="level"] { --pc: var(--c-sky); }
-  .pill[data-pop="role"] { --pc: var(--c-violet); }
-  .pill[data-pop="degree"] { --pc: var(--c-rose); }
-  .pill[data-pop="remote"] { --pc: var(--c-teal); }
-  .pill[data-pop="company"] { --pc: var(--c-violet); }
-  .pill[data-pop="posted"] { --pc: var(--c-sky); }
+  .pill[data-pop="lang"] { --pc: var(--c-emerald); --pb: var(--c-emerald-bg); }
+  .pill:has(#f-visa) { --pc: var(--c-amber); --pb: var(--c-amber-bg); }
+  .pill[data-pop="exp"] { --pc: var(--c-indigo); --pb: var(--c-indigo-bg); }
+  .pill[data-pop="level"] { --pc: var(--c-sky); --pb: var(--c-sky-bg); }
+  .pill[data-pop="role"] { --pc: var(--c-violet); --pb: var(--c-violet-bg); }
+  .pill[data-pop="degree"] { --pc: var(--c-rose); --pb: var(--c-rose-bg); }
+  .pill[data-pop="remote"] { --pc: var(--c-teal); --pb: var(--c-teal-bg); }
+  .pill[data-pop="company"] { --pc: var(--c-violet); --pb: var(--c-violet-bg); }
+  .pill[data-pop="posted"] { --pc: var(--c-sky); --pb: var(--c-sky-bg); }
   .pill.on, .pill:has(input:checked) { color: var(--pc, var(--accent)); border-color: var(--pc, var(--accent));
-    background: color-mix(in oklab, var(--pc, var(--accent)) 12%, var(--card)); }
+    background: var(--pb, color-mix(in oklab, var(--pc, var(--accent)) 12%, var(--card))); }
   .pill.open { @apply border-accent; }
   .pill .chev { @apply size-4 opacity-60 transition-transform; }
   .pill.open .chev { @apply rotate-180; }
@@ -335,13 +350,15 @@
   .bdel { @apply grid size-7 place-items-center rounded-md border-0 bg-transparent p-0 text-muted shadow-none hover:bg-chip hover:text-bad; }
   .bdel svg { @apply size-4; }
   .toast-action { @apply ml-2 font-semibold; }
+  .rss-foot { @apply mt-6 mb-0 text-center; }
+  .rss-foot .rss-link { @apply text-xs; }
   .rss-link { @apply inline-flex items-center gap-1 text-sm font-medium text-muted no-underline hover:text-accent-2; }
   .rss-link svg { @apply size-4; }
   .sort select { @apply py-1.5; }
   .jobs { @apply m-0 flex list-none flex-col gap-2.5 p-0; }
   .jobs-empty { @apply rounded-2xl border border-dashed border-line p-8 text-center; }
-  .job { @apply flex gap-4 rounded-2xl border border-line bg-card p-4 shadow-xs transition hover:-translate-y-px hover:border-accent/50
-    hover:shadow-md sm:p-5; border-left: 4px solid var(--sc, var(--line)); }
+  .job { @apply flex gap-4 rounded-2xl border border-line bg-card p-4 transition hover:-translate-y-px hover:border-accent/50
+    hover:shadow-md sm:p-5; border-left: 4px solid var(--sc, var(--line)); box-shadow: var(--shadow-card); }
   .job-logo { @apply relative grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl;
     background: color-mix(in oklab, var(--sc, #64748b) 13%, var(--card)); color: var(--sc, #64748b); }
   .job-logo svg { @apply size-6; }
@@ -364,11 +381,11 @@
   .job-asks .sal { @apply font-semibold text-ink; }
   .tag { @apply inline-flex items-center rounded-md bg-chip px-2 py-0.5 text-xs font-semibold text-chip-ink; }
   .tag.lang { background: var(--tag-lang-bg); color: var(--tag-lang-fg); }
-  .tag[class*=" c-"] { color: var(--tc); background: color-mix(in oklab, var(--tc) 16%, var(--card)); }
-  .tag.c-sky { --tc: var(--c-sky); }
-  .tag.c-indigo { --tc: var(--c-indigo); }
-  .tag.c-teal { --tc: var(--c-teal); }
-  .tag.c-emerald { --tc: var(--c-emerald); }
+  .tag[class*=" c-"] { color: var(--tc); background: var(--tb); }
+  .tag.c-sky { --tc: var(--c-sky); --tb: var(--c-sky-bg); }
+  .tag.c-indigo { --tc: var(--c-indigo); --tb: var(--c-indigo-bg); }
+  .tag.c-teal { --tc: var(--c-teal); --tb: var(--c-teal-bg); }
+  .tag.c-emerald { --tc: var(--c-emerald); --tb: var(--c-emerald-bg); }
   .tag.visa { background: var(--tag-visa-bg); color: var(--tag-visa-fg); }
   .job-skills { @apply mt-2 flex flex-wrap gap-x-2.5 gap-y-0.5 text-[12.5px]; color: var(--faint); }
   .job-skills .have { @apply font-semibold text-accent; }

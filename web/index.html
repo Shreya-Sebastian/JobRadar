@@ -24,7 +24,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="/static/app.css?v=24">
+<link rel="stylesheet" href="/static/app.css?v=25">
 <script src="/static/vendor/chart.umd.min.js"></script>
 <script src="/static/vendor/d3.min.js"></script>
 <script src="/static/theme.js?v=1"></script>
@@ -35,7 +35,7 @@
   <div class="wrap topbar">
     <a class="brand" href="{{HOME_PATH}}" id="brand" title="{{SITE_NAME}}"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="var(--accent)"/><g fill="none" stroke="var(--on-accent)" stroke-width="2" stroke-linecap="round"><circle cx="16" cy="16" r="10" opacity=".35"/><circle cx="16" cy="16" r="5.5" opacity=".6"/><path d="M16 16l7-7"/></g><circle cx="16" cy="16" r="1.8" fill="var(--on-accent)"/><circle cx="10.5" cy="20" r="1.8" fill="var(--on-accent)"/></svg><h1>{{SITE_NAME}}<span class="sr-only">{{H1_SUFFIX}}</span></h1></a>
     <div class="topbar-right">
-      <button class="refresh-btn" id="fresh-btn" disabled data-i18n-title="fresh.none" title="No new listings yet"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span data-i18n="fresh.reload">Refresh</span></button>
+      <button class="refresh-btn" id="fresh-btn" disabled data-i18n-title="fresh.none" title="No new jobs yet"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span data-i18n="fresh.reload">Refresh</span></button>
       <button type="button" class="theme-btn" data-theme-toggle aria-label="Switch theme"><svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button><div class="langswitch" id="langswitch"><button data-lang="nl">NL</button><button data-lang="en">EN</button></div>
       <button class="acct-btn" id="acct-btn" data-i18n="acct.login">Log in</button>
       <div class="relative" id="acct" hidden>
@@ -51,7 +51,7 @@
   </div>
   <nav class="wrap tabs" id="tabs">
     <a href="#jobs" data-tab="jobs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h18v12H3zM9 8V5h6v3"/></svg><span data-i18n="tab.jobs">Jobs</span></a>
-    <a href="#tracker" data-tab="tracker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h4v16H4zM10 4h4v10h-4zM16 4h4v13h-4z"/></svg><span data-i18n="tab.tracker">Tracker</span></a>
+    <a href="#tracker" data-tab="tracker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h4v16H4zM10 4h4v10h-4zM16 4h4v13h-4z"/></svg><span data-i18n="tab.tracker">My jobs</span></a>
     <a href="#market" data-tab="market"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg><span data-i18n="tab.market">Market</span></a>
     <a href="#profile" data-tab="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0"/></svg><span data-i18n="tab.profile">Profile</span></a>
   </nav>
@@ -68,43 +68,43 @@
 <!-- ============ TRACKER ============ -->
 <section class="tab" data-tab="tracker">
   <div class="board-head">
-    <h2 class="m-0 text-lg" data-i18n="tr.title">Your applications</h2>
-    <p class="m-0 text-sm text-muted" data-i18n="tr.hint">Star a job to collect it under Saved, then move it along as you go.</p>
-    <a class="rss-link" id="f-rss" href="/feed.xml" target="_blank" rel="noopener" data-i18n-title="rss.title" title="RSS feed of this search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1.2" fill="currentColor"/></svg><span data-i18n="rss.label">RSS feed of your search</span></a>
+    <h2 class="m-0 text-lg" data-i18n="tr.title">My jobs</h2>
+    <p class="m-0 text-sm text-muted" data-i18n="tr.hint">Save jobs with the star, then move them along as your application progresses.</p>
   </div>
   <div class="board" id="board"></div>
+  <p class="rss-foot"><a class="rss-link" id="f-rss" href="/feed.xml" target="_blank" rel="noopener" data-i18n-title="rss.title" title="Your current search as an RSS feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1.2" fill="currentColor"/></svg><span data-i18n="rss.label">RSS feed of your search</span></a></p>
 </section>
 
 <!-- ============ JOBS ============ -->
 <section class="tab" data-tab="jobs">
  <div class="hero">
-  <p class="hero-title" data-i18n="hero.title">Tech jobs in the Netherlands, filtered by what they ask</p>
+  <p class="hero-title" data-i18n="hero.title">Find tech jobs in the Netherlands</p>
   <p class="hero-sub" id="hero-sub">&nbsp;</p>
   <div class="search">
     <label class="search-q"><svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.45 4.39l3.08 3.08a.75.75 0 11-1.06 1.06l-3.08-3.08A7 7 0 012 9z" clip-rule="evenodd"/></svg><input type="search" id="f-q" autocomplete="off" data-i18n-placeholder="f.search.ph" placeholder="title or company" data-i18n-title="f.search" title="Search"></label>
     <div class="search-city"><svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M9.69 18.93l.03.02a.75.75 0 00.56 0l.03-.02.1-.05c.08-.05.2-.11.34-.2.28-.16.68-.41 1.14-.74A16.1 16.1 0 0015.5 13.6C16.82 12.06 18 10.07 18 7.75a8 8 0 00-16 0c0 2.32 1.18 4.31 2.5 5.85a16.1 16.1 0 003.6 3.1c.46.33.86.58 1.14.74l.34.2.1.05zM10 10.5a2.75 2.75 0 100-5.5 2.75 2.75 0 000 5.5z" clip-rule="evenodd"/></svg><div class="chipinput" id="f-cities"></div></div>
   </div>
   <div class="pillbar" id="pillbar">
-    <button type="button" class="pill" data-pop="lang" aria-expanded="false"><span data-i18n="pill.lang">Language</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><label class="pill"><input type="checkbox" id="f-visa" class="sr-only"> <span data-i18n="pill.visa">Visa sponsorship</span></label><button type="button" class="pill" data-pop="exp" aria-expanded="false"><span data-i18n="pill.exp">Experience</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="level" aria-expanded="false"><span data-i18n="pill.level">Level</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="role" aria-expanded="false"><span data-i18n="pill.role">Role</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="degree" aria-expanded="false"><span data-i18n="pill.degree">Degree</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="remote" aria-expanded="false"><span data-i18n="pill.remote">Remote</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="company" aria-expanded="false"><span data-i18n="pill.company">Company</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="posted" aria-expanded="false"><span data-i18n="pill.posted">Date posted</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="more" aria-expanded="false"><span data-i18n="pill.more">More</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button>
+    <button type="button" class="pill" data-pop="lang" aria-expanded="false"><span data-i18n="pill.lang">Language</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><label class="pill"><input type="checkbox" id="f-visa" class="sr-only"> <span data-i18n="pill.visa">Visa sponsorship</span></label><button type="button" class="pill" data-pop="exp" aria-expanded="false"><span data-i18n="pill.exp">Years of experience</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="level" aria-expanded="false"><span data-i18n="pill.level">Experience level</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="role" aria-expanded="false"><span data-i18n="pill.role">Field</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="degree" aria-expanded="false"><span data-i18n="pill.degree">Education</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="remote" aria-expanded="false"><span data-i18n="pill.remote">Remote</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="company" aria-expanded="false"><span data-i18n="pill.company">Company</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="posted" aria-expanded="false"><span data-i18n="pill.posted">Date posted</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button><button type="button" class="pill" data-pop="more" aria-expanded="false"><span data-i18n="pill.more">More</span><b class="n"></b><svg class="chev" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg></button>
   </div>
  </div>
   <div class="pops" id="pops">
-    <div class="pop" data-pop="lang" hidden><div class="field"><label data-i18n="f.language">Languages you speak</label><select id="f-language" data-i18n-title="f.language.hint" title="We hide jobs that ask for a language you did not pick."><option value="" data-i18n="f.language.any" selected>Dutch and English</option><option value="nl" data-i18n="f.language.nl">Dutch only</option><option value="en" data-i18n="f.language.en">English only</option></select></div></div>
-    <div class="pop" data-pop="exp" hidden><div class="field"><label data-i18n="f.exp">Experience asked</label><div class="chips toggles" id="f-exp"></div></div></div>
-    <div class="pop" data-pop="level" hidden><div class="field"><label data-i18n="f.level">Level</label><div class="chips toggles" id="f-levels"></div></div></div>
-    <div class="pop" data-pop="role" hidden><div class="field"><label data-i18n="f.role">Role</label><div class="chips toggles" id="f-roles"></div></div><div class="field"><label data-i18n="f.position">Position</label><div class="chipinput" id="f-position"></div></div></div>
-    <div class="pop" data-pop="degree" hidden><div class="field"><label data-i18n="f.degree">Degree asked</label><div class="chips toggles" id="f-degree"></div></div></div>
+    <div class="pop" data-pop="lang" hidden><div class="field"><label data-i18n="f.language">Language</label><select id="f-language" data-i18n-title="f.language.hint" title="&quot;No Dutch required&quot; hides jobs that ask for Dutch."><option value="" data-i18n="f.language.any" selected>All jobs</option><option value="nl" data-i18n="f.language.nl">Dutch-speaking jobs</option><option value="en" data-i18n="f.language.en">No Dutch required</option></select></div></div>
+    <div class="pop" data-pop="exp" hidden><div class="field"><label data-i18n="f.exp">Years of experience</label><div class="chips toggles" id="f-exp"></div></div></div>
+    <div class="pop" data-pop="level" hidden><div class="field"><label data-i18n="f.level">Experience level</label><div class="chips toggles" id="f-levels"></div></div></div>
+    <div class="pop" data-pop="role" hidden><div class="field"><label data-i18n="f.role">Field</label><div class="chips toggles" id="f-roles"></div></div><div class="field"><label data-i18n="f.position">Job title</label><div class="chipinput" id="f-position"></div></div></div>
+    <div class="pop" data-pop="degree" hidden><div class="field"><label data-i18n="f.degree">Education</label><div class="chips toggles" id="f-degree"></div></div></div>
     <div class="pop" data-pop="remote" hidden><div class="field"><label data-i18n="f.remote">Remote</label><div class="chips toggles" id="f-remote"></div></div></div>
-    <div class="pop" data-pop="company" hidden><div class="field"><label data-i18n="f.emp">Company size (employees)</label><div class="chips toggles" id="f-emp"></div></div><div class="field"><label data-i18n="f.sector">Sector</label><div class="chips toggles" id="f-sector"></div></div><div class="field"><label data-i18n="f.size">Hiring activity (open roles)</label><div class="chips toggles" id="f-size"></div></div><label class="check"><input type="checkbox" id="f-agencies"> <span data-i18n="f.agencies">Hide agencies</span></label></div>
-    <div class="pop" data-pop="posted" hidden><div class="field"><label data-i18n="f.window">Window</label><select id="f-days"><option value="" data-i18n="f.window.all">All live</option><option value="1" data-i18n="f.window.1">Last 24 h</option><option value="7" data-i18n="f.window.7">Last 7 days</option><option value="30" data-i18n="f.window.30">Last 30 days</option><option value="90" data-i18n="f.window.90">Last 90 days</option></select></div><label class="check"><input type="checkbox" id="f-confirmed"> <span data-i18n="f.confirmed">Only confirmed on the employer's site in the last 7 days</span></label></div>
-    <div class="pop" data-pop="more" hidden><label class="check"><input type="checkbox" id="f-noenrol"> <span data-i18n="f.noenrol">Exclude internships that require enrolment</span></label><label class="check"><input type="checkbox" id="f-saved"> <span data-i18n="f.saved">Saved only</span></label></div>
+    <div class="pop" data-pop="company" hidden><div class="field"><label data-i18n="f.emp">Company size</label><div class="chips toggles" id="f-emp"></div></div><div class="field"><label data-i18n="f.sector">Sector</label><div class="chips toggles" id="f-sector"></div></div><div class="field"><label data-i18n="f.size">Open jobs at the company</label><div class="chips toggles" id="f-size"></div></div><label class="check"><input type="checkbox" id="f-agencies"> <span data-i18n="f.agencies">Hide recruitment agencies</span></label></div>
+    <div class="pop" data-pop="posted" hidden><div class="field"><label data-i18n="f.window">Date posted</label><select id="f-days"><option value="" data-i18n="f.window.all">Any time</option><option value="1" data-i18n="f.window.1">Past 24 hours</option><option value="7" data-i18n="f.window.7">Past week</option><option value="30" data-i18n="f.window.30">Past month</option><option value="90" data-i18n="f.window.90">Past 3 months</option></select></div><label class="check"><input type="checkbox" id="f-confirmed"> <span data-i18n="f.confirmed">Verified on the employer's site in the past week</span></label></div>
+    <div class="pop" data-pop="more" hidden><label class="check"><input type="checkbox" id="f-noenrol"> <span data-i18n="f.noenrol">Hide internships for enrolled students only</span></label><label class="check"><input type="checkbox" id="f-saved"> <span data-i18n="f.saved">Saved jobs only</span></label></div>
   </div>
   <div class="results-head">
     <span class="count" id="count"></span>
     <div class="active-skill" id="active-skill" hidden><span data-i18n="f.skill">Skill</span>: <b id="active-skill-name"></b> <button id="clear-skill" title="clear">×</button></div>
     <button class="link" id="f-profile" data-i18n="f.profile" hidden>Use my profile</button>
-    <button class="link" id="f-reset" data-i18n="f.reset">Reset filters</button>
-    <label class="sort"><span data-i18n="f.sort">Sort</span> <select id="f-sort"><option value="size_large" data-i18n="f.sort.large">Larger organisations first</option><option value="newest" data-i18n="f.sort.newest">Newest</option><option value="match" data-i18n="f.sort.match">Best match</option><option value="size_small" data-i18n="f.sort.small">Smaller organisations first</option></select></label>
+    <button class="link" id="f-reset" data-i18n="f.reset">Clear filters</button>
+    <label class="sort"><span data-i18n="f.sort">Sort by</span> <select id="f-sort"><option value="size_large" data-i18n="f.sort.large">Largest companies first</option><option value="newest" data-i18n="f.sort.newest">Most recent</option><option value="match" data-i18n="f.sort.match">Best match</option><option value="size_small" data-i18n="f.sort.small">Smallest companies first</option></select></label>
   </div>
   <ol class="jobs" id="postings">
     <li class="job skel" aria-hidden="true"><span class="job-logo"></span><div class="job-body"><i class="bar w-3/5"></i><i class="bar w-2/5"></i><i class="bar w-4/5"></i></div></li>
@@ -120,14 +120,14 @@
 <section class="tab" data-tab="market">
   <div class="card mk-report">
     <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-      <h2 class="m-0" data-i18n="rep.title">This week in the market</h2>
-      <a class="text-sm font-medium" id="rep-link" href="/market-report" data-i18n="rep.open">Shareable report</a>
+      <h2 class="m-0" data-i18n="rep.title">Weekly market report</h2>
+      <a class="text-sm font-medium" id="rep-link" href="/market-report" data-i18n="rep.open">View full report →</a>
     </div>
     <p class="small muted mt-1 mb-3" id="rep-range"></p>
     <div class="kpis" id="rep-tiles"></div>
     <div class="grid two mt-4">
-      <div><h3 class="mt-0" data-i18n="rep.skills">Skills asked for</h3><div id="rep-skills"></div></div>
-      <div><h3 class="mt-0" data-i18n="rep.positions">Most posted positions</h3><div id="rep-positions"></div></div>
+      <div><h3 class="mt-0" data-i18n="rep.skills">Most requested skills</h3><div id="rep-skills"></div></div>
+      <div><h3 class="mt-0" data-i18n="rep.positions">Most common job titles</h3><div id="rep-positions"></div></div>
     </div>
   </div>
   <div class="grid two">
@@ -136,17 +136,17 @@
       <div class="chart tall"><canvas id="ov-skills"></canvas></div>
     </div>
     <div class="card">
-      <h2 data-i18n="ov.graph">Skills asked for together</h2>
+      <h2 data-i18n="ov.graph">Skills often requested together</h2>
       <div class="chart tall" id="ov-graph"></div>
     </div>
   </div>
   <div class="grid three">
     <div class="card"><h2 data-i18n="mk.cities">Cities</h2><div class="chart"><canvas id="mk-city"></canvas></div></div>
-    <div class="card"><h2 data-i18n="mk.seniority">Seniority</h2><div class="chart"><canvas id="mk-seniority"></canvas></div></div>
-    <div class="card"><h2 data-i18n="mk.exp">Experience asked</h2><div class="chart"><canvas id="mk-exp"></canvas></div></div>
-    <div class="card"><h2 data-i18n="mk.roles">Role family</h2><div class="chart"><canvas id="mk-role"></canvas></div></div>
-    <div class="card"><h2 data-i18n="mk.lang">Posting language</h2><div class="chart"><canvas id="mk-lang"></canvas></div></div>
-    <div class="card"><h2 data-i18n="mk.remote">Remote policy</h2><div class="chart"><canvas id="mk-remote"></canvas></div></div>
+    <div class="card"><h2 data-i18n="mk.seniority">Experience level</h2><div class="chart"><canvas id="mk-seniority"></canvas></div></div>
+    <div class="card"><h2 data-i18n="mk.exp">Years of experience</h2><div class="chart"><canvas id="mk-exp"></canvas></div></div>
+    <div class="card"><h2 data-i18n="mk.roles">Field</h2><div class="chart"><canvas id="mk-role"></canvas></div></div>
+    <div class="card"><h2 data-i18n="mk.lang">Job ad language</h2><div class="chart"><canvas id="mk-lang"></canvas></div></div>
+    <div class="card"><h2 data-i18n="mk.remote">Remote work</h2><div class="chart"><canvas id="mk-remote"></canvas></div></div>
   </div>
   <div class="grid two">
     <div class="card">
@@ -154,11 +154,11 @@
       <table class="table" id="mk-companies"><thead><tr><th data-i18n="th.employer">Employer</th><th data-i18n="th.open">Open tech roles</th><th data-i18n="th.share">Share</th></tr></thead><tbody></tbody></table>
     </div>
     <div class="card">
-      <h2><span data-i18n="mk.salary">Stated salaries</span> <span class="hint" data-i18n="mk.salary.hint">per year</span></h2>
+      <h2><span data-i18n="mk.salary">Salaries (where stated)</span> <span class="hint" data-i18n="mk.salary.hint">per year</span></h2>
       <div id="mk-salary" class="salary"></div>
     </div>
     <div class="card"><h2 data-i18n="mk.sector">Sectors</h2><div class="chart tall"><canvas id="mk-sector"></canvas></div></div>
-    <div class="card"><h2 data-i18n="mk.position">Most common positions</h2><div class="chart xtall"><canvas id="mk-position"></canvas></div></div>
+    <div class="card"><h2 data-i18n="mk.position">Most common job titles</h2><div class="chart xtall"><canvas id="mk-position"></canvas></div></div>
   </div>
 </section>
 
@@ -174,20 +174,20 @@
     <div class="card">
       <h2 data-i18n="p.looking">Job preferences</h2>
       <div class="field"><label data-i18n="p.roles">Roles</label><div class="chips toggles" id="p-roles"></div></div>
-      <div class="field"><label data-i18n="f.position">Position</label><div class="chipinput" id="p-position"></div></div>
-      <div class="field"><label data-i18n="p.levels">Levels</label><div class="chips toggles" id="p-levels"></div></div>
-      <div class="field"><label data-i18n="p.exp">Experience asked</label><div class="chips toggles" id="p-exp"></div></div>
-      <div class="field"><label data-i18n="f.degree">Degree asked</label><div class="chips toggles" id="p-degree"></div></div>
+      <div class="field"><label data-i18n="f.position">Job title</label><div class="chipinput" id="p-position"></div></div>
+      <div class="field"><label data-i18n="p.levels">Experience level</label><div class="chips toggles" id="p-levels"></div></div>
+      <div class="field"><label data-i18n="p.exp">Years of experience</label><div class="chips toggles" id="p-exp"></div></div>
+      <div class="field"><label data-i18n="f.degree">Education</label><div class="chips toggles" id="p-degree"></div></div>
       <div class="field"><label data-i18n="f.sector">Sector</label><div class="chips toggles" id="p-sector"></div></div>
-      <div class="field"><label data-i18n="f.emp">Company size (employees)</label><div class="chips toggles" id="p-emp"></div></div>
-      <div class="field"><label data-i18n="f.size">Hiring activity (open roles)</label><div class="chips toggles" id="p-size"></div></div>
+      <div class="field"><label data-i18n="f.emp">Company size</label><div class="chips toggles" id="p-emp"></div></div>
+      <div class="field"><label data-i18n="f.size">Open jobs at the company</label><div class="chips toggles" id="p-size"></div></div>
       <div class="field"><label data-i18n="f.remote">Remote</label><div class="chips toggles" id="p-remote"></div></div>
       <div class="field"><label data-i18n="f.cities">Cities</label><div class="chipinput" id="p-cities"></div></div>
       <div class="field"><label data-i18n="p.exclude">Employers to hide</label><div class="chipinput" id="p-exclude"></div></div>
-      <div class="field"><label data-i18n="p.language">Languages you speak</label><select id="p-language" data-i18n-title="f.language.hint" title="We hide jobs that ask for a language you did not pick."><option value="" data-i18n="f.language.any" selected>Dutch and English</option><option value="nl" data-i18n="f.language.nl">Dutch only</option><option value="en" data-i18n="f.language.en">English only</option></select></div>
+      <div class="field"><label data-i18n="p.language">Language</label><select id="p-language" data-i18n-title="f.language.hint" title="&quot;No Dutch required&quot; hides jobs that ask for Dutch."><option value="" data-i18n="f.language.any" selected>All jobs</option><option value="nl" data-i18n="f.language.nl">Dutch-speaking jobs</option><option value="en" data-i18n="f.language.en">No Dutch required</option></select></div>
       <label class="check"><input type="checkbox" id="p-visa"> <span data-i18n="p.visa">Only jobs that mention visa sponsorship</span></label>
       <label class="check"><input type="checkbox" id="p-agencies"> <span data-i18n="p.agencies">Hide recruitment agencies</span></label>
-      <label class="check"><input type="checkbox" id="p-noenrol"> <span data-i18n="f.noenrol">Exclude internships that require enrolment</span></label>
+      <label class="check"><input type="checkbox" id="p-noenrol"> <span data-i18n="f.noenrol">Hide internships for enrolled students only</span></label>
       <div class="row mt">
         <button class="primary" id="p-save" data-i18n="p.save">Save profile</button>
         <button id="p-export" data-i18n="p.export">Export</button>
@@ -200,11 +200,11 @@
       <h2 data-i18n="p.skills">Skills</h2>
       <div class="chipinput" id="p-skills"></div>
       <details class="mt">
-        <summary data-i18n="p.extract">Extract skills from CV text</summary>
+        <summary data-i18n="p.extract">Add skills from your CV</summary>
         <textarea id="p-cv" rows="6" data-i18n-placeholder="p.cv.ph" placeholder="Paste your CV text"></textarea>
         <div class="row"><button id="p-extract" data-i18n="p.extract.btn">Extract</button><span class="muted" id="p-extract-status"></span></div>
       </details>
-      <h3 class="mt" data-i18n="p.gap">Gap analysis</h3>
+      <h3 class="mt" data-i18n="p.gap">Skills gap</h3>
       <div class="row"><button class="primary" id="p-gap" data-i18n="p.gap.btn">Analyse</button><span class="muted" id="p-gap-status"></span></div>
       <div id="p-gap-result" hidden>
         <p class="muted" id="p-gap-coverage"></p>
@@ -262,12 +262,12 @@
   </div>
   <div class="grid three">
     <div class="card"><h2 data-i18n="co.skills">Skills asked for</h2><div class="chart"><canvas id="co-skills"></canvas></div></div>
-    <div class="card"><h2 data-i18n="co.level">Seniority</h2><div class="chart"><canvas id="co-seniority"></canvas></div></div>
-    <div class="card"><h2 data-i18n="co.lang">Posting language</h2><div class="chart"><canvas id="co-lang"></canvas></div></div>
+    <div class="card"><h2 data-i18n="co.level">Experience level</h2><div class="chart"><canvas id="co-seniority"></canvas></div></div>
+    <div class="card"><h2 data-i18n="co.lang">Job ad language</h2><div class="chart"><canvas id="co-lang"></canvas></div></div>
   </div>
   <div class="card">
     <h2><span data-i18n="co.roles">Open tech roles</span> <span class="hint" id="co-count"></span></h2>
-    <table class="table" id="co-jobs"><thead><tr><th data-i18n="th.age">Age</th><th data-i18n="th.title">Title</th><th data-i18n="th.city">City</th><th data-i18n="th.level">Level</th><th data-i18n="th.exp">Experience</th><th data-i18n="th.skills">Skills</th><th data-i18n="th.lang">Language</th><th data-i18n="th.visa">Visa</th></tr></thead><tbody></tbody></table>
+    <table class="table" id="co-jobs"><thead><tr><th data-i18n="th.age">Posted</th><th data-i18n="th.title">Title</th><th data-i18n="th.city">City</th><th data-i18n="th.level">Level</th><th data-i18n="th.exp">Experience</th><th data-i18n="th.skills">Skills</th><th data-i18n="th.lang">Language</th><th data-i18n="th.visa">Visa</th></tr></thead><tbody></tbody></table>
   </div>
 </section>
 
@@ -302,6 +302,6 @@
   <p class="foot-bottom"><a href="{{PRIVACY_PATH}}" data-i18n="privacy">Privacy</a> · <a href="{{FEEDBACK_PATH}}" data-i18n="feedback">Feedback</a>{{SOURCE_LINK}}</p>
  </div>
 </footer>
-<script src="/static/app.js?v=106"></script>
+<script src="/static/app.js?v=107"></script>
 </body>
 </html>

@@ -219,7 +219,7 @@ _T = {
     "nl": {
         "open": "open vacatures",
         "employers": "werkgevers",
-        "no_dutch": "zonder Nederlands",
+        "no_dutch": "geen Nederlands vereist",
         "visa": "noemen visumsponsoring",
         "entry": "voor starters",
         "updated": "bijgewerkt",
@@ -244,7 +244,7 @@ _T = {
     "en": {
         "open": "open roles",
         "employers": "employers",
-        "no_dutch": "need no Dutch",
+        "no_dutch": "no Dutch required",
         "visa": "mention visa sponsorship",
         "entry": "entry level",
         "updated": "updated",

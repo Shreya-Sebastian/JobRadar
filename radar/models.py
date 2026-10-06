@@ -116,6 +116,7 @@ class CompanyLogo(Base):
     data: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
     page_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    dark: Mapped[bool | None] = mapped_column(Boolean, nullable=True)  # drawn in white: shown on a dark plate
     fetched_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 

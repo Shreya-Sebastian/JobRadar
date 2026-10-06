@@ -561,6 +561,8 @@ def cmd_logos(args: argparse.Namespace) -> None:
 
     init_db()
     with session_scope() as s:
+        if args.recheck:
+            print(logos.recheck(s))
         print(logos.refresh(s, limit=args.limit, retry_missing=args.retry_missing))
 
 
@@ -785,6 +787,7 @@ def main(argv: list[str] | None = None) -> None:
     p = sub.add_parser("logos", help="look up employer logos for the job cards")
     p.add_argument("--limit", type=int, default=120)
     p.add_argument("--retry-missing", action="store_true", help="look again for employers that have none")
+    p.add_argument("--recheck", action="store_true", help="first check every stored logo again (blank ones dropped)")
     p.set_defaults(fn=cmd_logos)
     p = sub.add_parser("index-jobs", help="tell Google's Indexing API about new and closed job pages")
     p.add_argument("--dry-run", action="store_true", help="list what would be sent")

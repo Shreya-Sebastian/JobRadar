@@ -344,6 +344,7 @@
   .job-logo { @apply relative grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl;
     background: color-mix(in oklab, var(--sc, #64748b) 13%, var(--card)); color: var(--sc, #64748b); }
   .job-logo svg { @apply size-6; }
+  .job-logo.dark-plate img { background: #0f172a; }  /* a logo drawn in white */
   :root[data-theme="dark"] .job-logo { color: color-mix(in oklab, var(--sc, #64748b) 60%, white); }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) .job-logo { color: color-mix(in oklab, var(--sc, #64748b) 60%, white); }

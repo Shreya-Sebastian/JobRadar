@@ -126,7 +126,7 @@
       "exp.none": "none asked (entry level)", "exp.1": "≤ 1 year", "exp.2-3": "2-3 years", "exp.4-5": "4-5 years", "exp.6+": "6+ years", "exp.unspecified": "not stated",
       "co.back": "← Market", "co.skills": "Skills asked for", "co.level": "Seniority", "co.lang": "Posting language", "co.roles": "Open tech roles",
       "co.kpi.roles": "open tech roles", "co.kpi.cities": "cities", "co.kpi.en": "need no Dutch", "co.kpi.visa": "mention visa sponsorship", "co.kpi.new": "new in 30 days",
-      "co.none": "No open tech roles at the moment.", "co.title": "{c} jobs", "co.permalink": "Permanent page", "co.all": "All employers",
+      "co.none": "No open tech roles at the moment.", "co.title": "{c} jobs", "co.all": "All employers",
      
      
      
@@ -239,7 +239,7 @@
       "exp.none": "geen ervaring gevraagd (starter)", "exp.1": "≤ 1 jaar", "exp.2-3": "2-3 jaar", "exp.4-5": "4-5 jaar", "exp.6+": "6+ jaar", "exp.unspecified": "niet vermeld",
       "co.back": "← Markt", "co.skills": "Gevraagde skills", "co.level": "Niveau", "co.lang": "Taal van de vacature", "co.roles": "Open techvacatures",
       "co.kpi.roles": "open techvacatures", "co.kpi.cities": "steden", "co.kpi.en": "zonder Nederlands", "co.kpi.visa": "noemen visumsponsoring", "co.kpi.new": "nieuw in 30 dagen",
-      "co.none": "Op dit moment geen open techvacatures.", "co.title": "Vacatures bij {c}", "co.permalink": "Vaste pagina", "co.all": "Alle werkgevers",
+      "co.none": "Op dit moment geen open techvacatures.", "co.title": "Vacatures bij {c}", "co.all": "Alle werkgevers",
      
      
      
@@ -661,7 +661,6 @@
     doughnut("co-seniority", sen.items.map((i) => levelLabel(i.key)), sen.items.map((i) => i.count));
     doughnut("co-lang", lang.items.map((i) => t("lang.chart." + i.key) === "lang.chart." + i.key ? i.key : t("lang.chart." + i.key)), lang.items.map((i) => i.count));
     $("#co-count").textContent = fmt(jobs.total);
-    $("#co-permalink").href = "/company/" + name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
     document.title = `${t("co.title", { c: name })} | ${$("#brand").title}`;
     $("#co-jobs tbody").innerHTML = items.length ? items.map((i) => `<tr>
       <td class="muted" title="${esc(i.posted_at)}">${age(i)}</td>
@@ -886,7 +885,7 @@
     </li>`;
   }
   function logoTile(i) {
-    return `<span class="job-logo" style="--sc:${sectorColour(i.sector)}" title="${esc(sectorLabel(i.sector || "other"))}">${sectorTile(i.sector)}${i.logo ? `<img src="/logo/${encodeURIComponent(i.logo)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ""}</span>`;
+    return `<span class="job-logo${i.logo_dark ? " dark-plate" : ""}" style="--sc:${sectorColour(i.sector)}" title="${esc(sectorLabel(i.sector || "other"))}">${sectorTile(i.sector)}${i.logo ? `<img src="/logo/${encodeURIComponent(i.logo)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ""}</span>`;
   }
 
   // ---------- TRACKER: the saved jobs as a board, Saved -> Interested -> Applied -> Archived ----------

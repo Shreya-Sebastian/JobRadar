@@ -24,6 +24,7 @@ dependencies = [
     "alembic",
     "python-json-logger",
     "cryptography",  # signs the service-account login for Google's Indexing API
+    "pillow",  # checks and tidies employer logos (radar/logos.py)
 ]
 
 [project.optional-dependencies]

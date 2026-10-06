@@ -6,7 +6,7 @@ from radar import logos
 from radar.db import session_scope
 from radar.models import CompanyLogo
 
-PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 400
+PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 400  # bytes only: stored and served as they are
 
 
 def test_own_site_icons_rank_touch_icon_first_and_fall_back_to_favicon():
@@ -46,7 +46,7 @@ def test_logo_is_served_from_this_site_and_named_on_postings(fresh_db):
     assert r.status_code == 200 and r.content == PNG and "sandbox" in r.headers["content-security-policy"]
     assert client.get("/logo/nobody").status_code == 404
     with session_scope() as s:
-        assert logos.known(s) == {"Acme": "acme"}
+        assert logos.known(s) == {"Acme": {"slug": "acme", "dark": False}}
 
 
 def test_names_that_differ_only_in_case_get_their_own_logo_address(fresh_db):
@@ -62,10 +62,38 @@ def test_names_that_differ_only_in_case_get_their_own_logo_address(fresh_db):
                           content_hash=str(n), dedup_key=str(n), first_seen=now, last_seen=now, is_tech=True))
     with session_scope() as s:
         original = logos.find_logo
-        logos.find_logo = lambda url, client, depth=0: ("https://img/x.png", "image/png", PNG)
+        logos.find_logo = lambda url, client, depth=0: ("https://img/x.png", "image/png", PNG, False)
         try:
             out = logos.refresh(s, now=now, client=object())
         finally:
             logos.find_logo = original
         assert out["found"] == 2
         assert sorted(c.slug for c in s.query(CompanyLogo)) == ["deephealth", "deephealth-2"]
+
+
+def _png(colour, size=(40, 20), mode="RGBA", background=(0, 0, 0, 0)):
+    import io
+
+    from PIL import Image, ImageDraw
+
+    im = Image.new(mode, size, background)
+    ImageDraw.Draw(im).rectangle((10, 5, 30, 15), fill=colour)
+    out = io.BytesIO()
+    im.save(out, "PNG")
+    return out.getvalue()
+
+
+def test_blank_logos_are_dropped_and_white_ones_get_a_dark_plate():
+    white = (255, 255, 255, 255)
+    assert logos.tidy("image/png", _png(white, background=white)) is None  # a white square (Heerema's favicon)
+    assert logos.tidy("image/png", _png((0, 0, 0, 0))) is None                                     # nothing at all
+    ctype, data, dark = logos.tidy("image/png", _png((200, 30, 30, 255)))
+    assert ctype == "image/png" and dark is False
+    from io import BytesIO
+
+    from PIL import Image
+
+    assert Image.open(BytesIO(data)).size == (21, 11)  # cropped to what it shows
+    assert logos.tidy("image/png", _png((255, 255, 255, 255)))[2] is True  # white on transparent
+    assert logos.tidy("image/svg+xml", b'<svg><path fill="#ffffff" d="M0 0h1v1z"/></svg>')[2] is True
+    assert logos.tidy("image/svg+xml", b'<svg><path fill="#003366" d="M0 0h1v1z"/></svg>')[2] is False

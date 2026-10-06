@@ -131,7 +131,71 @@ def _size(sizes: str | None) -> int:
     return int(m.group(1)) if m else 0
 
 
-def download(url: str, client: httpx.Client) -> tuple[str, bytes] | None:
+def _light(colour: str) -> bool:
+    """A CSS colour that would vanish on a white plate."""
+    c = colour.strip().lower()
+    if c in ("white", "#fff", "#ffffff", "#ffffffff"):
+        return True
+    if re.fullmatch(r"#[0-9a-f]{6}", c):
+        r, g, b = (int(c[i:i + 2], 16) for i in (1, 3, 5))
+        return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.85
+    m = re.fullmatch(r"rgba?\(\s*(\d+)[ ,]+(\d+)[ ,]+(\d+).*", c)
+    if m:
+        r, g, b = (int(x) for x in m.groups())
+        return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.85
+    return False
+
+
+def tidy(ctype: str, data: bytes) -> tuple[str, bytes, bool] | None:
+    """Check that a logo shows something and tidy it: (type, bytes, needs a dark plate), or None for a blank one
+    (a white square, a fully transparent or tiny image). Raster logos are cropped to what they show and scaled
+    to at most 128 px, as PNG; an SVG stays as it is. A logo drawn in white for a dark header gets a dark plate."""
+    import io
+
+    if ctype == "image/svg+xml":
+        text = data.decode("utf-8", "ignore").lower()
+        colours = re.findall(r'(?:fill|stroke|stop-color)\s*[:=]\s*["\']?\s*'
+                             r'(#[0-9a-f]{3,8}|white|rgba?\([^)]*\))', text)
+        return ctype, data, bool(colours) and all(_light(c) for c in colours)
+    from PIL import Image
+
+    try:
+        im = Image.open(io.BytesIO(data))
+        im.load()
+        im = im.convert("RGBA")
+    except Exception:
+        return None
+    alpha = im.getchannel("A").point(lambda a: 255 if a > 16 else 0)
+    box = alpha.getbbox()
+    if not box:
+        return None  # fully transparent
+    im = im.crop(box)
+    if max(im.size) < 12:
+        return None
+    raw = im.tobytes()
+    n = len(raw) // 4
+    on_white = on_dark = opaque = 0
+    for i in range(0, len(raw), 4):
+        r, g, b, a = raw[i], raw[i + 1], raw[i + 2], raw[i + 3]
+        if a <= 32:
+            continue
+        lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255
+        on_white += lum < 0.82
+        on_dark += lum > 0.35
+        opaque += a > 240
+    if on_white >= 0.03 * n:
+        dark = False
+    elif 0.03 * n <= on_dark <= 0.85 * n:
+        dark = True  # light marks on a transparent background (a near-solid white tile is a placeholder, not a mark)
+    else:
+        return None  # nothing that would show: a white square, a blank placeholder
+    im.thumbnail((128, 128))
+    out = io.BytesIO()
+    im.save(out, "PNG", optimize=True)
+    return "image/png", out.getvalue(), dark
+
+
+def download(url: str, client: httpx.Client) -> tuple[str, bytes, bool] | None:
     from radar import robots
 
     if not robots.allowed(url, client):
@@ -146,7 +210,7 @@ def download(url: str, client: httpx.Client) -> tuple[str, bytes] | None:
         return None
     if ctype == "image/svg+xml" and (b"<script" in data.lower() or b"<svg" not in data[:2000].lower()):
         return None
-    return ctype, data
+    return tidy(ctype, data)
 
 
 def _read(url: str, client: httpx.Client, limit: int) -> tuple[int, str, bytes, str] | None:
@@ -200,14 +264,14 @@ def find_logo(page_url: str, client: httpx.Client, depth: int = 0) -> tuple[str,
         for path in ("/apple-touch-icon.png", "/apple-touch-icon-precomposed.png", "/favicon.ico"):
             got = download(f"{u.scheme}://{u.netloc}{path}", client)
             if got:
-                return f"{u.scheme}://{u.netloc}{path}", got[0], got[1]
+                return f"{u.scheme}://{u.netloc}{path}", *got
         return None
     html, final = page[2].decode("utf-8", "replace"), page[3]
     del page
     for url in candidates(html, final):
         got = download(url, client)
         if got:
-            return url, got[0], got[1]
+            return url, *got
     site = website(html, final) if ATS_HOSTS.search(urlparse(final).netloc) else None
     return find_logo(site, client, depth + 1) if site and depth == 0 else None
 
@@ -288,7 +352,7 @@ def refresh(session, limit: int = 120, now: datetime | None = None, client: http
             row = CompanyLogo(company=company, slug=slug)
         row.fetched_at, row.page_url = now, (page or "")[:500]
         if got:
-            row.status, row.image_url, row.content_type, row.data = "ok", got[0][:500], got[1], got[2]
+            row.status, row.image_url, row.content_type, row.data, row.dark = "ok", got[0][:500], got[1], got[2], got[3]
             found += 1
         elif row.status != "ok":  # keep an older logo when a later lookup fails
             row.status, row.data = "none", None
@@ -318,12 +382,35 @@ def known_domains() -> dict[str, str]:
     return out
 
 
-_known: dict[str, dict[str, str]] = {}
+_known: dict[str, dict[str, dict]] = {}
 _known_at: list[float] = [0.0]
 
 
-def known(session) -> dict[str, str]:
-    """company -> logo slug for every employer with a stored logo (kept 10 minutes in memory)."""
+def recheck(session) -> dict:
+    """Run every stored logo through `tidy` again (no network): blank ones are dropped (status "none", so a later
+    lookup tries the next candidate), the rest cropped, scaled and marked for a dark plate where they need one."""
+    from sqlalchemy import select
+
+    from radar.models import CompanyLogo
+
+    kept = dropped = 0
+    for company in session.scalars(select(CompanyLogo.company).where(CompanyLogo.status == "ok")).all():
+        row = session.get(CompanyLogo, company)
+        got = tidy(row.content_type or "", row.data or b"")
+        if got is None:
+            row.status, row.data = "none", None
+            dropped += 1
+        else:
+            row.content_type, row.data, row.dark = got
+            kept += 1
+        session.commit()
+        session.expunge(row)
+    _known.clear()
+    return {"kept": kept, "dropped": dropped}
+
+
+def known(session) -> dict[str, dict]:
+    """company -> {"slug", "dark"} for every employer with a stored logo (kept 10 minutes in memory)."""
     import time
 
     from sqlalchemy import select
@@ -331,7 +418,7 @@ def known(session) -> dict[str, str]:
     from radar.models import CompanyLogo
 
     if "map" not in _known or time.monotonic() - _known_at[0] > 600:
-        _known["map"] = dict(session.execute(select(CompanyLogo.company, CompanyLogo.slug)
-                                             .where(CompanyLogo.status == "ok")).all())
+        _known["map"] = {c: {"slug": s, "dark": bool(d)} for c, s, d in session.execute(
+            select(CompanyLogo.company, CompanyLogo.slug, CompanyLogo.dark).where(CompanyLogo.status == "ok")).all()}
         _known_at[0] = time.monotonic()
     return _known["map"]

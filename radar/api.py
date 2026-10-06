@@ -229,7 +229,8 @@ def postings(request: Request, page: int = Query(1, ge=1), size: int = Query(50,
     have = set(canonicalise((skills_have or "").split(",")))
     out = cached(_key(request), lambda: stats.posting_dicts(_rows(session, f), page, size, sort, have))
     marks = logos.known(session)
-    return {**out, "items": [{**i, "logo": marks.get(i["company"])} for i in out["items"]]}
+    return {**out, "items": [{**i, "logo": (marks.get(i["company"]) or {}).get("slug"),
+                              "logo_dark": (marks.get(i["company"]) or {}).get("dark", False)} for i in out["items"]]}
 
 
 @app.get("/logo/{slug}", include_in_schema=False)

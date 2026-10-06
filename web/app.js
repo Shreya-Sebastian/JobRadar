@@ -925,7 +925,7 @@
       </div>
       <div class="job-side">
         <button class="star${saved ? " on" : ""}" data-id="${i.id}" title="${t("save")}">${saved ? "★" : "☆"}</button>
-        ${i.match != null ? `<span class="match-bar" title="${Math.round(i.match * 100)}%"><i style="width:${Math.round(i.match * 100)}%"></i></span>` : ""}
+        ${i.match != null ? `<span class="match-bar" title="${Math.round(i.match * 100)}%"><i style="width:${Math.round(i.match * 100)}%"></i></span>${Math.round(i.match * 100) > 0 ? `<small class="match-pct">${t("li.match", { p: Math.round(i.match * 100) })}</small>` : ""}` : ""}
       </div>
     </li>`;
   }

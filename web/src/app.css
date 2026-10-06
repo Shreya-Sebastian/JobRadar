@@ -423,6 +423,15 @@
   .job-skills { @apply mt-2 flex flex-wrap gap-x-2.5 gap-y-0.5 text-[12.5px]; color: var(--faint); }
   .job-skills .have { @apply font-semibold text-accent; }
   .job-skills .more { @apply text-muted; }
+  /* wide cards: what the job asks gets its own column on the right, ruled off from the title and skills */
+  .job { container-type: inline-size; }
+  @container (min-width: 52rem) {
+    .job-body { display: grid; grid-template-columns: minmax(0, 1fr) 17.5rem; grid-template-areas: "top asks" "meta asks" "skills asks";
+                column-gap: 1.5rem; align-content: start; }
+    .job-top { grid-area: top; } .job-meta { grid-area: meta; } .job-skills { grid-area: skills; }
+    .job-asks { grid-area: asks; @apply mt-0 content-start self-stretch border-l border-line pl-5; }
+  }
+  .match-pct { @apply text-[11px] whitespace-nowrap text-muted tabular-nums; }
   .job.skel { @apply pointer-events-none; }
   .jobs-loading { @apply flex flex-col items-center gap-3 rounded-xl border border-line bg-card px-6 py-12 text-sm text-muted; }
   .load-track { @apply relative block h-1.5 w-full max-w-sm overflow-hidden rounded-full bg-chip; }

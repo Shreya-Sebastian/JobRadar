@@ -206,7 +206,11 @@
   /* the profile's preferences in labelled groups */
   fieldset.group { @apply m-0 mt-4 flex min-w-0 flex-col gap-3 rounded-xl border border-line px-4 pt-2 pb-4; }
   fieldset.group:first-of-type { @apply mt-0; }
-  fieldset.group > legend { @apply px-1.5 text-xs font-semibold tracking-wider text-muted uppercase; }
+  /* the groups in the site's green: a tinted label on the frame, bold field names inside */
+  fieldset.group { border-color: color-mix(in oklab, var(--accent) 30%, var(--line)); }
+  fieldset.group > legend { @apply rounded-md px-2 py-0.5 text-xs font-bold tracking-wider uppercase text-accent;
+    background: color-mix(in oklab, var(--accent) 12%, var(--card)); }
+  fieldset.group .field > label { @apply text-[13px] font-semibold text-ink; }
   fieldset.group label.check { @apply pb-0; }
   .matches > li + li { @apply border-t border-line pt-2.5; }
   .hint { @apply ml-1.5 text-xs font-normal text-muted; }

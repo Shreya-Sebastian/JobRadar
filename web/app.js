@@ -24,7 +24,7 @@
       "rep.title": "Weekly market report", "rep.open": "View full report →", "rep.range": "Jobs posted {a} to {b}, compared with the previous week",
       "rep.new": "new jobs", "rep.before": "the week before: {n}", "rep.nodutch": "no Dutch required", "rep.visa": "mention visa sponsorship",
       "rep.salary": "median stated salary", "rep.skills": "Most requested skills", "rep.positions": "Most common job titles", "rep.change": "change in share compared with the previous week",
-      "tab.tracker": "Saved jobs", "tr.title": "Saved jobs", "tr.hint": "Save jobs with the star, then move them along as your application progresses.", "col.saved": "Saved", "col.interested": "Interested", "col.applied": "Applied", "col.archived": "Archived", "tr.move": "Move to", "tr.delete": "Remove", "tr.removed": "Job removed.", "tr.undo": "Undo", "tr.empty": "No saved jobs yet. Save a job with the star in the Jobs tab to track it here.", "tr.col.empty": "Drag a job here", "tr.applied.on": "Applied {d}", "tr.moved.on": "Since {d}", "tr.closed": "Closed", "hero.title": "Find tech jobs in the Netherlands", "hero.sub": "{n} open jobs at {c} companies · updated {d}", "foot.tag": "Tech jobs in the Netherlands, read straight from employers' own career sites and updated every day.",
+      "tab.tracker": "Saved jobs", "tr.title": "Saved jobs", "tr.hint": "Move a job to the next column as your application progresses.", "col.saved": "Saved", "col.interested": "Interested", "col.applied": "Applied", "col.archived": "Archived", "tr.move": "Move to", "tr.delete": "Remove", "tr.removed": "Job removed.", "tr.undo": "Undo", "tr.empty": "No saved jobs yet. Tap the star on a job in Discover to keep it here.", "tr.col.empty": "Drag a job here", "tr.applied.on": "Applied {d}", "tr.moved.on": "Since {d}", "tr.closed": "Closed", "hero.title": "Find tech jobs in the Netherlands", "hero.sub": "{n} open jobs at {c} companies · updated {d}", "foot.tag": "Tech jobs in the Netherlands, read straight from employers' own career sites and updated every day.",
       "jobs.none": "No jobs match these filters. Try removing one.", "rss.title": "Your current search as an RSS feed", "rss.label": "RSS feed of your search", "pill.lang": "Language", "pill.visa": "Visa sponsorship", "pill.exp": "Experience", "pill.level": "Experience level", "pill.role": "Field", "pill.degree": "Education", "pill.remote": "Remote", "pill.company": "Company", "pill.posted": "Date posted", "pill.more": "More", "remote.label": "Remote", "sal.from": "from {v}", "fact.noexp": "No experience required", "sal.upto": "up to {v}", "sal.title": "Salary stated in the posting (per year, gross)", "fact.visa": "Visa sponsorship", "fact.nodutch": "No Dutch required",
       "ov.graph": "Skills often requested together",
       "kpi.week": "posted in the last 7 days", "kpi.week.vs": "previous 7 days: {m}", "kpi.week.title": "Jobs posted in the last 7 days, by the date employers posted them, against the 7 days before",
@@ -60,7 +60,7 @@
      
       
      
-      "match.none": "No live posting fits all your profile filters. Loosen a level or city under Profile.",
+      "match.none": "No live posting fits all your preferences. Try fewer levels or more cities.",
       "li.match": "{p}% match", "li.have": "you have {s}", "li.missing": "missing {s}", "agency": "agency", "closed": "closed",
       "jobs.match": "{n} jobs match", "jobs.match.one": "1 job matches", "page": "page {p} of {t}", "today": "today", "yesterday": "yesterday", "days.ago": "{d} days ago", "old": "90+ days", "old.year": "1+ year", "old.year.title": "Posted over a year ago: possibly a role the employer keeps open all the time", 
       "lang.nl": "NL", "lang.en": "EN", "lang.both": "NL + EN", "lang.nl.title": "Dutch required, no English needed", "lang.en.title": "No Dutch required", "lang.both.title": "Dutch and English both required",
@@ -69,7 +69,7 @@
       "lang.chart.en": "English", "lang.chart.nl": "Dutch", "lang.chart.other": "Other",
       "remote.remote": "Remote", "remote.hybrid": "Hybrid", "remote.onsite": "On-site", "remote.unknown": "Not stated",
       "trend.all": "all new postings",
-      "p.saved.empty": "Save a job with the star in the Jobs tab to keep it here.", "p.saved.status": "Saved. The Jobs tab now opens with these filters.", "p.imported": "Imported.",
+      "p.saved.empty": "None yet.", "p.saved.status": "Saved. Discover now opens with these filters.", "p.imported": "Imported.",
       "p.import.fail": "Could not read that file.", "p.more.text": "Paste a bit more text first.", "p.extracting": "Extracting…",
       "p.extracted": "{n} skills found; press Save profile to keep them.", "p.add.skills": "Add some skills first.", "p.analysing": "Analysing…",
       "p.considered": "{n} postings considered", "p.coverage": "Your skills cover {p}% of all skill mentions in these postings. The most demanded skills you do not list:",
@@ -138,7 +138,7 @@
       "rep.title": "Wekelijks marktrapport", "rep.open": "Volledig rapport bekijken →", "rep.range": "Vacatures geplaatst van {a} tot {b}, vergeleken met de week ervoor",
       "rep.new": "nieuwe vacatures", "rep.before": "de week ervoor: {n}", "rep.nodutch": "geen Nederlands vereist", "rep.visa": "noemen visumsponsoring",
       "rep.salary": "mediaan vermeld salaris", "rep.skills": "Meest gevraagde skills", "rep.positions": "Meest voorkomende functietitels", "rep.change": "verschil in aandeel met de week ervoor",
-      "tab.tracker": "Bewaarde vacatures", "tr.title": "Bewaarde vacatures", "tr.hint": "Bewaar vacatures met de ster en verplaats ze naarmate je sollicitatie vordert.", "col.saved": "Bewaard", "col.interested": "Interessant", "col.applied": "Gesolliciteerd", "col.archived": "Gearchiveerd", "tr.move": "Verplaats naar", "tr.delete": "Verwijderen", "tr.removed": "Vacature verwijderd.", "tr.undo": "Ongedaan maken", "tr.empty": "Nog geen bewaarde vacatures. Bewaar een vacature met de ster in het tabblad Vacatures om hem hier te volgen.", "tr.col.empty": "Sleep een vacature hierheen", "tr.applied.on": "Gesolliciteerd {d}", "tr.moved.on": "Sinds {d}", "tr.closed": "Gesloten", "hero.title": "Vind techvacatures in Nederland", "hero.sub": "{n} open vacatures bij {c} bedrijven · bijgewerkt {d}", "foot.tag": "Techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers en elke dag bijgewerkt.",
+      "tab.tracker": "Bewaarde vacatures", "tr.title": "Bewaarde vacatures", "tr.hint": "Verplaats een vacature naar de volgende kolom naarmate je sollicitatie vordert.", "col.saved": "Bewaard", "col.interested": "Interessant", "col.applied": "Gesolliciteerd", "col.archived": "Gearchiveerd", "tr.move": "Verplaats naar", "tr.delete": "Verwijderen", "tr.removed": "Vacature verwijderd.", "tr.undo": "Ongedaan maken", "tr.empty": "Nog geen bewaarde vacatures. Tik op de ster bij een vacature in Ontdekken om hem hier te bewaren.", "tr.col.empty": "Sleep een vacature hierheen", "tr.applied.on": "Gesolliciteerd {d}", "tr.moved.on": "Sinds {d}", "tr.closed": "Gesloten", "hero.title": "Vind techvacatures in Nederland", "hero.sub": "{n} open vacatures bij {c} bedrijven · bijgewerkt {d}", "foot.tag": "Techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers en elke dag bijgewerkt.",
       "jobs.none": "Geen vacatures met deze filters. Haal er een weg.", "rss.title": "Je huidige zoekopdracht als RSS-feed", "rss.label": "RSS-feed van je zoekopdracht", "pill.lang": "Taal", "pill.visa": "Visumsponsoring", "pill.exp": "Ervaring", "pill.level": "Ervaringsniveau", "pill.role": "Vakgebied", "pill.degree": "Opleiding", "pill.remote": "Remote", "pill.company": "Werkgever", "pill.posted": "Geplaatst", "pill.more": "Meer", "remote.label": "Remote", "sal.from": "vanaf {v}", "fact.noexp": "Geen ervaring vereist", "sal.upto": "tot {v}", "sal.title": "Salaris volgens de vacature (per jaar, bruto)", "fact.visa": "Visumsponsoring", "fact.nodutch": "Geen Nederlands vereist",
       "ov.graph": "Skills die vaak samen gevraagd worden",
       "kpi.week": "geplaatst in de laatste 7 dagen", "kpi.week.vs": "7 dagen daarvoor: {m}", "kpi.week.title": "Vacatures geplaatst in de laatste 7 dagen, op de datum van de werkgever, tegenover de 7 dagen daarvoor",
@@ -173,7 +173,7 @@
      
       
      
-      "match.none": "Geen open vacature past bij al je profielfilters. Versoepel een niveau of stad onder Profiel.",
+      "match.none": "Geen open vacature past bij al je voorkeuren. Kies minder niveaus of meer steden.",
       "li.match": "{p}% match", "li.have": "je hebt {s}", "li.missing": "mist {s}", "agency": "bureau", "closed": "gesloten",
       "jobs.match": "{n} vacatures gevonden", "jobs.match.one": "1 vacature gevonden", "page": "pagina {p} van {t}", "today": "vandaag", "yesterday": "gisteren", "days.ago": "{d} dagen geleden", "old": "90+ dagen", "old.year": "1+ jaar", "old.year.title": "Meer dan een jaar geleden geplaatst: mogelijk een vacature die altijd open staat", 
       "lang.nl": "NL", "lang.en": "EN", "lang.both": "NL + EN", "lang.nl.title": "Nederlands vereist, geen Engels nodig", "lang.en.title": "Geen Nederlands vereist", "lang.both.title": "Nederlands en Engels allebei vereist",
@@ -182,7 +182,7 @@
       "lang.chart.en": "Engels", "lang.chart.nl": "Nederlands", "lang.chart.other": "Anders",
       "remote.remote": "Remote", "remote.hybrid": "Hybride", "remote.onsite": "Op kantoor", "remote.unknown": "Niet vermeld",
       "trend.all": "alle nieuwe vacatures",
-      "p.saved.empty": "Bewaar een vacature met de ster in het tabblad Vacatures om hem hier te houden.", "p.saved.status": "Opgeslagen. Persoonlijke weergave staat aan.", "p.imported": "Geïmporteerd.",
+      "p.saved.empty": "Nog geen.", "p.saved.status": "Opgeslagen. Persoonlijke weergave staat aan.", "p.imported": "Geïmporteerd.",
       "p.import.fail": "Kon dat bestand niet lezen.", "p.more.text": "Plak eerst wat meer tekst.", "p.extracting": "Bezig met herkennen…",
       "p.extracted": "{n} skills gevonden; klik op Profiel opslaan om ze te bewaren.", "p.add.skills": "Voeg eerst wat skills toe.", "p.analysing": "Bezig met analyseren…",
       "p.considered": "{n} vacatures bekeken", "p.coverage": "Je skills dekken {p}% van alle skillvermeldingen in deze vacatures. De meest gevraagde skills die je niet noemt:",
@@ -946,6 +946,7 @@
     const shortDate = (iso) => new Date(iso).toLocaleDateString(LANG === "nl" ? "nl-NL" : "en-GB", { day: "numeric", month: "short" });
     const cols = Object.fromEntries(COLUMNS.map((c) => [c, []]));
     for (const id of state.saved) if (boardItems[id]) cols[columnOf(id)].push(boardItems[id]);
+    $("#tr-hint").hidden = !state.saved.length;  // an empty board says what to do instead
     if (!state.saved.length) { $("#board").innerHTML = `<p class="board-empty muted">${t("tr.empty")}</p>`; return; }
     $("#board").innerHTML = COLUMNS.map((c) => `<div class="col" data-col="${c}">
       <h3><span>${t("col." + c)}</span><b>${cols[c].length}</b></h3>

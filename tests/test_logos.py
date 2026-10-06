@@ -94,6 +94,16 @@ def test_blank_logos_are_dropped_and_white_ones_get_a_dark_plate():
     from PIL import Image
 
     assert Image.open(BytesIO(data)).size == (21, 11)  # cropped to what it shows
-    assert logos.tidy("image/png", _png((255, 255, 255, 255)))[2] is True  # white on transparent
+    # white marks on transparent (an outline: a solid white block would be a placeholder)
+    import io
+
+    from PIL import Image as Img
+    from PIL import ImageDraw
+
+    im = Img.new("RGBA", (40, 20), (0, 0, 0, 0))
+    ImageDraw.Draw(im).rectangle((5, 3, 35, 17), outline=(255, 255, 255, 255), width=2)
+    buf = io.BytesIO()
+    im.save(buf, "PNG")
+    assert logos.tidy("image/png", buf.getvalue())[2] is True
     assert logos.tidy("image/svg+xml", b'<svg><path fill="#ffffff" d="M0 0h1v1z"/></svg>')[2] is True
     assert logos.tidy("image/svg+xml", b'<svg><path fill="#003366" d="M0 0h1v1z"/></svg>')[2] is False

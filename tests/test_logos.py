@@ -46,7 +46,10 @@ def test_logo_is_served_from_this_site_and_named_on_postings(fresh_db):
     assert r.status_code == 200 and r.content == PNG and "sandbox" in r.headers["content-security-policy"]
     assert client.get("/logo/nobody").status_code == 404
     with session_scope() as s:
-        assert logos.known(s) == {"Acme": {"slug": "acme", "dark": False}}
+        mark = logos.known(s)["Acme"]
+        assert (mark["slug"], mark["dark"]) == ("acme", False)
+        # the address carries the time the logo was stored: a replaced logo gets a new one, past the week-long cache
+        assert mark["v"] and int(mark["v"], 16) > 0
 
 
 def test_names_that_differ_only_in_case_get_their_own_logo_address(fresh_db):

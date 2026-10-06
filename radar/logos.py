@@ -535,7 +535,8 @@ def recheck(session) -> dict:
 
 
 def known(session) -> dict[str, dict]:
-    """company -> {"slug", "dark"} for every employer with a stored logo (kept 10 minutes in memory)."""
+    """company -> {"slug", "dark", "v"} for every employer with a stored logo (kept 10 minutes in memory). "v" changes
+    whenever the logo is stored again, so its address does too and browsers do not keep showing the old one."""
     import time
 
     from sqlalchemy import select
@@ -543,7 +544,9 @@ def known(session) -> dict[str, dict]:
     from radar.models import CompanyLogo
 
     if "map" not in _known or time.monotonic() - _known_at[0] > 600:
-        _known["map"] = {c: {"slug": s, "dark": bool(d)} for c, s, d in session.execute(
-            select(CompanyLogo.company, CompanyLogo.slug, CompanyLogo.dark).where(CompanyLogo.status == "ok")).all()}
+        _known["map"] = {c: {"slug": s, "dark": bool(d), "v": format(int(at.timestamp()), "x") if at else ""}
+                         for c, s, d, at in session.execute(
+            select(CompanyLogo.company, CompanyLogo.slug, CompanyLogo.dark, CompanyLogo.fetched_at)
+            .where(CompanyLogo.status == "ok")).all()}
         _known_at[0] = time.monotonic()
     return _known["map"]

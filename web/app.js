@@ -926,7 +926,7 @@
     </li>`;
   }
   function logoTile(i) {
-    return `<span class="job-logo${i.logo_dark ? " dark-plate" : ""}" style="--sc:${sectorColour(i.sector)}" title="${esc(sectorLabel(i.sector || "other"))}">${sectorTile(i.sector)}${i.logo ? `<img src="/logo/${encodeURIComponent(i.logo)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ""}</span>`;
+    return `<span class="job-logo${i.logo_dark ? " dark-plate" : ""}" style="--sc:${sectorColour(i.sector)}" title="${esc(sectorLabel(i.sector || "other"))}">${sectorTile(i.sector)}${i.logo ? `<img src="/logo/${encodeURIComponent(i.logo)}${i.logo_v ? "?v=" + i.logo_v : ""}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ""}</span>`;
   }
 
   // ---------- TRACKER: the saved jobs as a board, Saved -> Interested -> Applied -> Archived ----------

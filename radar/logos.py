@@ -307,7 +307,7 @@ def known_domains() -> dict[str, str]:
     """data/company_domains.tsv: employer -> official website, for employers whose board shows no logo."""
     from pathlib import Path
 
-    path = Path(__file__).resolve().parent.parent / "data" / "company_domains.tsv"
+    path = Path(settings.data_dir) / "company_domains.tsv"  # the installed package has no data folder beside it
     out = {}
     if path.exists():
         for line in path.read_text(encoding="utf-8").splitlines():

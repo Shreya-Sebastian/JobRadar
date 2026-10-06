@@ -23,6 +23,13 @@ from radar.models import CrawlRun, Posting, Source
 from radar.taxonomy import find_skills
 
 
+def _recognised(company: str | None) -> bool:
+    """On the IND register of recognised sponsors (radar/sponsors.py; imported late, it pulls in httpx)."""
+    from radar.sponsors import recognised
+
+    return recognised(company)
+
+
 @dataclass
 class Row:
     id: int
@@ -229,8 +236,10 @@ class Filters:
             # Dutch only: Dutch is required and English is not, for people who work in Dutch
             out = [r for r in out if (r.ex.get("dutch_required") or r.ex.get("posting_language") == "nl")
                    and r.ex.get("english_required") is False]
-        if self.sponsorship:
-            out = [r for r in out if r.ex.get("visa_sponsorship") is True]
+        if self.sponsorship:  # the posting mentions sponsorship, or the employer is a recognised sponsor (IND)
+            from radar.sponsors import recognised
+
+            out = [r for r in out if r.ex.get("visa_sponsorship") is True or recognised(r.company)]
         remotes = _csv(self.remote)
         if remotes and {"remote", "hybrid", "onsite"} <= set(remotes):
             remotes = []  # every policy ticked means "any", including postings that do not state one
@@ -698,6 +707,7 @@ def posting_dicts(
             "english_only": r.ex.get("english_only"),
             "english_required": r.ex.get("english_required"),
             "visa": r.ex.get("visa_sponsorship"),
+            "ind_sponsor": _recognised(r.company),
             "remote_policy": r.ex.get("remote_policy"),
             "salary_min": r.ex.get("salary_min_eur"),
             "salary_max": r.ex.get("salary_max_eur"),

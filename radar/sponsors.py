@@ -62,6 +62,52 @@ def name_key(name: str) -> str:
     return re.sub(r"[^a-z0-9]", "", clean_name(name).lower())
 
 
+_register: dict[str, frozenset[str]] = {}
+_register_lock = threading.Lock()
+
+
+def _register_index() -> dict[str, frozenset[str]]:
+    """The IND register as two sets: every employer's name key, and every leading run of whole words of its cleaned
+    name ("deloitte", "deloitte consulting"), so "Deloitte" matches "Deloitte Consulting B.V."."""
+    with _register_lock:
+        if not _register:
+            exact, prefixes = set(), set()
+            path = Path(settings.data_dir) / "seeds" / "ind_sponsors.tsv"
+            if path.exists():
+                for line in path.read_text(encoding="utf-8").splitlines():
+                    if line.startswith("#") or "\t" not in line:
+                        continue
+                    words = re.findall(r"[a-z0-9]+", clean_name(line.split("\t")[0]).lower())
+                    if len("".join(words)) >= 3:
+                        exact.add("".join(words))
+                    prefixes.update(" ".join(words[:i]) for i in range(1, len(words)))
+            _register["exact"], _register["prefix"] = frozenset(exact), frozenset(prefixes)
+        return _register
+
+
+_recognised: dict[str, bool] = {}
+# everyday words that start many unrelated registered names
+_COMMON = {"open", "crop", "core", "next", "blue", "live", "home", "more", "lead", "tech", "data", "smart", "first",
+           "green", "action", "focus", "prime", "true", "nova", "best", "good", "real", "fast", "easy", "city", "star",
+           "link"}
+
+
+def recognised(company: str | None) -> bool:
+    """Whether the employer is on the IND public register of recognised sponsors: allowed to sponsor a work visa
+    for knowledge migrants. Matched by name: exactly, or as the leading words of a registered name. A single word only
+    counts as leading words when it has 4 letters or more and is not an everyday word, so "KPMG" matches "KPMG
+    Advisory N.V." but "Open" does not match "Open Universiteit"."""
+    if not company:
+        return False
+    if company not in _recognised:
+        idx = _register_index()
+        words = re.findall(r"[a-z0-9]+", clean_name(company).lower())
+        key = "".join(words)
+        _recognised[company] = bool(key) and (key in idx["exact"] or (
+            " ".join(words) in idx["prefix"] and (len(words) > 1 or (len(key) >= 4 and key not in _COMMON))))
+    return _recognised[company]
+
+
 def tokens(name: str) -> list[str]:
     return [w for w in re.findall(r"[a-z0-9]+", clean_name(name).lower()) if len(w) >= 4 and w not in _STOP]
 

@@ -24,7 +24,7 @@
       "rep.new": "new jobs", "rep.before": "the week before: {n}", "rep.nodutch": "no Dutch required", "rep.visa": "mention visa sponsorship",
       "rep.salary": "median stated salary", "rep.skills": "Most requested skills", "rep.positions": "Most common job titles", "rep.change": "change in share compared with the previous week",
       "tab.tracker": "Saved jobs", "tr.title": "Saved jobs", "tr.hint": "Move a job to the next column as your application progresses.", "col.saved": "Saved", "col.interested": "Interested", "col.applied": "Applied", "col.archived": "Archived", "tr.move": "Move to", "tr.delete": "Remove", "tr.removed": "Job removed.", "tr.undo": "Undo", "tr.empty": "No saved jobs yet. Tap the star on a job in Discover to keep it here.", "tr.col.empty": "Drag a job here", "tr.applied.on": "Applied {d}", "tr.moved.on": "Since {d}", "tr.closed": "Closed", "hero.title": "Find tech jobs in the Netherlands", "hero.sub": "{n} open jobs at {c} companies · updated {d}", "foot.tag": "Tech jobs in the Netherlands, read straight from employers' own career sites and updated every day.",
-      "jobs.none": "No jobs match these filters. Try removing one.", "rss.title": "Your current search as an RSS feed", "rss.label": "RSS feed of your search", "pill.lang": "Language", "pill.visa": "Visa sponsorship", "pill.exp": "Experience", "pill.level": "Experience level", "pill.role": "Field", "pill.degree": "Education", "pill.remote": "Remote", "pill.company": "Company", "pill.posted": "Date posted", "pill.more": "More", "remote.label": "Remote", "sal.from": "from {v}", "fact.noexp": "No experience required", "sal.upto": "up to {v}", "sal.title": "Salary stated in the posting (per year, gross)", "fact.visa": "Visa sponsorship", "fact.nodutch": "No Dutch required",
+      "jobs.none": "No jobs match these filters. Try removing one.", "rss.title": "Your current search as an RSS feed", "rss.label": "RSS feed of your search", "pill.lang": "Language", "pill.visa": "Visa sponsorship", "pill.exp": "Experience", "pill.level": "Experience level", "pill.role": "Field", "pill.degree": "Education", "pill.remote": "Remote", "pill.company": "Company", "pill.posted": "Date posted", "pill.more": "More", "remote.label": "Remote", "sal.from": "from {v}", "fact.noexp": "No experience required", "sal.upto": "up to {v}", "sal.title": "Salary stated in the posting (per year, gross)", "fact.visa": "Visa sponsorship", "fact.ind": "Recognised sponsor", "fact.ind.title": "The employer is on the IND public register of recognised sponsors: it can sponsor a work visa", "fact.nodutch": "No Dutch required",
       "ov.graph": "Skills often requested together",
       "kpi.week": "posted in the last 7 days", "kpi.week.vs": "previous 7 days: {m}", "kpi.week.title": "Jobs posted in the last 7 days, by the date employers posted them, against the 7 days before",
       "ov.matches": "Suggested for you",
@@ -33,8 +33,8 @@
       "f.window.7": "Past week", "f.window.30": "Past month", "f.window.90": "Past 3 months",
       "f.language": "Language", "f.language.any": "All jobs", "f.language.nl": "Dutch-speaking jobs", "f.language.en": "No Dutch required", "f.language.hint": "\"No Dutch required\" hides jobs that ask for Dutch.",
       "f.sort": "Sort by", "f.sort.newest": "Most recent", "f.sort.match": "Best match", "f.role": "Field", "f.level": "Experience level", "f.remote": "Remote",
-      "f.cities": "Cities", "f.visa": "Visa sponsorship mentioned", "f.agencies": "Hide recruitment agencies", 
-      "f.saved": "Saved jobs only", "f.skill": "Skill", "f.reset": "Clear filters", "f.profile": "Use my profile",
+      "f.cities": "Cities", "f.visa": "Can sponsor a visa (mentioned, or a recognised sponsor)", "f.agencies": "Hide recruitment agencies", 
+      "f.saved": "Saved jobs only", "f.skill": "Skill", "quiz.open": "Quick start", "f.reset": "Clear filters", "f.profile": "Use my profile",
       "th.age": "Posted", "th.title": "Title", "th.company": "Company", "th.city": "City", "th.level": "Level", "th.exp": "Experience", "expcell.none": "None required", "th.skills": "Skills",
       "th.match": "Match", "th.lang": "Language", "th.visa": "Visa", "th.employer": "Employer", "th.open": "Open tech roles", "th.share": "Share",
       "th.sector": "Sector", "th.status": "Status", "th.livetech": "Live tech postings", "th.platform": "Platform", "th.kind": "Kind", "th.postings": "Postings",
@@ -44,7 +44,7 @@
       "mk.lang": "Job ad language", "mk.remote": "Remote work",
       "p.looking": "Job preferences", "p.g.role": "Role", "p.g.exp": "Experience and education", "p.g.employer": "Employer", "p.g.where": "Location", "p.g.lang": "Language and visa",
       "p.roles": "Roles", "p.levels": "Experience level", "p.exclude": "Employers to hide", "p.language": "Language",
-      "p.visa": "Only jobs that mention visa sponsorship", "p.agencies": "Hide recruitment agencies", "p.save": "Save profile", "p.export": "Export",
+      "p.visa": "Only employers that can sponsor a visa", "p.agencies": "Hide recruitment agencies", "p.save": "Save profile", "p.export": "Export",
       "p.import": "Import", "p.clear": "Clear", "p.skills": "Skills",
       "p.extract": "Add skills from your CV", "p.cv.ph": "Paste your CV text", "p.extract.btn": "Extract",
       "p.gap": "Skills gap", "p.gap.btn": "Analyse",
@@ -137,7 +137,7 @@
       "rep.new": "nieuwe vacatures", "rep.before": "de week ervoor: {n}", "rep.nodutch": "geen Nederlands vereist", "rep.visa": "noemen visumsponsoring",
       "rep.salary": "mediaan vermeld salaris", "rep.skills": "Meest gevraagde skills", "rep.positions": "Meest voorkomende functietitels", "rep.change": "verschil in aandeel met de week ervoor",
       "tab.tracker": "Bewaarde vacatures", "tr.title": "Bewaarde vacatures", "tr.hint": "Verplaats een vacature naar de volgende kolom naarmate je sollicitatie vordert.", "col.saved": "Bewaard", "col.interested": "Interessant", "col.applied": "Gesolliciteerd", "col.archived": "Gearchiveerd", "tr.move": "Verplaats naar", "tr.delete": "Verwijderen", "tr.removed": "Vacature verwijderd.", "tr.undo": "Ongedaan maken", "tr.empty": "Nog geen bewaarde vacatures. Tik op de ster bij een vacature in Ontdekken om hem hier te bewaren.", "tr.col.empty": "Sleep een vacature hierheen", "tr.applied.on": "Gesolliciteerd {d}", "tr.moved.on": "Sinds {d}", "tr.closed": "Gesloten", "hero.title": "Vind techvacatures in Nederland", "hero.sub": "{n} open vacatures bij {c} bedrijven · bijgewerkt {d}", "foot.tag": "Techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers en elke dag bijgewerkt.",
-      "jobs.none": "Geen vacatures met deze filters. Haal er een weg.", "rss.title": "Je huidige zoekopdracht als RSS-feed", "rss.label": "RSS-feed van je zoekopdracht", "pill.lang": "Taal", "pill.visa": "Visumsponsoring", "pill.exp": "Ervaring", "pill.level": "Ervaringsniveau", "pill.role": "Vakgebied", "pill.degree": "Opleiding", "pill.remote": "Remote", "pill.company": "Werkgever", "pill.posted": "Geplaatst", "pill.more": "Meer", "remote.label": "Remote", "sal.from": "vanaf {v}", "fact.noexp": "Geen ervaring vereist", "sal.upto": "tot {v}", "sal.title": "Salaris volgens de vacature (per jaar, bruto)", "fact.visa": "Visumsponsoring", "fact.nodutch": "Geen Nederlands vereist",
+      "jobs.none": "Geen vacatures met deze filters. Haal er een weg.", "rss.title": "Je huidige zoekopdracht als RSS-feed", "rss.label": "RSS-feed van je zoekopdracht", "pill.lang": "Taal", "pill.visa": "Visumsponsoring", "pill.exp": "Ervaring", "pill.level": "Ervaringsniveau", "pill.role": "Vakgebied", "pill.degree": "Opleiding", "pill.remote": "Remote", "pill.company": "Werkgever", "pill.posted": "Geplaatst", "pill.more": "Meer", "remote.label": "Remote", "sal.from": "vanaf {v}", "fact.noexp": "Geen ervaring vereist", "sal.upto": "tot {v}", "sal.title": "Salaris volgens de vacature (per jaar, bruto)", "fact.visa": "Visumsponsoring", "fact.ind": "Erkend referent", "fact.ind.title": "De werkgever staat in het openbaar register erkende referenten van de IND: hij kan een werkvisum sponsoren", "fact.nodutch": "Geen Nederlands vereist",
       "ov.graph": "Skills die vaak samen gevraagd worden",
       "kpi.week": "geplaatst in de laatste 7 dagen", "kpi.week.vs": "7 dagen daarvoor: {m}", "kpi.week.title": "Vacatures geplaatst in de laatste 7 dagen, op de datum van de werkgever, tegenover de 7 dagen daarvoor",
       "ov.matches": "Voorgesteld voor jou",
@@ -146,8 +146,8 @@
       "f.window.7": "Afgelopen week", "f.window.30": "Afgelopen maand", "f.window.90": "Afgelopen 3 maanden",
       "f.language": "Taal", "f.language.any": "Alle vacatures", "f.language.nl": "Nederlandstalige vacatures", "f.language.en": "Geen Nederlands vereist", "f.language.hint": "\"Geen Nederlands vereist\" verbergt vacatures die om Nederlands vragen.",
       "f.sort": "Sorteren op", "f.sort.newest": "Meest recent", "f.sort.match": "Beste match", "f.role": "Vakgebied", "f.level": "Ervaringsniveau", "f.remote": "Remote",
-      "f.cities": "Steden", "f.visa": "Visumsponsoring genoemd", "f.agencies": "Wervingsbureaus verbergen", 
-      "f.saved": "Alleen bewaarde vacatures", "f.skill": "Skill", "f.reset": "Filters wissen", "f.profile": "Mijn profiel gebruiken",
+      "f.cities": "Steden", "f.visa": "Kan een visum sponsoren (genoemd, of erkend referent)", "f.agencies": "Wervingsbureaus verbergen", 
+      "f.saved": "Alleen bewaarde vacatures", "f.skill": "Skill", "quiz.open": "Snel starten", "f.reset": "Filters wissen", "f.profile": "Mijn profiel gebruiken",
       "th.age": "Geplaatst", "th.title": "Functie", "th.company": "Werkgever", "th.city": "Plaats", "th.level": "Niveau", "th.exp": "Ervaring", "expcell.none": "Niet vereist", "th.skills": "Skills",
       "th.match": "Match", "th.lang": "Taal", "th.visa": "Visum", "th.employer": "Werkgever", "th.open": "Open techvacatures", "th.share": "Aandeel",
       "th.sector": "Sector", "th.status": "Status", "th.livetech": "Open techvacatures", "th.platform": "Platform", "th.kind": "Soort", "th.postings": "Vacatures",
@@ -157,7 +157,7 @@
       "mk.lang": "Taal van de vacature", "mk.remote": "Remote werken",
       "p.looking": "Voorkeuren", "p.g.role": "Functie", "p.g.exp": "Ervaring en opleiding", "p.g.employer": "Werkgever", "p.g.where": "Locatie", "p.g.lang": "Taal en visum",
       "p.roles": "Rollen", "p.levels": "Ervaringsniveau", "p.exclude": "Werkgevers verbergen", "p.language": "Taal",
-      "p.visa": "Alleen vacatures die visumsponsoring noemen", "p.agencies": "Wervingsbureaus verbergen", "p.save": "Profiel opslaan", "p.export": "Exporteren",
+      "p.visa": "Alleen werkgevers die een visum kunnen sponsoren", "p.agencies": "Wervingsbureaus verbergen", "p.save": "Profiel opslaan", "p.export": "Exporteren",
       "p.import": "Importeren", "p.clear": "Wissen", "p.skills": "Skills",
       "p.extract": "Skills uit je cv halen", "p.cv.ph": "Plak je cv-tekst", "p.extract.btn": "Herkennen",
       "p.gap": "Ontbrekende skills", "p.gap.btn": "Analyseren",
@@ -423,6 +423,15 @@
   function fmtDate(iso) { return new Date(iso).toLocaleString(LANG === "nl" ? "nl-NL" : "en-GB", { dateStyle: "medium", timeStyle: "short" }); }
 
   // ---------- charts ----------
+  // the chart libraries (Chart.js and D3, about 170 KB) load only when a view draws a chart: Discover, where most
+  // visits start, does without them. Pointing at the Market tab fetches them early, so it opens without a wait
+  let chartLibs = null;
+  const needCharts = () => chartLibs || (chartLibs = Promise.all(["/static/vendor/chart.umd.min.js", "/static/vendor/d3.min.js"]
+    .map((src) => new Promise((ok, fail) => {
+      const s = document.createElement("script"); s.src = src; s.onload = ok;
+      s.onerror = () => { chartLibs = null; fail(new Error(`${src} did not load`)); };
+      document.head.appendChild(s);
+    }))));
   // long axis labels ("Simulation / computational") on two lines, so Chart.js does not cut them off
   function wrapLabel(label, max = 26) {
     const s = String(label);
@@ -605,6 +614,7 @@
   // ---------- OVERVIEW ----------
   // the skill charts, at the top of the Market tab
   async function renderSkills() {
+    await needCharts();
     const p = new URLSearchParams();
     const [skills, co] = await Promise.all([api("/api/skills", withParams(p, { top: 30 })), api("/api/cooccurrence", withParams(p, { top: 28 }))]);
     const have = new Set(state.profile.skills);
@@ -643,6 +653,7 @@
 
   // ---------- COMPANY ----------
   async function renderCompany() {
+    await needCharts();
     const name = state.routeArg || "";
     $("#co-name").textContent = name;
     const p = new URLSearchParams({ company: name });
@@ -905,7 +916,8 @@
     const tags = [
       i.english_only ? `<span class="tag lang" title="${t("lang.en.title")}">${t("fact.nodutch")}</span>`
         : `<span class="tag" title="${t("lang." + langKey(i) + ".title")}">${t("lang." + langKey(i))}</span>`,
-      i.visa === true && `<span class="tag visa">${t("fact.visa")}</span>`,
+      i.visa === true ? `<span class="tag visa">${t("fact.visa")}</span>`
+        : i.ind_sponsor && `<span class="tag visa" title="${esc(t("fact.ind.title"))}">${t("fact.ind")}</span>`,
       i.via_agency && `<span class="tag">${t("agency")}</span>`,
     ].filter(Boolean).join("");
     const shown = i.skills.slice(0, 6);
@@ -1035,6 +1047,7 @@
     $("#rep-positions").innerHTML = bars(r.positions.map((p) => ({ k: positionLabel(p.key), n: p.share, v: pct(p.share) })));
   }
   async function renderMarket() {
+    await needCharts();
     renderReport().catch(() => {});
     renderSkills().catch(() => {});
     const p = new URLSearchParams();
@@ -1128,6 +1141,7 @@
       $("#p-gap-status").textContent = t("p.considered", { n: fmt(g.postings_considered) });
       $("#p-gap-result").hidden = false;
       $("#p-gap-coverage").textContent = t("p.coverage", { p: Math.round(g.demand_coverage * 100) });
+      await needCharts();
       barChart("p-gap-chart", g.missing.map((m) => m.skill), g.missing.map((m) => Math.round(m.share * 100)), { pct: true, color: palette[1], onClick: (s) => openJobsWithSkill(s) });
     });
   }
@@ -1317,8 +1331,147 @@
     try { if (booting) await booting; await renderers[state.tab](); } catch (e) { console.error(e); $("#kpis").hidden = false; $("#kpis").insertAdjacentHTML("beforeend", `<div class="kpi bad"><b>!</b><span>${esc(e.message)}</span></div>`); }
     finally { clearTimeout(slow); bar.hidden = true; $("#boot").hidden = true; }
   }
+
+  // ---------- QUICK START: five questions for a first visit. Each answer is one of the site's filters, and the count
+  // of matching jobs updates as you go, so it also shows what the filters do. An inline card, not a pop-up, so it
+  // never stands between a visitor (or a search engine) and the list; it can be skipped and reopened ----------
+  const QUIZ_TEXT = {
+    en: { title: "Find your jobs in five questions", lead: "Each answer sets a filter. You can change them all afterwards.",
+      skip: "Skip", back: "Back", next: "Next", show: "Show {n} jobs", count: "{n} jobs match so far",
+      remember: "Remember my answers in this browser",
+      q1: "Do you speak Dutch?", q1a: "Yes, fluently", q1b: "A little", q1c: "No",
+      q2: "Do you need visa sponsorship to work here?", q2a: "Yes, I need sponsorship", q2b: "No, I can already work here",
+      q3: "How much work experience do you have?", q3a: "Student (internships)", q3b: "Graduate or under a year",
+      q3c: "2 to 3 years", q3d: "4 to 5 years", q3e: "6 years or more",
+      q4: "What do you want to work on?", q4hint: "Pick one or more, or none for every field.",
+      q5: "Where do you want to work?", q5hint: "Pick one or more, or none for anywhere in the Netherlands.", remote: "Remote" },
+    nl: { title: "Vind je vacatures in vijf vragen", lead: "Elk antwoord zet een filter. Je kunt ze daarna allemaal aanpassen.",
+      skip: "Overslaan", back: "Terug", next: "Volgende", show: "Toon {n} vacatures", count: "{n} vacatures passen tot nu toe",
+      remember: "Onthoud mijn antwoorden in deze browser",
+      q1: "Spreek je Nederlands?", q1a: "Ja, vloeiend", q1b: "Een beetje", q1c: "Nee",
+      q2: "Heb je visumsponsoring nodig om hier te werken?", q2a: "Ja, ik heb sponsoring nodig", q2b: "Nee, ik mag hier al werken",
+      q3: "Hoeveel werkervaring heb je?", q3a: "Student (stages)", q3b: "Afgestudeerd of minder dan een jaar",
+      q3c: "2 tot 3 jaar", q3d: "4 tot 5 jaar", q3e: "6 jaar of meer",
+      q4: "Waar wil je aan werken?", q4hint: "Kies er een of meer, of niets voor alle vakgebieden.",
+      q5: "Waar wil je werken?", q5hint: "Kies er een of meer, of niets voor heel Nederland.", remote: "Remote" },
+  };
+  const qt = (k, vars) => {
+    let s = (QUIZ_TEXT[LANG] || QUIZ_TEXT.en)[k] || k;
+    for (const [a, b] of Object.entries(vars || {})) s = s.replace(`{${a}}`, b);
+    return s;
+  };
+  // experience as seniority levels: almost every posting has one, while most leave the years unstated
+  const QUIZ_LEVELS = { student: ["intern"], grad: ["trainee", "junior"], y23: ["junior", "medior"], y45: ["medior", "senior"],
+                        y6: ["senior", "lead", "staff", "manager"] };
+  const QUIZ_ROLES = ["backend", "frontend", "fullstack", "data", "ml", "platform", "security", "mobile", "embedded", "qa", "it_support", "product"];
+  const QUIZ_CITIES = ["Amsterdam", "Rotterdam", "Utrecht", "Eindhoven", "The Hague", "Delft", "Groningen"];
+  let quiz = null;  // {step, dutch, visa, exp, roles, places, remember, total}
+  function quizSteps() {
+    const one = (key, name, opts) => ({ key, multi: false, q: qt(name), opts });
+    return [
+      one("dutch", "q1", [["fluent", qt("q1a")], ["little", qt("q1b")], ["no", qt("q1c")]]),
+      one("visa", "q2", [["yes", qt("q2a")], ["no", qt("q2b")]]),
+      one("exp", "q3", [["student", qt("q3a")], ["grad", qt("q3b")], ["y23", qt("q3c")], ["y45", qt("q3d")], ["y6", qt("q3e")]]),
+      { key: "roles", multi: true, q: qt("q4"), hint: qt("q4hint"), opts: QUIZ_ROLES.map((r) => [r, roleLabel(r)]) },
+      { key: "places", multi: true, q: qt("q5"), hint: qt("q5hint"), opts: [...QUIZ_CITIES.map((c) => [c, cityLabel(c)]), ["remote", qt("remote")]] },
+    ];
+  }
+  function quizFilters() {
+    const f = emptyJobFilters();
+    if (quiz.dutch === "little" || quiz.dutch === "no") f.language = "en";
+    if (quiz.visa === "yes") f.visa = true;
+    if (quiz.exp) f.levels = [...QUIZ_LEVELS[quiz.exp]];
+    f.roles = [...quiz.roles];
+    f.cities = quiz.places.filter((p) => p !== "remote");
+    if (quiz.places.includes("remote")) f.remote = ["remote"];
+    return f;
+  }
+  let quizCountReq = 0;
+  async function quizCount() {
+    const mine = ++quizCountReq, keep = jobFilters;
+    jobFilters = quizFilters();
+    const p = jobParams();
+    jobFilters = keep;
+    p.set("size", 1); p.set("page", 1);
+    try {
+      const d = await api("/api/postings", p);
+      if (mine !== quizCountReq || !quiz) return;
+      quiz.total = d.total;
+      const c = $("#quiz-count"); if (c) c.textContent = qt("count", { n: fmt(d.total) });
+      const b = $('#quiz [data-q="show"]'); if (b) b.textContent = qt("show", { n: fmt(d.total) });
+    } catch { /* the count is only a hint; the list itself reports any failure */ }
+  }
+  function quizRender() {
+    const steps = quizSteps(), s = steps[quiz.step], last = quiz.step === steps.length - 1;
+    const chosen = (v) => s.multi ? quiz[s.key].includes(v) : quiz[s.key] === v;
+    const showLabel = quiz.total != null ? qt("show", { n: fmt(quiz.total) }) : qt("show", { n: "" }).replace("  ", " ");
+    $("#quiz").innerHTML = `<div class="quiz-head"><h2>${esc(qt("title"))}</h2><button class="link" data-q="skip">${esc(qt("skip"))}</button></div>
+      <p class="muted small m-0">${esc(qt("lead"))}</p>
+      <div class="quiz-steps" aria-hidden="true">${steps.map((_, i) => `<i${i <= quiz.step ? ' class="on"' : ""}></i>`).join("")}</div>
+      <fieldset class="quiz-q"><legend>${quiz.step + 1}/${steps.length} · ${esc(s.q)}</legend>
+        ${s.hint ? `<p class="muted small m-0">${esc(s.hint)}</p>` : ""}
+        <div class="quiz-opts">${s.opts.map(([v, l]) => `<button type="button" class="quiz-opt${chosen(v) ? " on" : ""}" data-v="${esc(v)}" aria-pressed="${chosen(v)}">${esc(l)}</button>`).join("")}</div>
+      </fieldset>
+      <div class="quiz-foot">
+        ${quiz.step ? `<button data-q="back">${esc(qt("back"))}</button>` : "<span></span>"}
+        <span class="muted small" id="quiz-count" role="status">${quiz.total != null ? esc(qt("count", { n: fmt(quiz.total) })) : ""}</span>
+        ${last ? `<label class="check small"><input type="checkbox" id="quiz-remember"${quiz.remember ? " checked" : ""}> ${esc(qt("remember"))}</label>
+                  <button class="primary" data-q="show">${esc(showLabel)}</button>`
+               : `<button class="primary" data-q="next">${esc(qt("next"))}</button>`}
+      </div>`;
+    quizCount();
+  }
+  function openQuiz() {
+    quiz = { step: 0, dutch: null, visa: null, exp: null, roles: [], places: [], remember: true, total: null };
+    $("#quiz").hidden = false;
+    quizRender();
+    beacon("quiz_open");
+  }
+  function closeQuiz() { $("#quiz").hidden = true; quiz = null; store.set("quizDone", true); }
+  function quizShow() {
+    const f = quizFilters();
+    if ($("#quiz-remember") && $("#quiz-remember").checked) {
+      Object.assign(state.profile, { roles: [...f.roles], levels: [...f.levels], cities: [...f.cities], remote: [...f.remote],
+                                     language: f.language, visa: f.visa });
+      store.set("profile", state.profile); store.set("jobsUseProfile", true);
+    }
+    jobFilters = f; state.page = 1; state.skill = null;
+    closeQuiz();
+    beacon("quiz_done");
+    buildJobsFilters(); refreshJobs(true);
+    $(".results-head").scrollIntoView({ block: "start" });
+  }
+  function bindQuiz() {
+    $("#quiz").addEventListener("click", (e) => {
+      const opt = e.target.closest(".quiz-opt"), act = e.target.closest("[data-q]");
+      if (opt && quiz) {
+        const s = quizSteps()[quiz.step], v = opt.dataset.v;
+        if (s.multi) { const a = quiz[s.key], i = a.indexOf(v); if (i >= 0) a.splice(i, 1); else a.push(v); quizRender(); return; }
+        quiz[s.key] = quiz[s.key] === v ? null : v;
+        quizRender();
+        // a single answer moves on by itself, after a beat to see it chosen
+        if (quiz[s.key]) setTimeout(() => { if (quiz && quiz.step < 4 && quiz[s.key] === v) { quiz.step++; quizRender(); } }, 250);
+        return;
+      }
+      if (!act || !quiz) return;
+      if (act.dataset.q === "skip") closeQuiz();
+      else if (act.dataset.q === "back") { quiz.step = Math.max(0, quiz.step - 1); quizRender(); }
+      else if (act.dataset.q === "next") { quiz.step = Math.min(4, quiz.step + 1); quizRender(); }
+      else if (act.dataset.q === "show") quizShow();
+    });
+    $("#quiz").addEventListener("change", (e) => { if (e.target.id === "quiz-remember" && quiz) quiz.remember = e.target.checked; });
+    $("#quiz-open").addEventListener("click", () => { openQuiz(); $("#quiz").scrollIntoView({ block: "nearest" }); });
+  }
+  // shown once, on a first visit to Discover with nothing set up yet
+  function maybeQuiz() {
+    if (state.tab !== "jobs" || store.get("quizDone", false) || hasProfileFilters() || state.saved.length || location.hash.includes("?")) return;
+    openQuiz();
+  }
+
   let booting = null;  // the first load (account, then the filter options); every tab needs it
   window.addEventListener("hashchange", route);
+  $$('#tabs a[data-tab="market"]').forEach((a) => ["pointerenter", "focus", "touchstart"].forEach((ev) =>
+    a.addEventListener(ev, () => needCharts().catch(() => {}), { once: true, passive: true })));
   // a suggestion's star puts the job on the board (and out of the suggestions)
   $("#ov-matches").addEventListener("click", (e) => {
     const b = e.target.closest(".star"); if (!b) return;
@@ -1342,5 +1495,6 @@
   else $('.tab[data-tab="jobs"]').classList.remove("on");
   bindAccount();
   booting = account.load().then(() => { renderAccount(); jobFilters = null; }).then(loadHeader);
-  booting.then(() => { booting = null; }).then(route).catch((e) => { $("#kpis").hidden = false; $("#kpis").innerHTML = `<div class="kpi bad"><b>!</b><span>${esc(t("fail", { e: e.message }))}</span></div>`; });
+  bindQuiz();
+  booting.then(() => { booting = null; }).then(route).then(maybeQuiz).catch((e) => { $("#kpis").hidden = false; $("#kpis").innerHTML = `<div class="kpi bad"><b>!</b><span>${esc(t("fail", { e: e.message }))}</span></div>`; });
 })();

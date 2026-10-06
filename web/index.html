@@ -24,9 +24,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="/static/app.css?v=43">
-<script src="/static/vendor/chart.umd.min.js"></script>
-<script src="/static/vendor/d3.min.js"></script>
+<link rel="stylesheet" href="/static/app.css?v=44">
 <script src="/static/theme.js?v=1"></script>
 </head>
 <body>
@@ -103,10 +101,12 @@
     <div class="pop" data-pop="posted" hidden><div class="field"><label data-i18n="f.window">Date posted</label><select id="f-days"><option value="" data-i18n="f.window.all">Any time</option><option value="1" data-i18n="f.window.1">Past 24 hours</option><option value="7" data-i18n="f.window.7">Past week</option><option value="30" data-i18n="f.window.30">Past month</option><option value="90" data-i18n="f.window.90">Past 3 months</option></select></div><label class="check"><input type="checkbox" id="f-confirmed"> <span data-i18n="f.confirmed">Verified on the employer's site in the past week</span></label></div>
     <div class="pop" data-pop="more" hidden><label class="check"><input type="checkbox" id="f-noenrol"> <span data-i18n="f.noenrol">Hide internships for enrolled students only</span></label><label class="check"><input type="checkbox" id="f-saved"> <span data-i18n="f.saved">Saved jobs only</span></label></div>
   </div>
+  <section class="card quiz" id="quiz" hidden aria-label="Quick start"></section>
   <div class="results-head">
     <span class="count" id="count"></span>
     <div class="active-skill" id="active-skill" hidden><span data-i18n="f.skill">Skill</span>: <b id="active-skill-name"></b> <button id="clear-skill" title="clear">×</button></div>
     <button class="link" id="f-profile" data-i18n="f.profile" hidden>Use my profile</button>
+    <button class="link" id="quiz-open" data-i18n="quiz.open">Quick start</button>
     <button class="link" id="f-reset" data-i18n="f.reset">Clear filters</button>
     <label class="sort"><span data-i18n="f.sort">Sort by</span> <select id="f-sort"><option value="size_large" data-i18n="f.sort.large">Largest companies first</option><option value="newest" data-i18n="f.sort.newest">Most recent</option><option value="match" data-i18n="f.sort.match">Best match</option><option value="size_small" data-i18n="f.sort.small">Smallest companies first</option></select></label>
   </div>
@@ -192,7 +192,7 @@
       </fieldset>
       <fieldset class="group"><legend data-i18n="p.g.lang">Language and visa</legend>
         <div class="field"><label data-i18n="p.language">Language</label><select id="p-language" data-i18n-title="f.language.hint" title="&quot;No Dutch required&quot; hides jobs that ask for Dutch."><option value="" data-i18n="f.language.any" selected>All jobs</option><option value="nl" data-i18n="f.language.nl">Dutch-speaking jobs</option><option value="en" data-i18n="f.language.en">No Dutch required</option></select></div>
-        <label class="check"><input type="checkbox" id="p-visa"> <span data-i18n="p.visa">Only jobs that mention visa sponsorship</span></label>
+        <label class="check"><input type="checkbox" id="p-visa"> <span data-i18n="p.visa">Only employers that can sponsor a visa</span></label>
       </fieldset>
       <div class="row mt">
         <button class="primary" id="p-save" data-i18n="p.save">Save profile</button>
@@ -305,6 +305,6 @@
   <p class="foot-bottom"><a href="{{PRIVACY_PATH}}" data-i18n="privacy">Privacy</a> · <a href="{{FEEDBACK_PATH}}" data-i18n="feedback">Feedback</a>{{SOURCE_LINK}}</p>
  </div>
 </footer>
-<script src="/static/app.js?v=132"></script>
+<script src="/static/app.js?v=135"></script>
 </body>
 </html>

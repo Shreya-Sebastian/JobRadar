@@ -191,6 +191,20 @@
   .grid.two { grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); }
   .grid.three { grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); }
   .grid > .card { @apply mt-0; }
+  /* the quick start: one question at a time, big answer buttons, the matching count as it goes */
+  .quiz { border-color: color-mix(in oklab, var(--accent) 40%, var(--line)); }
+  .quiz-head { @apply flex items-baseline justify-between gap-3; }
+  .quiz-head h2 { @apply m-0 text-lg; }
+  .quiz-steps { @apply my-3 flex gap-1.5; }
+  .quiz-steps i { @apply block h-1.5 flex-1 rounded-full bg-chip; }
+  .quiz-steps i.on { @apply bg-accent; }
+  .quiz-q { @apply m-0 flex flex-col gap-2 border-0 p-0; }
+  .quiz-q legend { @apply mb-1 p-0 text-base font-semibold text-ink; }
+  .quiz-opts { @apply flex flex-wrap gap-2; }
+  .quiz-opt { @apply rounded-xl border border-line bg-card px-3.5 py-2 text-sm font-medium text-ink; }
+  .quiz-opt:hover { @apply border-accent; }
+  .quiz-opt.on { @apply border-accent text-accent; background: color-mix(in oklab, var(--accent) 12%, var(--card)); }
+  .quiz-foot { @apply mt-4 flex flex-wrap items-center justify-between gap-3; }
   /* the Skills box in blue: its title mark, links, buttons and chips take the blue instead of the site's green */
   .skills-card { --hc: var(--c-sky); --accent: var(--c-sky); --on-accent: #ffffff;
                  border-color: color-mix(in oklab, var(--c-sky) 30%, var(--line)); }

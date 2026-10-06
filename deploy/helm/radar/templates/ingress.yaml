@@ -3,7 +3,11 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ include "radar.fullname" . }}
-  labels: {{- include "radar.labels" . | nindent 4 }}
+  # no chart or version label: Flux stamps the chart version with each commit, and a changed Ingress makes Traefik and
+  # cert-manager reload the certificate, which Cloudflare saw as a broken one for a moment (a 526) on every deploy
+  labels:
+    app.kubernetes.io/name: {{ include "radar.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
   annotations:
     {{- if .Values.ingress.tls }}
     cert-manager.io/cluster-issuer: {{ .Values.ingress.clusterIssuer }}

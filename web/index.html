@@ -52,7 +52,6 @@
   <nav class="wrap tabs" id="tabs">
     <a href="#jobs" data-tab="jobs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h18v12H3zM9 8V5h6v3"/></svg><span data-i18n="tab.jobs">Jobs</span></a>
     <a href="#tracker" data-tab="tracker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h4v16H4zM10 4h4v10h-4zM16 4h4v13h-4z"/></svg><span data-i18n="tab.tracker">Tracker</span></a>
-    <a href="#overview" data-tab="overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span data-i18n="tab.overview">Overview</span></a>
     <a href="#market" data-tab="market"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg><span data-i18n="tab.market">Market</span></a>
     <a href="#profile" data-tab="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0"/></svg><span data-i18n="tab.profile">Profile</span></a>
   </nav>
@@ -74,25 +73,6 @@
     <a class="rss-link" id="f-rss" href="/feed.xml" target="_blank" rel="noopener" data-i18n-title="rss.title" title="RSS feed of this search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1.2" fill="currentColor"/></svg><span data-i18n="rss.label">RSS feed of your search</span></a>
   </div>
   <div class="board" id="board"></div>
-</section>
-
-<!-- ============ OVERVIEW ============ -->
-<section class="tab" data-tab="overview">
-  <div class="grid two">
-    <div class="card">
-      <h2><span data-i18n="ov.skills">Most requested skills</span></h2>
-      <div class="chart tall"><canvas id="ov-skills"></canvas></div>
-    </div>
-    <div class="card">
-      <h2 data-i18n="ov.graph">Skills asked for together</h2>
-      <div class="chart tall" id="ov-graph"></div>
-    </div>
-  </div>
-  <div class="card">
-    <h2 data-i18n="ov.matches">Best matches for you</h2>
-    <ol class="matches" id="ov-matches"></ol>
-    <p class="muted small" id="ov-match-empty" hidden data-i18n-html="ov.matches.empty">Add your skills under <a href="#profile">Profile</a> to see matches.</p>
-  </div>
 </section>
 
 <!-- ============ JOBS ============ -->
@@ -150,6 +130,16 @@
       <div><h3 class="mt-0" data-i18n="rep.positions">Most posted positions</h3><div id="rep-positions"></div></div>
     </div>
   </div>
+  <div class="grid two">
+    <div class="card">
+      <h2><span data-i18n="ov.skills">Most requested skills</span></h2>
+      <div class="chart tall"><canvas id="ov-skills"></canvas></div>
+    </div>
+    <div class="card">
+      <h2 data-i18n="ov.graph">Skills asked for together</h2>
+      <div class="chart tall" id="ov-graph"></div>
+    </div>
+  </div>
   <div class="grid three">
     <div class="card"><h2 data-i18n="mk.cities">Cities</h2><div class="chart"><canvas id="mk-city"></canvas></div></div>
     <div class="card"><h2 data-i18n="mk.seniority">Seniority</h2><div class="chart"><canvas id="mk-seniority"></canvas></div></div>
@@ -174,6 +164,11 @@
 
 <!-- ============ PROFILE ============ -->
 <section class="tab" data-tab="profile">
+  <div class="card">
+    <h2 data-i18n="ov.matches">Best matches for you</h2>
+    <ol class="matches" id="ov-matches"></ol>
+    <p class="muted small" id="ov-match-empty" hidden data-i18n-html="ov.matches.empty">Add your skills under <a href="#profile">Profile</a> to see matches.</p>
+  </div>
   <p class="small muted mt-4 mb-0" id="acct-out" data-i18n-html="acct.nudge">Your profile and saved jobs are kept in this browser. <a href="/login">Log in</a> to have them on every device.</p>
   <div class="grid two">
     <div class="card">
@@ -307,6 +302,6 @@
   <p class="foot-bottom"><a href="{{PRIVACY_PATH}}" data-i18n="privacy">Privacy</a> · <a href="{{FEEDBACK_PATH}}" data-i18n="feedback">Feedback</a>{{SOURCE_LINK}}</p>
  </div>
 </footer>
-<script src="/static/app.js?v=102"></script>
+<script src="/static/app.js?v=103"></script>
 </body>
 </html>

@@ -30,7 +30,7 @@
       "ov.graph": "Skills asked for together",
       "kpi.week": "new in the last 7 days", "kpi.week.vs": "the 7 days before: {m}", "kpi.week.title": "Jobs posted in the last 7 days, by the date employers posted them, against the 7 days before",
       "ov.matches": "Best matches for you",
-      "ov.matches.empty": 'Add your skills under <a href="#profile">Profile</a> to see matches.',
+      "ov.matches.empty": "Add your skills below to see the jobs that fit them best.",
       "f.search": "Search", "f.search.ph": "title or company", "f.window": "Window", "f.window.all": "All live", "f.window.1": "Last 24 h",
       "f.window.7": "Last 7 days", "f.window.30": "Last 30 days", "f.window.90": "Last 90 days",
       "f.language": "Languages you speak", "f.language.any": "Dutch and English", "f.language.nl": "Dutch only", "f.language.en": "English only", "f.language.hint": "We hide jobs that ask for a language you did not pick.",
@@ -144,7 +144,7 @@
       "ov.graph": "Skills die samen gevraagd worden",
       "kpi.week": "nieuw in de laatste 7 dagen", "kpi.week.vs": "de 7 dagen daarvoor: {m}", "kpi.week.title": "Vacatures geplaatst in de laatste 7 dagen, op de datum van de werkgever, tegenover de 7 dagen daarvoor",
       "ov.matches": "Beste matches voor jou",
-      "ov.matches.empty": 'Voeg je skills toe onder <a href="#profile">Profiel</a> om matches te zien.',
+      "ov.matches.empty": "Voeg hieronder je skills toe om de vacatures te zien die er het best bij passen.",
       "f.search": "Zoeken", "f.search.ph": "functietitel of werkgever", "f.window": "Periode", "f.window.all": "Alle open", "f.window.1": "Laatste 24 uur",
       "f.window.7": "Laatste 7 dagen", "f.window.30": "Laatste 30 dagen", "f.window.90": "Laatste 90 dagen",
       "f.language": "Talen die je spreekt", "f.language.any": "Nederlands en Engels", "f.language.nl": "Alleen Nederlands", "f.language.en": "Alleen Engels", "f.language.hint": "We verbergen vacatures die een taal vragen die je niet hebt gekozen.",
@@ -603,13 +603,17 @@
   }
 
   // ---------- OVERVIEW ----------
-  async function renderOverview() {
+  // the skill charts, at the top of the Market tab
+  async function renderSkills() {
     const p = new URLSearchParams();
     const [skills, co] = await Promise.all([api("/api/skills", withParams(p, { top: 30 })), api("/api/cooccurrence", withParams(p, { top: 28 }))]);
     const have = new Set(state.profile.skills);
     barChart("ov-skills", skills.skills.map((s) => s.skill), skills.skills.map((s) => Math.round(s.share * 100)),
       { pct: true, onClick: (s) => openJobsWithSkill(s), color: skills.skills.map((s, k) => have.has(s.skill) ? palette[1] : SPREAD[k % SPREAD.length]) });
     graph($("#ov-graph"), co, (s) => openJobsWithSkill(s));
+  }
+  // best matches for the profile's skills, at the top of the Profile tab
+  async function renderMatches() {
     const mine = profileParams();
     const hasProfile = [...mine.keys()].length > 0;
     if (state.profile.skills.length) {
@@ -985,6 +989,7 @@
   }
   async function renderMarket() {
     renderReport().catch(() => {});
+    renderSkills().catch(() => {});
     const p = new URLSearchParams();
     const [city, sen, role, comp, sal, lang, remote, exp, sector, pos] = await Promise.all([
       api("/api/breakdown/city", withParams(p, { top: 12 })), api("/api/breakdown/seniority", p),
@@ -1013,6 +1018,7 @@
   // ---------- PROFILE ----------
   let profileBuilt = false;
   function renderProfile() {
+    renderMatches().catch(() => {});
     const p = state.profile;
     toggles($("#p-roles"), state.options.roles, p.roles, roleLabel);
     if (!p.positions) p.positions = [];
@@ -1239,7 +1245,7 @@
   }
 
   // ---------- routing ----------
-  const renderers = { tracker: renderTracker, overview: renderOverview, jobs: () => { buildJobsFilters(); return refreshJobs(); }, market: renderMarket, profile: renderProfile, account: renderAccount, company: renderCompany, admin: renderAdmin };
+  const renderers = { tracker: renderTracker, jobs: () => { buildJobsFilters(); return refreshJobs(); }, market: renderMarket, profile: renderProfile, account: renderAccount, company: renderCompany, admin: renderAdmin };
   let firstRoute = true;
   async function route() {
     if (!firstRoute) beacon("nav");
@@ -1256,13 +1262,14 @@
       }
     }
     const eq = raw.indexOf("=");
-    const tab = eq >= 0 ? raw.slice(0, eq) : raw;
+    let tab = eq >= 0 ? raw.slice(0, eq) : raw;
+    if (tab === "overview") tab = "market";  // Overview and Market are one tab now; old links still land
     state.routeArg = eq >= 0 ? decodeURIComponent(raw.slice(eq + 1)) : null;
     state.tab = renderers[tab] ? tab : "jobs";
     $$("#tabs a").forEach((a) => a.classList.toggle("on", a.dataset.tab === state.tab));
     $$(".tab").forEach((s) => s.classList.toggle("on", s.dataset.tab === state.tab));
     $("#f-profile").hidden = !hasProfileFilters();
-    $("#kpis").hidden = state.tab !== "overview";  // the market figures belong to the overview
+    $("#kpis").hidden = state.tab !== "market";  // the key figures open the Market tab
     window.scrollTo(0, 0);
     const bar = $("#progress"), slow = setTimeout(() => { bar.hidden = false; }, 150);  // only when it takes a moment
     try { await renderers[state.tab](); } catch (e) { console.error(e); $("#kpis").hidden = false; $("#kpis").insertAdjacentHTML("beforeend", `<div class="kpi bad"><b>!</b><span>${esc(e.message)}</span></div>`); }
@@ -1280,7 +1287,7 @@
     LANG = b.dataset.lang; store.set("lang", LANG); applyI18n(); renderAccount(); renderHeader(); jobsBuilt = false; profileBuilt = false; route();
   });
   applyI18n();
-  $("#kpis").hidden = location.hash !== "#overview";  // no placeholder flash on other tabs
+  $("#kpis").hidden = !["#market", "#overview"].includes(location.hash);  // no placeholder flash on other tabs
   if (["", "#jobs"].includes(location.hash.split("?")[0])) $("#boot").hidden = true;  // the job list shows placeholders
   bindAccount();
   account.load().then(() => { renderAccount(); jobFilters = null; }).then(loadHeader).then(route).catch((e) => { $("#kpis").hidden = false; $("#kpis").innerHTML = `<div class="kpi bad"><b>!</b><span>${esc(t("fail", { e: e.message }))}</span></div>`; });

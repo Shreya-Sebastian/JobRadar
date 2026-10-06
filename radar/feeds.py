@@ -51,7 +51,7 @@ def render(items: list[dict], params: dict[str, str], lang: str) -> str:
     out = ['<?xml version="1.0" encoding="UTF-8"?>',
            '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel>',
            f"<title>{escape(title_for(params, lang))}</title>",
-           f"<link>{escape(home + ('#jobs?' + query if query else '#jobs'))}</link>",
+           f"<link>{escape(home + ('#discover?' + query if query else '#discover'))}</link>",
            f'<atom:link href="{escape(base + ("/nl" if nl else "") + "/feed.xml" + ("?" + query if query else ""))}" '
            'rel="self" type="application/rss+xml"/>',
            f"<description>{escape(settings.site_tagline)}</description>",

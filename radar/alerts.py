@@ -108,13 +108,13 @@ def _compose(session: Session, user, jobs: list[stats.Row], total: int) -> tuple
         where = r.city or ("Remote" if r.remote else "")
         lines += [f"- {r.title} · {r.company}{' · ' + where if where else ''}", f"  {r.url}"]
     if total > len(jobs):
-        lines += ["", t["more"].format(n=total - len(jobs)) + f": {home}#jobs"]
+        lines += ["", t["more"].format(n=total - len(jobs)) + f": {home}#discover"]
     lines += ["", f"{t['profile']}: {home}#account", f"{t['stop']}: {stop}", "", t["why"].format(f=freq, site=site)]
     items = "".join(
         f'<li style="margin:0 0 10px"><a href="{escape(r.url)}" style="font-weight:600">{escape(r.title)}</a><br>'
         f'<span style="color:#5f6b7a">{escape(r.company)}{" · " + escape(r.city or "") if r.city else ""}</span></li>'
         for r in jobs)
-    jobs_url, account_url = escape(home + "#jobs"), escape(home + "#account")
+    jobs_url, account_url = escape(home + "#discover"), escape(home + "#account")
     more = (f'<p><a href="{jobs_url}">{escape(t["more"].format(n=total - len(jobs)))}</a></p>'
             if total > len(jobs) else "")
     why = escape(t["why"].format(f=freq, site=site))

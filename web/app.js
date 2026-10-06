@@ -634,8 +634,8 @@
       : (i.skills || []).slice(0, 5).join(", ");
     return `<li><a href="${jobPath(i)}" data-pid="${i.id}" target="_blank">${esc(i.title)}</a> · ${companyLink(i.company)}${i.city ? " · " + esc(cityLabel(i.city)) : ""}${i.via_agency ? ` <span class="chip more">${t("agency")}</span>` : ""}<div class="m">${esc(i.posted_at)} · ${m}</div></li>`;
   }
-  function openJobsWithSkill(skill) { state.skill = skill; state.page = 1; location.hash = "#jobs"; }
-  function openJobsWithPosition(key) { currentJobFilters().positions = [key]; state.page = 1; location.hash = "#jobs"; }
+  function openJobsWithSkill(skill) { state.skill = skill; state.page = 1; location.hash = "#discover"; }
+  function openJobsWithPosition(key) { currentJobFilters().positions = [key]; state.page = 1; location.hash = "#discover"; }
   // the listing's page on this site (/job/<id>/<slug>): the employer's text with what the radar read from it
   const slugify = (s) => (s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "company";
   const jobPath = (i) => (LANG === "nl" ? "/nl/vacature/" : "/job/") + i.id + "/" + slugify(i.title);
@@ -709,7 +709,7 @@
     if (currentJobFilters().savedOnly) q.set("saved", "1");
     if (state.sort !== "size_large") q.set("sort", state.sort);
     const s = q.toString().replace(/%2C/g, ",");
-    const want = "#jobs" + (s ? "?" + s : "");
+    const want = "#discover" + (s ? "?" + s : "");
     paintFeedLink();
     if (location.hash !== want) history.replaceState(null, "", location.pathname + location.search + want);
   }
@@ -1290,12 +1290,12 @@
   async function route() {
     if (!firstRoute) beacon("nav");
     firstRoute = false;
-    let raw = (location.hash || "#jobs").slice(1);
+    let raw = (location.hash || "#discover").slice(1);
     const qi = raw.indexOf("?");
     if (qi >= 0) {
       const q = new URLSearchParams(raw.slice(qi + 1));
       raw = raw.slice(0, qi);
-      if (raw === "jobs") {  // a search from a link: these filters for this visit, the saved preference is untouched
+      if (raw === "discover" || raw === "jobs") {  // a search from a link: these filters for this visit, the saved preference is untouched
         jobFilters = filtersFromParams(q);
         state.skill = q.get("skill") || null; state.page = 1;
         if (["newest", "match", "size_small", "size_large"].includes(q.get("sort"))) state.sort = q.get("sort");
@@ -1304,6 +1304,7 @@
     const eq = raw.indexOf("=");
     let tab = eq >= 0 ? raw.slice(0, eq) : raw;
     if (tab === "overview") tab = "market";  // Overview and Market are one tab now; old links still land
+    if (tab === "discover") tab = "jobs";  // the Discover tab (its address was #jobs until Oct 2026; those links still land)
     state.routeArg = eq >= 0 ? decodeURIComponent(raw.slice(eq + 1)) : null;
     state.tab = renderers[tab] ? tab : "jobs";
     $$("#tabs a").forEach((a) => a.classList.toggle("on", a.dataset.tab === state.tab));
@@ -1327,7 +1328,7 @@
   $("#brand").addEventListener("click", (e) => {
     e.preventDefault();
     const target = LANG === "nl" ? "/nl/" : "/";
-    if (location.pathname === target) { location.hash = "#jobs"; window.scrollTo(0, 0); } else location.href = target;
+    if (location.pathname === target) { location.hash = "#discover"; window.scrollTo(0, 0); } else location.href = target;
   });
   $("#langswitch").addEventListener("click", (e) => {
     const b = e.target.closest("button"); if (!b || b.dataset.lang === LANG) return;
@@ -1337,7 +1338,7 @@
   $("#kpis").hidden = !["#market", "#overview"].includes(location.hash);  // no placeholder flash on other tabs
   // the Jobs tab is open in the page from the start, so its placeholder rows show while the app loads; another tab
   // in the address gets the loading message instead
-  if (["", "#jobs"].includes(location.hash.split("?")[0])) $("#boot").hidden = true;
+  if (["", "#discover", "#jobs"].includes(location.hash.split("?")[0])) $("#boot").hidden = true;
   else $('.tab[data-tab="jobs"]').classList.remove("on");
   bindAccount();
   booting = account.load().then(() => { renderAccount(); jobFilters = null; }).then(loadHeader);

@@ -274,14 +274,14 @@ def _entry(r: stats.Row) -> bool:
 
 
 def jobs_link(page: Page, lang: str) -> str:
-    """The site's Jobs tab with this page's filters applied (web/app.js reads `#jobs?<filters>`)."""
+    """The site's Jobs tab with this page's filters applied (web/app.js reads `#discover?<filters>`)."""
     from urllib.parse import urlencode
 
     params = {k: ("true" if v is True else v) for k, v in page.filters.items() if v not in (None, False, "")}
     if page.city:
         params["city"] = page.city
     home = "/nl/" if lang == "nl" else "/"
-    return f"{home}#jobs?{urlencode(params, safe=',')}" if params else f"{home}#jobs"
+    return f"{home}#discover?{urlencode(params, safe=',')}" if params else f"{home}#discover"
 
 
 def render(page: Page, lang: str, rows: list[stats.Row], pages: list[Page]) -> str:

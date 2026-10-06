@@ -367,6 +367,8 @@
   .col-list { @apply m-0 flex flex-1 list-none flex-col gap-2.5 p-0; }
   .col-empty { @apply rounded-xl border border-dashed border-line px-3 py-6 text-center text-xs; }
   .bcard { @apply cursor-grab rounded-xl border border-line bg-card p-3 shadow-xs transition hover:border-accent/50; }
+  .board { -webkit-user-select: none; user-select: none; }  /* dragging a card never drags a text selection */
+  .board select, .board input { user-select: auto; }
   .bcard.dragging { @apply opacity-50; }
   .bcard-top { @apply flex gap-3; }
   .bcard .job-logo { @apply size-9 rounded-lg; }

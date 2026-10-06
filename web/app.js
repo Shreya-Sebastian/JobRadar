@@ -976,6 +976,10 @@
     board.addEventListener("click", (e) => { const b = e.target.closest(".bdel"); if (b) removeFromTracker(Number(b.dataset.id)); });
     board.addEventListener("dragstart", (e) => {
       const c = e.target.closest(".bcard"); if (!c) return;
+      // only this card moves: no selected text comes along, and the picture under the pointer is the card alone
+      window.getSelection()?.removeAllRanges();
+      const r = c.getBoundingClientRect();
+      e.dataTransfer.setDragImage(c, e.clientX - r.left, e.clientY - r.top);
       e.dataTransfer.setData("text/plain", c.dataset.id); e.dataTransfer.effectAllowed = "move"; c.classList.add("dragging");
     });
     board.addEventListener("dragend", (e) => { const c = e.target.closest(".bcard"); if (c) c.classList.remove("dragging"); });

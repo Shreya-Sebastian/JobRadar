@@ -820,8 +820,10 @@
   function age(i) { return i.age_days === 0 ? t("today") : i.age_days === 1 ? t("yesterday") : t("days.ago", { d: i.age_days }); }
   // the list while a search runs: a loading bar once it takes a moment, and only the latest search's answer is shown
   const loadingRow = () => `<li class="jobs-loading" role="status"><span class="load-track"><span class="load-bar"></span></span><span>${t("loading")}</span></li>`;
-  let jobsRequest = 0;
-  async function refreshJobs(resetPage = false) {
+  let jobsRequest = 0, jobsShown = null;  // jobsShown: the search on screen, {key, at, d}
+  // quiet: back on the Jobs tab from another one. The same search from the last two minutes is drawn again from memory
+  // (saved stars and language may have changed); an older one is fetched behind the results already showing
+  async function refreshJobs(resetPage = false, quiet = false) {
     if (resetPage) state.page = 1;
     const mine = ++jobsRequest, list = $("#postings");
     $("#active-skill").hidden = !state.skill; $("#active-skill-name").textContent = state.skill || "";
@@ -831,8 +833,10 @@
     if (have.length) p.set("skills_have", have.join(","));
     if (state.sort !== "match" || have.length) p.set("sort", state.sort);
     syncJobsUrl();
+    const key = p.toString();
+    if (quiet && jobsShown && jobsShown.key === key && Date.now() - jobsShown.at < 120000) { showJobs(jobsShown.d); return; }
     list.setAttribute("aria-busy", "true");
-    const slow = setTimeout(() => { if (mine === jobsRequest) { list.innerHTML = loadingRow(); $("#count").textContent = ""; } }, 150);
+    const slow = quiet ? null : setTimeout(() => { if (mine === jobsRequest) { list.innerHTML = loadingRow(); $("#count").textContent = ""; } }, 150);
     let d;
     try { d = await api("/api/postings", p); }
     catch (e) {
@@ -843,6 +847,10 @@
       return;
     } finally { clearTimeout(slow); if (mine === jobsRequest) list.removeAttribute("aria-busy"); }
     if (mine !== jobsRequest) return;  // a newer search has started: its answer wins
+    jobsShown = { key, at: Date.now(), d };
+    showJobs(d);
+  }
+  function showJobs(d) {
     const pages = Math.max(1, Math.ceil(d.total / d.size));
     $("#count").textContent = d.total === 1 ? t("jobs.match.one") : t("jobs.match", { n: fmt(d.total) });
     $("#page-info").textContent = t("page", { p: d.page, t: pages });
@@ -1259,7 +1267,7 @@
   }
 
   // ---------- routing ----------
-  const renderers = { tracker: renderTracker, jobs: () => { buildJobsFilters(); return refreshJobs(); }, market: renderMarket, profile: renderProfile, account: renderAccount, company: renderCompany, admin: renderAdmin };
+  const renderers = { tracker: renderTracker, jobs: () => { buildJobsFilters(); return refreshJobs(false, true); }, market: renderMarket, profile: renderProfile, account: renderAccount, company: renderCompany, admin: renderAdmin };
   let firstRoute = true;
   async function route() {
     if (!firstRoute) beacon("nav");

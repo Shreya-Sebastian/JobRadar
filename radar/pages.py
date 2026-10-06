@@ -604,7 +604,7 @@ def render_report(rep: dict, lang: str) -> str:
                      for line, s in zip(skills.split('<div class="rbar">')[1:], rep["skills"], strict=True)
                      for line in ['<div class="rbar">' + line])
     labels = POSITION_LABELS[lang]
-    positions = bars([(labels.get(p["key"], p["key"]), p["count"], num(p["count"])) for p in rep["positions"]])
+    positions = bars([(labels.get(p["key"], p["key"]), p["share"], pct(p["share"])) for p in rep["positions"]])
     cities = bars([(city_nl(c["key"]) if lang == "nl" else c["key"], c["count"], num(c["count"]))
                    for c in rep["cities"]])
     order = ["none", "1", "2-3", "4-5", "6+", "unspecified"]

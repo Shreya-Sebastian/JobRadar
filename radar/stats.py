@@ -409,8 +409,8 @@ def market_report(rows: list[Row], tracking_start: datetime | None, now: datetim
         "hybrid": share(cur, lambda r: r.ex.get("remote_policy") == "hybrid"),
         "salary_median": statistics.median(salaries) if len(salaries) >= 10 else None, "salary_n": len(salaries),
         "skills": skills,
-        "positions": [{"key": k, "count": n} for k, n in Counter(r.position for r in cur).most_common(9)
-                      if k != "other"][:8],
+        "positions": [{"key": k, "count": n, "share": round(n / len(cur), 3)}
+                      for k, n in Counter(r.position for r in cur).most_common(9) if k != "other"][:8],
         "cities": [{"key": k, "count": n} for k, n in Counter(r.city for r in cur if r.city).most_common(6)],
         "experience": {k: round(n / len(cur), 3) for k, n in bands.items()} if cur else {},
     }

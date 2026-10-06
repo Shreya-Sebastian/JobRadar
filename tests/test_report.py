@@ -20,7 +20,7 @@ def test_report_compares_the_last_seven_days_with_the_seven_before():
     assert (rep["new"], rep["new_before"], rep["no_dutch"]) == (2, 1, 0.5)
     python = next(s for s in rep["skills"] if s["skill"] == "Python")
     assert python == {"skill": "Python", "share": 1.0, "change": 1.0}  # in both new jobs, in none the week before
-    assert rep["positions"] == [{"key": "data_engineer", "count": 2}] and rep["cities"] == [{"key": "Utrecht", "count": 2}]
+    assert rep["positions"] == [{"key": "data_engineer", "count": 2, "share": 1.0}] and rep["cities"] == [{"key": "Utrecht", "count": 2}]
     # tracking that does not cover the earlier week: no comparison
     assert stats.market_report(rows, tracking_start=now - timedelta(days=10), now=now)["new_before"] is None
 

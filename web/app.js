@@ -1025,7 +1025,7 @@
     const bars = (items) => { const top = Math.max(1, ...items.map((i) => i.n));
       return items.map((i) => `<div class="rbar"><span>${esc(i.k)}</span><i style="width:${Math.round(i.n / top * 100)}%"></i><b>${esc(i.v)}</b>${i.c != null ? ` <small class="${i.c > 0.004 ? "ok" : i.c < -0.004 ? "bad" : "muted"}" title="${t("rep.change")}">${i.c > 0.004 ? "▲" : i.c < -0.004 ? "▼" : "="} ${Math.abs(Math.round(i.c * 100))}</small>` : ""}</div>`).join(""); };
     $("#rep-skills").innerHTML = bars(r.skills.slice(0, 8).map((s) => ({ k: s.skill, n: s.share, v: pct(s.share), c: s.change })));
-    $("#rep-positions").innerHTML = bars(r.positions.map((p) => ({ k: positionLabel(p.key), n: p.count, v: fmt(p.count) })));
+    $("#rep-positions").innerHTML = bars(r.positions.map((p) => ({ k: positionLabel(p.key), n: p.share, v: pct(p.share) })));
   }
   async function renderMarket() {
     renderReport().catch(() => {});

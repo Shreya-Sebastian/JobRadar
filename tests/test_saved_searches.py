@@ -2,11 +2,11 @@ from datetime import datetime, timedelta
 from urllib.parse import parse_qs, urlparse
 
 from fastapi.testclient import TestClient
+from test_alerts import _jobs
 
 from radar import alerts, auth, mailer
 from radar.db import session_scope
 from radar.models import SavedSearch, User
-from tests.test_alerts import _jobs
 
 H = {"X-Requested-With": "radar"}
 

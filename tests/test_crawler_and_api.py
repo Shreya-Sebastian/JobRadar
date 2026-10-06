@@ -325,7 +325,7 @@ def test_search_landing_pages_bilingual_and_in_sitemap(fresh_db):
     en = client.get("/jobs/tech-amsterdam")
     assert nl.status_code == 200 and en.status_code == 200
     assert "<title>ICT vacatures Amsterdam | " in nl.text and 'lang="nl"' in nl.text
-    assert "<title>Tech jobs in Amsterdam</title>" in en.text and 'hreflang="nl" href="https://techjobsradar.nl/vacatures/ict-amsterdam"' in en.text
+    assert "<title>Tech jobs in Amsterdam | Rolera</title>" in en.text and 'hreflang="nl" href="https://techjobsradar.nl/vacatures/ict-amsterdam"' in en.text
     assert "Data Engineer 0" in en.text and "{{" not in en.text
     assert client.get("/jobs/english-speaking").status_code == 200
     assert client.get("/jobs/tech-groningen").status_code == 404  # no postings there: no thin page

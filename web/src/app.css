@@ -26,19 +26,21 @@
 }
 
 @layer base {
+  /* the category colours (filter dots, job tags) share one lightness and strength per theme, in OKLCH; only the hue
+     differs, so no category (visa's amber, say) shouts louder than the others */
   :root {
     color-scheme: light;
     --bg: #f4f6f9; --card: #ffffff; --ink: #0f172a; --muted: #5b6b80; --line: #e3e8ef;
-    --c-sky-bg: #e0f2fe; --c-indigo-bg: #e0e7ff; --c-teal-bg: #ccfbf1; --c-emerald-bg: #d1fae5;
-    --c-violet-bg: #ede9fe; --c-rose-bg: #ffe4e6; --c-amber-bg: #fef3c7;
+    --c-sky-bg: oklch(0.95 0.035 235); --c-indigo-bg: oklch(0.95 0.035 275); --c-teal-bg: oklch(0.95 0.035 190); --c-emerald-bg: oklch(0.95 0.035 160);
+    --c-violet-bg: oklch(0.95 0.035 305); --c-rose-bg: oklch(0.95 0.035 12); --c-amber-bg: oklch(0.95 0.035 70);
     --shadow-card: 0 1px 2px rgb(15 23 42 / .04), 0 2px 8px rgb(15 23 42 / .05);
     --hero-bg: linear-gradient(120deg, #ecfdf5 0%, #e6f7f4 45%, #e0f2fe 100%);
     --accent: #047857; --accent-2: #f97316; --on-accent: #ffffff; --chip: #f1f5f9; --chip-ink: #334155;
     --ok: #059669; --bad: #dc2626; --warn: #d97706;
-    --tag-lang-fg: #047857; --tag-lang-bg: #d1fae5; --tag-visa-fg: #92400e; --tag-visa-bg: #fef3c7;
+    --tag-lang-fg: var(--c-emerald); --tag-lang-bg: var(--c-emerald-bg); --tag-visa-fg: var(--c-amber); --tag-visa-bg: var(--c-amber-bg);
     --badge-bg: #c2410c; --badge-fg: #ffffff;
-    --c-rose: #be123c; --c-amber: #92400e;
-    --c-sky: #0369a1; --c-indigo: #4338ca; --c-teal: #115e59; --c-emerald: #065f46; --c-violet: #6d28d9;
+    --c-rose: oklch(0.5 0.13 12); --c-amber: oklch(0.5 0.13 70);
+    --c-sky: oklch(0.5 0.13 235); --c-indigo: oklch(0.5 0.13 275); --c-teal: oklch(0.5 0.13 190); --c-emerald: oklch(0.5 0.13 160); --c-violet: oklch(0.5 0.13 305);
     --hero-a: #065f46; --hero-b: #047857; --hero-c: #0e7490; --faint: #64748b; --logo-edge: #020617;
     --logo-glow: 0 1px 2px rgb(15 23 42 / .22);
   }
@@ -48,16 +50,16 @@
       --bg: #0b1120; --card: #131c2e; --ink: #f1f5f9; --muted: #9aa8bc; --line: #243045;
       --accent: #34d399; --accent-2: #fb923c; --on-accent: #022c22; --chip: #1f2a3d; --chip-ink: #cbd5e1;
       --ok: #34d399; --bad: #f87171; --warn: #fbbf24;
-      --tag-lang-fg: #6ee7b7; --tag-lang-bg: #0c3b2e; --tag-visa-fg: #fcd34d; --tag-visa-bg: #3d2a07;
+      --tag-lang-fg: var(--c-emerald); --tag-lang-bg: var(--c-emerald-bg); --tag-visa-fg: var(--c-amber); --tag-visa-bg: var(--c-amber-bg);
       --badge-bg: #fb923c; --badge-fg: #1c0a00;
-      --c-rose: #fda4af; --c-amber: #fcd34d;
-      --c-sky-bg: color-mix(in oklab, #7dd3fc 16%, #131c2e); --c-indigo-bg: color-mix(in oklab, #a5b4fc 16%, #131c2e);
-      --c-teal-bg: color-mix(in oklab, #5eead4 16%, #131c2e); --c-emerald-bg: color-mix(in oklab, #6ee7b7 16%, #131c2e);
-      --c-violet-bg: color-mix(in oklab, #c4b5fd 16%, #131c2e); --c-rose-bg: color-mix(in oklab, #fda4af 16%, #131c2e);
-      --c-amber-bg: color-mix(in oklab, #fcd34d 16%, #131c2e);
+      --c-rose: oklch(0.8 0.1 12); --c-amber: oklch(0.8 0.1 70);
+      --c-sky-bg: oklch(0.31 0.045 235); --c-indigo-bg: oklch(0.31 0.045 275);
+      --c-teal-bg: oklch(0.31 0.045 190); --c-emerald-bg: oklch(0.31 0.045 160);
+      --c-violet-bg: oklch(0.31 0.045 305); --c-rose-bg: oklch(0.31 0.045 12);
+      --c-amber-bg: oklch(0.31 0.045 70);
       --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
       --hero-bg: linear-gradient(135deg, color-mix(in oklab, #34d399 16%, #131c2e) 0%, color-mix(in oklab, #5eead4 12%, #131c2e) 55%, color-mix(in oklab, #7dd3fc 12%, #131c2e) 100%);
-      --c-sky: #7dd3fc; --c-indigo: #a5b4fc; --c-teal: #5eead4; --c-emerald: #6ee7b7; --c-violet: #c4b5fd;
+      --c-sky: oklch(0.8 0.1 235); --c-indigo: oklch(0.8 0.1 275); --c-teal: oklch(0.8 0.1 190); --c-emerald: oklch(0.8 0.1 160); --c-violet: oklch(0.8 0.1 305);
       --hero-a: #064e3b; --hero-b: #065f46; --hero-c: #164e63; --faint: #7f8da3; --logo-edge: #475569;
       --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
     }
@@ -67,16 +69,16 @@
     --bg: #0b1120; --card: #131c2e; --ink: #f1f5f9; --muted: #9aa8bc; --line: #243045;
     --accent: #34d399; --accent-2: #fb923c; --on-accent: #022c22; --chip: #1f2a3d; --chip-ink: #cbd5e1;
     --ok: #34d399; --bad: #f87171; --warn: #fbbf24;
-      --tag-lang-fg: #6ee7b7; --tag-lang-bg: #0c3b2e; --tag-visa-fg: #fcd34d; --tag-visa-bg: #3d2a07;
+      --tag-lang-fg: var(--c-emerald); --tag-lang-bg: var(--c-emerald-bg); --tag-visa-fg: var(--c-amber); --tag-visa-bg: var(--c-amber-bg);
       --badge-bg: #fb923c; --badge-fg: #1c0a00;
-      --c-rose: #fda4af; --c-amber: #fcd34d;
-      --c-sky-bg: color-mix(in oklab, #7dd3fc 16%, #131c2e); --c-indigo-bg: color-mix(in oklab, #a5b4fc 16%, #131c2e);
-      --c-teal-bg: color-mix(in oklab, #5eead4 16%, #131c2e); --c-emerald-bg: color-mix(in oklab, #6ee7b7 16%, #131c2e);
-      --c-violet-bg: color-mix(in oklab, #c4b5fd 16%, #131c2e); --c-rose-bg: color-mix(in oklab, #fda4af 16%, #131c2e);
-      --c-amber-bg: color-mix(in oklab, #fcd34d 16%, #131c2e);
+      --c-rose: oklch(0.8 0.1 12); --c-amber: oklch(0.8 0.1 70);
+      --c-sky-bg: oklch(0.31 0.045 235); --c-indigo-bg: oklch(0.31 0.045 275);
+      --c-teal-bg: oklch(0.31 0.045 190); --c-emerald-bg: oklch(0.31 0.045 160);
+      --c-violet-bg: oklch(0.31 0.045 305); --c-rose-bg: oklch(0.31 0.045 12);
+      --c-amber-bg: oklch(0.31 0.045 70);
       --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
       --hero-bg: linear-gradient(135deg, color-mix(in oklab, #34d399 16%, #131c2e) 0%, color-mix(in oklab, #5eead4 12%, #131c2e) 55%, color-mix(in oklab, #7dd3fc 12%, #131c2e) 100%);
-      --c-sky: #7dd3fc; --c-indigo: #a5b4fc; --c-teal: #5eead4; --c-emerald: #6ee7b7; --c-violet: #c4b5fd;
+      --c-sky: oklch(0.8 0.1 235); --c-indigo: oklch(0.8 0.1 275); --c-teal: oklch(0.8 0.1 190); --c-emerald: oklch(0.8 0.1 160); --c-violet: oklch(0.8 0.1 305);
       --hero-a: #064e3b; --hero-b: #065f46; --hero-c: #164e63; --faint: #7f8da3; --logo-edge: #475569;
       --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
   }

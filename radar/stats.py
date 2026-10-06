@@ -167,6 +167,7 @@ class Filters:
     employees: str | None = None  # comma list of radar.sizes.EMPLOYEE_BANDS: headcount of the organisation
     sector: str | None = None  # comma list of radar.sectors.SECTORS: the employer's sector
     position: str | None = None  # comma list of radar.positions.POSITIONS: the position type of the title
+    exclude_ids: str | None = None  # posting ids to leave out (the ones a visitor opened or applied to)
 
     def apply(self, rows: list[Row]) -> list[Row]:
         out = rows
@@ -175,6 +176,9 @@ class Filters:
         if self.ids:
             wanted = {int(i) for i in self.ids.split(",") if i.strip().isdigit()}
             out = [r for r in out if r.id in wanted]
+        if self.exclude_ids:
+            unwanted = {int(i) for i in self.exclude_ids.split(",") if i.strip().isdigit()}
+            out = [r for r in out if r.id not in unwanted]
         if self.days:
             # the employer's posting date where the board gives one, as in the Age column; the day the radar first
             # saw a posting says little (every posting looked new in the radar's first weeks)

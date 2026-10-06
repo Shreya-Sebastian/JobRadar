@@ -145,10 +145,12 @@ def filters(
     employees: str | None = None,
     sector: str | None = None,
     position: str | None = None,
+    exclude_ids: str | None = Query(None, max_length=6000),
 ) -> stats.Filters:
     return stats.Filters(role, seniority, city, company, english_only, sponsorship, remote, days, q, skill,
                          include_closed, exclude_agencies, exclude_companies, since, skills_any, ids, language,
-                         experience, enrollment, org_size, confirmed_days, degree, employees, sector, position)
+                         experience, enrollment, org_size, confirmed_days, degree, employees, sector, position,
+                         exclude_ids)
 
 
 def _rows(session: Session, f: stats.Filters) -> list[stats.Row]:

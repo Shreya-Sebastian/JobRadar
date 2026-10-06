@@ -430,6 +430,7 @@
   .job-body { @apply min-w-0 flex-1; }
   .job-top { @apply flex items-start gap-3; }
   .job-title { @apply text-[17px] leading-snug font-semibold text-ink no-underline hover:text-accent; }
+  .job.seen .job-title { color: color-mix(in oklab, var(--ink) 62%, var(--card)); }  /* opened before */
   .job-age { @apply ml-auto shrink-0 pt-0.5 text-xs whitespace-nowrap text-muted; }
   .job-meta { @apply mt-1 flex flex-wrap items-baseline gap-x-2 text-sm; }
   .job-meta .co { @apply font-medium text-ink no-underline hover:text-accent; }

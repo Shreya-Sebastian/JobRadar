@@ -34,7 +34,7 @@
       "f.language": "Language", "f.language.any": "All jobs", "f.language.nl": "Dutch-speaking jobs", "f.language.en": "No Dutch required", "f.language.hint": "\"No Dutch required\" hides jobs that ask for Dutch.",
       "f.sort": "Sort by", "f.sort.newest": "Most recent", "f.sort.match": "Best match", "f.role": "Field", "f.level": "Experience level", "f.remote": "Remote",
       "f.cities": "Cities", "f.visa": "Can sponsor a visa (mentioned, or a recognised sponsor)", "f.agencies": "Hide recruitment agencies", 
-      "f.saved": "Saved jobs only", "f.skill": "Skill", "quiz.open": "Quick start", "f.reset": "Clear filters", "f.profile": "Use my profile",
+      "f.saved": "Saved jobs only", "f.hideseen": "Hide jobs I've opened", "f.hideapplied": "Hide jobs I've applied to or archived", "f.skill": "Skill", "quiz.open": "Quick start", "f.reset": "Clear filters", "f.profile": "Use my profile",
       "th.age": "Posted", "th.title": "Title", "th.company": "Company", "th.city": "City", "th.level": "Level", "th.exp": "Experience", "expcell.none": "None required", "th.skills": "Skills",
       "th.match": "Match", "th.lang": "Language", "th.visa": "Visa", "th.employer": "Employer", "th.open": "Open tech roles", "th.share": "Share",
       "th.sector": "Sector", "th.status": "Status", "th.livetech": "Live tech postings", "th.platform": "Platform", "th.kind": "Kind", "th.postings": "Postings",
@@ -147,7 +147,7 @@
       "f.language": "Taal", "f.language.any": "Alle vacatures", "f.language.nl": "Nederlandstalige vacatures", "f.language.en": "Geen Nederlands vereist", "f.language.hint": "\"Geen Nederlands vereist\" verbergt vacatures die om Nederlands vragen.",
       "f.sort": "Sorteren op", "f.sort.newest": "Meest recent", "f.sort.match": "Beste match", "f.role": "Vakgebied", "f.level": "Ervaringsniveau", "f.remote": "Remote",
       "f.cities": "Steden", "f.visa": "Kan een visum sponsoren (genoemd, of erkend referent)", "f.agencies": "Wervingsbureaus verbergen", 
-      "f.saved": "Alleen bewaarde vacatures", "f.skill": "Skill", "quiz.open": "Snel starten", "f.reset": "Filters wissen", "f.profile": "Mijn profiel gebruiken",
+      "f.saved": "Alleen bewaarde vacatures", "f.hideseen": "Vacatures verbergen die ik heb geopend", "f.hideapplied": "Vacatures verbergen waarop ik heb gesolliciteerd of die ik heb gearchiveerd", "f.skill": "Skill", "quiz.open": "Snel starten", "f.reset": "Filters wissen", "f.profile": "Mijn profiel gebruiken",
       "th.age": "Geplaatst", "th.title": "Functie", "th.company": "Werkgever", "th.city": "Plaats", "th.level": "Niveau", "th.exp": "Ervaring", "expcell.none": "Niet vereist", "th.skills": "Skills",
       "th.match": "Match", "th.lang": "Taal", "th.visa": "Visum", "th.employer": "Werkgever", "th.open": "Open techvacatures", "th.share": "Aandeel",
       "th.sector": "Sector", "th.status": "Status", "th.livetech": "Open techvacatures", "th.platform": "Platform", "th.kind": "Soort", "th.postings": "Vacatures",
@@ -257,7 +257,7 @@
   };
   document.addEventListener("click", (ev) => {
     const a = ev.target.closest && ev.target.closest("a[data-pid]");
-    if (a) beacon("job_click", a.dataset.pid);
+    if (a) { beacon("job_click", a.dataset.pid); markSeen(Number(a.dataset.pid)); }
   }, true);
   // ---------- account (optional; see radar/auth.py) ----------
   const account = {
@@ -381,6 +381,7 @@
     profile: Object.assign(emptyProfile(), store.get("profile", {})),
     saved: store.get("saved", []),
     board: store.get("board", {}),  // the application tracker: {job id: {col, at}}; no entry = "saved"
+    seen: store.get("seen", []),  // jobs this browser opened, newest last
     options: { roles: [], positions: [], cities: [], skills: [] },
     charts: {}, overview: null,
   };
@@ -696,6 +697,14 @@
     const p = state.profile;
     return { roles: [...p.roles], positions: [...(p.positions || [])], levels: [...p.levels], exp: [...p.exp], degrees: [...p.degrees], emps: [...p.emps], sectors: [...(p.sectors || [])], remote: [...p.remote], cities: [...p.cities], language: p.language, visa: p.visa, agencies: p.agencies, noenrol: !!p.noenrol, confirmed: false, q: "", days: "", savedOnly: false, exclude: [...p.exclude] };
   }
+  // opened jobs: shown quieter in the list, and hidden with "Hide jobs I've opened"
+  function markSeen(id) {
+    if (!id) return;
+    const i = state.seen.indexOf(id); if (i >= 0) state.seen.splice(i, 1);
+    state.seen.push(id); if (state.seen.length > 400) state.seen.splice(0, state.seen.length - 400);
+    store.set("seen", state.seen);
+    const li = document.querySelector(`#postings a[data-pid="${id}"]`); if (li) li.closest(".job")?.classList.add("seen");
+  }
   const emptyJobFilters = () => ({ roles: [], positions: [], levels: [], exp: [], degrees: [], emps: [], sectors: [], remote: [], cities: [], language: "", visa: false, agencies: false, noenrol: false, confirmed: false, q: "", days: "", savedOnly: false, exclude: [] });
   // the Jobs tab opens with the saved profile's filters. "Reset filters" turns that off for this browser (it is
   // remembered, so a reload does not bring them back); "Use my profile" and saving the profile turn it on again.
@@ -711,13 +720,16 @@
       exclude: list("exclude_companies"), language: q.get("language") || "", visa: q.get("sponsorship") === "true",
       agencies: q.get("exclude_agencies") === "true", noenrol: q.get("enrollment") === "open", confirmed: !!q.get("confirmed_days"),
       q: q.get("q") || "", days: q.get("days") || "", savedOnly: q.get("saved") === "1",
+      hideSeen: (q.get("hide") || "").split(",").includes("seen"), hideApplied: (q.get("hide") || "").split(",").includes("applied"),
     });
   }
   // the current search as a link, so it can be bookmarked or shared (saved jobs stay out of it: they are personal)
   function syncJobsUrl() {
     const q = jobParams();
-    q.delete("ids");
+    q.delete("ids"); q.delete("exclude_ids");
     if (currentJobFilters().savedOnly) q.set("saved", "1");
+    const hide = [currentJobFilters().hideSeen && "seen", currentJobFilters().hideApplied && "applied"].filter(Boolean);
+    if (hide.length) q.set("hide", hide.join(","));
     if (state.sort !== "size_large") q.set("sort", state.sort);
     const s = q.toString().replace(/%2C/g, ",");
     const want = "#discover" + (s ? "?" + s : "");
@@ -750,6 +762,10 @@
     if (f.q) q.set("q", f.q);
     if (f.days) q.set("days", f.days);
     if (f.savedOnly) q.set("ids", state.saved.join(",") || "0");
+    // the opened jobs, and the ones moved to Applied or Archived on the board, when the visitor hides them
+    const out = [...(f.hideSeen ? state.seen : []),
+                 ...(f.hideApplied ? Object.keys(state.board).filter((id) => ["applied", "archived"].includes(state.board[id].col)).map(Number) : [])];
+    if (out.length) q.set("exclude_ids", [...new Set(out)].join(","));
     if (state.skill) q.set("skill", state.skill);
     return q;
   }
@@ -758,7 +774,7 @@
     lang: (f) => (f.language ? 1 : 0), exp: (f) => f.exp.length + f.levels.length,
     role: (f) => f.roles.length + (f.positions || []).length, degree: (f) => f.degrees.length, remote: (f) => f.remote.length,
     company: (f) => f.emps.length + f.sectors.length + (f.agencies ? 1 : 0),
-    posted: (f) => (f.days ? 1 : 0) + (f.confirmed ? 1 : 0), more: (f) => (f.noenrol ? 1 : 0) + (f.savedOnly ? 1 : 0),
+    posted: (f) => (f.days ? 1 : 0) + (f.confirmed ? 1 : 0), more: (f) => (f.noenrol ? 1 : 0) + (f.savedOnly ? 1 : 0) + (f.hideSeen ? 1 : 0) + (f.hideApplied ? 1 : 0),
   };
   function paintPills() {
     const f = currentJobFilters();
@@ -806,12 +822,14 @@
     chipInput($("#f-cities"), f.cities, [...state.options.cities, "Remote"], () => refreshJobs(true), t("ph.city"), null, cityLabel);
     $("#f-language").value = f.language || ""; $("#f-visa").checked = f.visa; $("#f-agencies").checked = f.agencies; $("#f-noenrol").checked = !!f.noenrol; $("#f-confirmed").checked = !!f.confirmed;
     $("#f-saved").checked = f.savedOnly; $("#f-q").value = f.q; $("#f-days").value = f.days;
+    $("#f-hideseen").checked = !!f.hideSeen; $("#f-hideapplied").checked = !!f.hideApplied;
     $("#f-sort").value = state.sort;
     paintPills();
     if (!jobsBuilt) {
       jobsBuilt = true;
       bindPills();
-      [["#f-visa", "visa"], ["#f-agencies", "agencies"], ["#f-noenrol", "noenrol"], ["#f-confirmed", "confirmed"], ["#f-saved", "savedOnly"]]
+      [["#f-visa", "visa"], ["#f-agencies", "agencies"], ["#f-noenrol", "noenrol"], ["#f-confirmed", "confirmed"], ["#f-saved", "savedOnly"],
+       ["#f-hideseen", "hideSeen"], ["#f-hideapplied", "hideApplied"]]
         .forEach(([id, key]) => $(id).addEventListener("change", (e) => { currentJobFilters()[key] = e.target.checked; refreshJobs(true); }));
       $("#f-language").addEventListener("change", (e) => { currentJobFilters().language = e.target.value; refreshJobs(true); });
       $("#f-days").addEventListener("change", (e) => { currentJobFilters().days = e.target.value; refreshJobs(true); });
@@ -923,7 +941,7 @@
     const shown = i.skills.slice(0, 6);
     const skills = shown.length ? `<div class="job-skills">${shown.map((s) => `<span${have.includes(s) ? ' class="have"' : ""}>${esc(s)}</span>`).join("")}${i.skills.length > 6 ? `<span class="more">+${i.skills.length - 6}</span>` : ""}</div>` : "";
     const old = i.age_days > 365 ? `<span class="badge stale" title="${t("old.year.title")}">${t("old.year")}</span>` : i.age_days > 90 ? `<span class="badge stale">${t("old")}</span>` : "";
-    return `<li class="job" style="--sc:${sectorColour(i.sector)}">
+    return `<li class="job${state.seen.includes(i.id) ? " seen" : ""}" style="--sc:${sectorColour(i.sector)}">
       ${logoTile(i)}
       <div class="job-body">
         <div class="job-top"><a class="job-title" href="${jobPath(i)}" data-pid="${i.id}" target="_blank" title="${esc(trustText(i))}">${esc(i.title)}</a>

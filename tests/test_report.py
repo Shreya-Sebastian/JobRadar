@@ -42,3 +42,11 @@ def test_report_page_is_public_and_names_no_employer(fresh_db):
         assert r.status_code == 200 and "{{" not in r.text and "Acme" not in r.text
     assert "The Dutch tech job market this week" in client.get("/market-report").text
     assert client.get("/api/market/report").json()["new"] == 1
+
+
+def test_jobs_a_visitor_opened_or_applied_to_can_be_left_out():
+    now = datetime(2026, 10, 20, 12)
+    rows = [_row(1, 1, ["Python"]), _row(2, 1, ["SQL"]), _row(3, 1, ["Go"])]
+    assert [r.id for r in stats.Filters(exclude_ids="1,3").apply(rows)] == [2]
+    assert [r.id for r in stats.Filters(exclude_ids="x, 2").apply(rows)] == [1, 3]  # junk ignored
+    assert len(stats.Filters().apply(rows)) == 3 and now

@@ -91,8 +91,8 @@ def feed_path(page: Page, lang: str) -> str:
 
 
 def doc_title(title: str) -> str:
-    """The <title>: the page title, then the site name, unless the title already says "tech jobs" (it is the name)."""
-    return title if "tech jobs" in title.lower() else f"{title} | {settings.site_name}"
+    """The <title>: the page title, then the site name (unless the title already carries it)."""
+    return title if settings.site_name.lower() in title.lower() else f"{title} | {settings.site_name}"
 
 
 def city_nl(c: str) -> str:

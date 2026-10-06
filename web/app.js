@@ -604,7 +604,7 @@
       ...(o.new ? [[fmt(o.new.recent), t("kpi.week"), o.new.before != null ? t("kpi.week.vs", { m: fmt(o.new.before) }) : "", t("kpi.week.title")]] : []),
       [last, t("kpi.crawl")],
     ].map(([v, l, sub, title]) => `<div class="kpi"${title ? ` title="${esc(title)}"` : ""}><b>${esc(v)}</b><span>${esc(l)}</span>${sub ? `<span class="kpi-sub">${esc(sub)}</span>` : ""}</div>`).join("");
-    document.title = t("title");
+    document.title = `${t("title")} | ${$("#brand").title}`;
     $("#hero-sub").textContent = t("hero.sub", { n: fmt(o.live_tech_postings), c: fmt(o.companies), d: last });
   }
 

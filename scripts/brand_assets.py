@@ -89,7 +89,7 @@ def card() -> Image.Image:
     d = ImageDraw.Draw(img)
     d.rectangle((0, 0, 1200, 12), fill=TILE)
     img.paste(logo(150), (90, 150), logo(150))
-    d.text((270, 160), "Tech Jobs", font=font(True, 76), fill=INK)
+    d.text((270, 160), "Rolera", font=font(True, 76), fill=INK)
     d.text((272, 258), "IT jobs in the Netherlands, filtered by what they ask", font=font(False, 36), fill=INK)
     d.text((92, 410), "Dutch or English, visa sponsorship, years of experience,", font=font(False, 34), fill=MUTED)
     d.text((92, 458), "degree, position, company size and city.", font=font(False, 34), fill=MUTED)

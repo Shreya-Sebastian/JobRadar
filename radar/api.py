@@ -719,9 +719,10 @@ def _render_index(session: Session | None = None, lang: str = "en") -> str:
                 .replace("{{HTML_LANG}}", lang)
                 .replace("{{HOME_PATH}}", "/nl/" if lang == "nl" else "/")
                 .replace("{{FEED_PATH}}", "/nl/feed.xml" if lang == "nl" else "/feed.xml")
+                # the header's name, then for search engines and screen readers what the site is
                 .replace("{{H1_SUFFIX}}",
-                         " in Nederland" if lang == "nl" else " in the Netherlands")
-                .replace("{{PAGE_TITLE}}", title)
+                         ": techvacatures in Nederland" if lang == "nl" else ": tech jobs in the Netherlands")
+                .replace("{{PAGE_TITLE}}", seo.doc_title(title))
                 .replace("{{META_DESCRIPTION}}", desc)
                 .replace("{{VERIFY}}", seo.verification_meta())
                 .replace("{{SOURCE_LINK}}", _source_link(lang))

@@ -24,7 +24,7 @@ def test_feed_lists_the_newest_matching_jobs_as_rss(fresh_db):
     assert r.status_code == 200 and r.headers["content-type"].startswith("application/rss+xml")
     channel = ElementTree.fromstring(r.text).find("channel")
     items = channel.findall("item")
-    assert channel.findtext("title") == "Tech Jobs: new jobs (Utrecht)"
+    assert channel.findtext("title") == "Rolera: new jobs (Utrecht)"
     assert [i.findtext("title") for i in items] == ["Data Engineer · Acme"] and "/job/" in items[0].findtext("link")
     nl = ElementTree.fromstring(client.get("/nl/feed.xml").text).find("channel")
     assert len(nl.findall("item")) == 2 and "/nl/vacature/" in nl.find("item").findtext("link")

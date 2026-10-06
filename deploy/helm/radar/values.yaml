@@ -16,7 +16,7 @@ admin:
 # Login e-mails (radar/auth.py). With backend "console" links only appear in the API log.
 mail:
   backend: console            # console | smtp
-  from: "Tech Jobs <login@techjobsradar.nl>"
+  from: "Rolera <login@techjobsradar.nl>"
   smtpHost: email-smtp.eu-west-1.amazonaws.com
   smtpPort: 587
   existingSecret: ""          # Secret with keys RADAR_SMTP_USER and RADAR_SMTP_PASSWORD
@@ -44,7 +44,7 @@ config:
   cadenceNormalMinutes: 180
   cadenceLowMinutes: 720
   corsOrigins: "*"
-  siteName: "NL Tech Job Radar"          # e.g. "Tech Vacature Radar"
+  siteName: "Rolera"
   siteAliases: "TechJobsNL, Tech Jobs NL, Dutch tech jobs"
   siteUrl: "https://radar.example.com"   # canonical public URL, used in robots.txt, sitemap and metadata
   extraEnv: {}

@@ -17,7 +17,7 @@ admin:
 # with sending access only. Amazon SES (deploy/aws/main.tf) stays set up as a fallback.
 mail:
   backend: smtp
-  from: "Tech Jobs <login@techjobsradar.nl>"
+  from: "Rolera <login@techjobsradar.nl>"
   smtpHost: smtp.resend.com
   smtpPort: 587
   existingSecret: radar-smtp
@@ -28,8 +28,8 @@ google:
 
 config:
   corsOrigins: "https://techjobsradar.nl"
-  siteName: "Tech Jobs"
-  siteAliases: "Tech Jobs Radar, TechJobsRadar, techjobsradar.nl, TechJobsNL, Tech Jobs NL, ICT vacatures, IT vacatures, tech jobs Netherlands"
+  siteName: "Rolera"
+  siteAliases: "Tech Jobs, Tech Jobs Radar, TechJobsRadar, techjobsradar.nl, TechJobsNL, Tech Jobs NL, ICT vacatures, IT vacatures, tech jobs Netherlands"
   siteUrl: "https://techjobsradar.nl"
   extraEnv:
     RADAR_SOURCE_URL: ""  # the repository is private: no source link in the footer

@@ -72,6 +72,11 @@
     <p class="m-0 text-sm text-muted" id="tr-hint" data-i18n="tr.hint" hidden>Move a job to the next column as your application progresses.</p>
   </div>
   <div class="board" id="board"></div>
+  <div class="card">
+    <h2 data-i18n="ov.matches">Suggested for you</h2>
+    <ol class="matches" id="ov-matches"></ol>
+    <p class="muted small" id="ov-match-empty" hidden data-i18n-html="ov.matches.empty">Add your skills under <a href="#profile">Profile</a> to get suggestions.</p>
+  </div>
   <p class="rss-foot"><a class="rss-link" id="f-rss" href="/feed.xml" target="_blank" rel="noopener" data-i18n-title="rss.title" title="Your current search as an RSS feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1.2" fill="currentColor"/></svg><span data-i18n="rss.label">RSS feed of your search</span></a></p>
 </section>
 
@@ -161,11 +166,6 @@
 
 <!-- ============ PROFILE ============ -->
 <section class="tab" data-tab="profile">
-  <div class="card">
-    <h2 data-i18n="ov.matches">Best matches for you</h2>
-    <ol class="matches" id="ov-matches"></ol>
-    <p class="muted small" id="ov-match-empty" hidden data-i18n-html="ov.matches.empty">Add your skills under <a href="#profile">Profile</a> to see matches.</p>
-  </div>
   <p class="small muted mt-4 mb-0" id="acct-out" data-i18n-html="acct.nudge">Your profile and saved jobs are kept in this browser. <a href="/login">Log in</a> to have them on every device.</p>
   <div class="grid two">
     <div class="card">
@@ -305,6 +305,6 @@
   <p class="foot-bottom"><a href="{{PRIVACY_PATH}}" data-i18n="privacy">Privacy</a> · <a href="{{FEEDBACK_PATH}}" data-i18n="feedback">Feedback</a>{{SOURCE_LINK}}</p>
  </div>
 </footer>
-<script src="/static/app.js?v=122"></script>
+<script src="/static/app.js?v=123"></script>
 </body>
 </html>

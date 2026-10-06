@@ -28,8 +28,8 @@
       "jobs.none": "No jobs match these filters. Try removing one.", "rss.title": "Your current search as an RSS feed", "rss.label": "RSS feed of your search", "pill.lang": "Language", "pill.visa": "Visa sponsorship", "pill.exp": "Experience", "pill.level": "Experience level", "pill.role": "Field", "pill.degree": "Education", "pill.remote": "Remote", "pill.company": "Company", "pill.posted": "Date posted", "pill.more": "More", "remote.label": "Remote", "sal.from": "from {v}", "fact.noexp": "No experience required", "sal.upto": "up to {v}", "sal.title": "Salary stated in the posting (per year, gross)", "fact.visa": "Visa sponsorship", "fact.nodutch": "No Dutch required",
       "ov.graph": "Skills often requested together",
       "kpi.week": "posted in the last 7 days", "kpi.week.vs": "previous 7 days: {m}", "kpi.week.title": "Jobs posted in the last 7 days, by the date employers posted them, against the 7 days before",
-      "ov.matches": "Best matches for you",
-      "ov.matches.empty": "Add your skills below to see the jobs that fit them best.",
+      "ov.matches": "Suggested for you",
+      "ov.matches.empty": "Add your skills under <a href=\"#profile\">Profile</a> to get suggestions.",
       "f.search": "Search", "f.search.ph": "title or company", "f.window": "Date posted", "f.window.all": "Any time", "f.window.1": "Past 24 hours",
       "f.window.7": "Past week", "f.window.30": "Past month", "f.window.90": "Past 3 months",
       "f.language": "Language", "f.language.any": "All jobs", "f.language.nl": "Dutch-speaking jobs", "f.language.en": "No Dutch required", "f.language.hint": "\"No Dutch required\" hides jobs that ask for Dutch.",
@@ -142,8 +142,8 @@
       "jobs.none": "Geen vacatures met deze filters. Haal er een weg.", "rss.title": "Je huidige zoekopdracht als RSS-feed", "rss.label": "RSS-feed van je zoekopdracht", "pill.lang": "Taal", "pill.visa": "Visumsponsoring", "pill.exp": "Ervaring", "pill.level": "Ervaringsniveau", "pill.role": "Vakgebied", "pill.degree": "Opleiding", "pill.remote": "Remote", "pill.company": "Werkgever", "pill.posted": "Geplaatst", "pill.more": "Meer", "remote.label": "Remote", "sal.from": "vanaf {v}", "fact.noexp": "Geen ervaring vereist", "sal.upto": "tot {v}", "sal.title": "Salaris volgens de vacature (per jaar, bruto)", "fact.visa": "Visumsponsoring", "fact.nodutch": "Geen Nederlands vereist",
       "ov.graph": "Skills die vaak samen gevraagd worden",
       "kpi.week": "geplaatst in de laatste 7 dagen", "kpi.week.vs": "7 dagen daarvoor: {m}", "kpi.week.title": "Vacatures geplaatst in de laatste 7 dagen, op de datum van de werkgever, tegenover de 7 dagen daarvoor",
-      "ov.matches": "Beste matches voor jou",
-      "ov.matches.empty": "Voeg hieronder je skills toe om de vacatures te zien die er het best bij passen.",
+      "ov.matches": "Voorgesteld voor jou",
+      "ov.matches.empty": "Voeg je skills toe onder <a href=\"#profile\">Profiel</a> voor suggesties.",
       "f.search": "Zoeken", "f.search.ph": "functietitel of werkgever", "f.window": "Datum geplaatst", "f.window.all": "Altijd", "f.window.1": "Afgelopen 24 uur",
       "f.window.7": "Afgelopen week", "f.window.30": "Afgelopen maand", "f.window.90": "Afgelopen 3 maanden",
       "f.language": "Taal", "f.language.any": "Alle vacatures", "f.language.nl": "Nederlandstalige vacatures", "f.language.en": "Geen Nederlands vereist", "f.language.hint": "\"Geen Nederlands vereist\" verbergt vacatures die om Nederlands vragen.",
@@ -620,14 +620,18 @@
     $$("[data-skill-key]").forEach((k) => { k.hidden = !skills.skills.some((s) => have.has(s.skill)); });
     graph($("#ov-graph"), co, (s) => openJobsWithSkill(s));
   }
-  // best matches for the profile's skills, at the top of the Profile tab
+  // suggestions on the Saved jobs tab: the best matches for the profile's skills that are not saved yet, each with a
+  // star to save it onto the board
   async function renderMatches() {
     const mine = profileParams();
     const hasProfile = [...mine.keys()].length > 0;
     if (state.profile.skills.length) {
       $("#ov-match-empty").hidden = true;
-      const m = await api("/api/postings", withParams(mine, { sort: "match", skills_have: state.profile.skills.join(","), size: 8 }));
-      $("#ov-matches").innerHTML = m.items.length ? m.items.map(li).join("") : `<li class="muted">${t("match.none")}</li>`;
+      const m = await api("/api/postings", withParams(mine, { sort: "match", skills_have: state.profile.skills.join(","), size: 16 }));
+      const items = m.items.filter((i) => !state.saved.includes(i.id)).slice(0, 8);
+      $("#ov-matches").innerHTML = items.length
+        ? items.map((i) => li(i).replace("<li>", `<li><button class="star" data-id="${i.id}" title="${t("save")}" aria-label="${t("save")}">☆</button> `)).join("")
+        : `<li class="muted">${t("match.none")}</li>`;
     } else { $("#ov-match-empty").hidden = false; $("#ov-matches").innerHTML = ""; }
   }
   function li(i) {
@@ -935,6 +939,7 @@
   const columnOf = (id) => (state.board[id] && COLUMNS.includes(state.board[id].col) ? state.board[id].col : "saved");
   async function renderTracker() {
     paintFeedLink();
+    renderMatches().catch(() => {});
     const batches = [];
     for (let k = 0; k < state.saved.length; k += 200) batches.push(state.saved.slice(k, k + 200));  // the API's page size
     const pages = await Promise.all(batches.map((ids) => api("/api/postings", new URLSearchParams({ ids: ids.join(","), size: 200, include_closed: "true", sort: "newest" }))));
@@ -1059,7 +1064,6 @@
   // ---------- PROFILE ----------
   let profileBuilt = false;
   function renderProfile() {
-    renderMatches().catch(() => {});
     const p = state.profile;
     toggles($("#p-roles"), state.options.roles, p.roles, roleLabel);
     if (!p.positions) p.positions = [];
@@ -1311,6 +1315,11 @@
   }
   let booting = null;  // the first load (account, then the filter options); every tab needs it
   window.addEventListener("hashchange", route);
+  // a suggestion's star puts the job on the board (and out of the suggestions)
+  $("#ov-matches").addEventListener("click", (e) => {
+    const b = e.target.closest(".star"); if (!b) return;
+    toggleSaved(Number(b.dataset.id), b); renderTracker().catch(() => {});
+  });
   window.addEventListener("themechange", () => { const r = renderers[state.tab]; if (r && state.tab !== "jobs") Promise.resolve(r()).catch(() => {}); });
   $("#brand").addEventListener("click", (e) => {
     e.preventDefault();

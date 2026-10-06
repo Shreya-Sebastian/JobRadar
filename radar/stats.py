@@ -405,7 +405,8 @@ def market_report(rows: list[Row], tracking_start: datetime | None, now: datetim
         "new": len(cur), "new_before": len(prev) if prev is not None else None,
         "no_dutch": share(cur, no_dutch), "no_dutch_before": share(prev, no_dutch),
         "visa": sum(1 for r in cur if r.ex.get("visa_sponsorship") is True),
-        "remote": share(cur, lambda r: r.ex.get("remote_policy") in ("remote", "hybrid")),
+        "remote": share(cur, lambda r: r.ex.get("remote_policy") == "remote"),
+        "hybrid": share(cur, lambda r: r.ex.get("remote_policy") == "hybrid"),
         "salary_median": statistics.median(salaries) if len(salaries) >= 10 else None, "salary_n": len(salaries),
         "skills": skills,
         "positions": [{"key": k, "count": n} for k, n in Counter(r.position for r in cur).most_common(9)

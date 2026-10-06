@@ -508,7 +508,7 @@ REPORT_TEXT = {'en': {'title': 'The Dutch tech job market this week',
                       'before': 'the week before: {n}',
                       'no_dutch': 'need no Dutch',
                       'visa': 'mention visa sponsorship',
-                      'remote': 'remote or hybrid',
+                      'remote': 'fully remote', 'hybrid': 'hybrid',
                       'salary': 'median stated salary',
                       'salary_n': '{n} postings state one',
                       'skills': 'Skills asked for',
@@ -536,7 +536,7 @@ REPORT_TEXT = {'en': {'title': 'The Dutch tech job market this week',
                       'before': 'de week ervoor: {n}',
                       'no_dutch': 'zonder Nederlands',
                       'visa': 'noemen visumsponsoring',
-                      'remote': 'thuis of hybride',
+                      'remote': 'volledig op afstand', 'hybrid': 'hybride',
                       'salary': 'mediaan vermeld salaris',
                       'salary_n': '{n} vacatures noemen er een',
                       'skills': 'Gevraagde skills',
@@ -580,7 +580,7 @@ def render_report(rep: dict, lang: str) -> str:
     before = t["before"].format(n=num(rep["new_before"])) if rep["new_before"] is not None else ""
     tiles = [(num(rep["new"]), t["new"], before),
              (pct(rep["no_dutch"]), t["no_dutch"], ""), (num(rep["visa"]), t["visa"], ""),
-             (pct(rep["remote"]), t["remote"], "")]
+             (pct(rep["remote"]), t["remote"], ""), (pct(rep.get("hybrid")), t["hybrid"], "")]
     if rep["salary_median"]:
         tiles.append((f"€{num(round(rep['salary_median'], -3))}", t["salary"], t["salary_n"].format(n=rep["salary_n"])))
     tiles_html = "".join(f'<div class="kpi"><b>{escape(v)}</b><span>{escape(label)}</span>'

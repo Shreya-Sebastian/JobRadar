@@ -274,6 +274,7 @@
   .pill .n { @apply rounded-full bg-accent px-1.5 text-[11px] leading-4 font-semibold text-on-accent; }
   .pill .n:empty { display: none; }
   /* light / dark switch (web/theme.js): the moon in light mode, the sun in dark mode */
+  .masked { -webkit-text-security: disc; }  /* a secret typed into a plain text field (admin token) */
   .theme-btn { @apply grid size-9 shrink-0 cursor-pointer place-items-center rounded-lg border border-line bg-card p-0 text-muted
     shadow-none transition-colors hover:bg-chip hover:text-ink; }
   .theme-btn svg { @apply size-[18px]; }

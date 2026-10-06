@@ -27,8 +27,8 @@ class Settings(BaseSettings):
     # Branding and search: the site name goes into the title, headings and structured data; the aliases are
     # phrases people may search for ("TechJobsNL"); the URL is the canonical public address.
     site_name: str = "Rolera"
-    site_aliases: str = ("Tech Jobs, Tech Jobs Radar, TechJobsRadar, techjobsradar.nl, TechJobsNL, Tech Jobs NL, ICT vacatures, "
-                         "IT vacatures, tech jobs Netherlands")
+    site_aliases: str = ("Tech Jobs, Tech Jobs Radar, TechJobsRadar, techjobsradar.nl, TechJobsNL, Tech Jobs NL, "
+                         "ICT vacatures, IT vacatures, tech jobs Netherlands")
     site_url: str = "https://techjobsradar.nl"
     # Google Search Console verification token (the content of its <meta name="google-site-verification">)
     google_site_verification: str | None = None

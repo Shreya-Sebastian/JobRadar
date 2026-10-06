@@ -18,3 +18,13 @@ patches:
         value:
           requests: {cpu: 20m, memory: 48Mi}
           limits: {cpu: 500m, memory: 256Mi}
+      # the default 1-second probe timeout restarts the controllers whenever the small node stalls for a moment
+      - op: add
+        path: /spec/template/spec/containers/0/livenessProbe/timeoutSeconds
+        value: 10
+      - op: add
+        path: /spec/template/spec/containers/0/livenessProbe/failureThreshold
+        value: 6
+      - op: add
+        path: /spec/template/spec/containers/0/readinessProbe/timeoutSeconds
+        value: 5

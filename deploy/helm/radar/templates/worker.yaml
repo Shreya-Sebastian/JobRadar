@@ -52,9 +52,11 @@ spec:
               value: /var/run/secrets/indexing/key.json
             {{- end }}
           livenessProbe:
+            # a generous timeout: on the small node a few seconds' stall is not a dead process
             httpGet: {path: /metrics, port: metrics}
             periodSeconds: 30
-            failureThreshold: 3
+            timeoutSeconds: 10
+            failureThreshold: 6
           resources: {{- toYaml .Values.worker.resources | nindent 12 }}
           {{- if .Values.google.indexingSecret }}
           volumeMounts:
@@ -134,8 +136,10 @@ spec:
               containerPort: {{ .Values.worker.metricsPort }}
           env: {{- include "radar.env" . | nindent 12 }}
           livenessProbe:
+            # a generous timeout: on the small node a few seconds' stall is not a dead process
             httpGet: {path: /metrics, port: metrics}
             periodSeconds: 30
-            failureThreshold: 3
+            timeoutSeconds: 10
+            failureThreshold: 6
           resources: {{- toYaml .Values.worker.light.resources | nindent 12 }}
 {{- end }}

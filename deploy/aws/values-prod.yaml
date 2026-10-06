@@ -49,8 +49,11 @@ api:
 worker:
   replicas: 1
   timetable: true             # periodic jobs from the worker, no CronJob pods
-  light:                      # a second worker for the quick ATS boards (radar/queue.py), capped for the 2 GB node
-    enabled: true
+  # a second worker for the quick ATS boards (radar/queue.py). Off on the 2 GB node: with it the node ran out of
+  # memory and swapped, and the stalls failed every health check on it (6 Oct 2026). The main worker serves the
+  # quick queue as well, so crawls only take longer
+  light:
+    enabled: false
     replicas: 1
     resources:
       requests: {cpu: 50m, memory: 100Mi}

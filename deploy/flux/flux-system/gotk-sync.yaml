@@ -8,7 +8,7 @@ metadata:
   name: flux-system
   namespace: flux-system
 spec:
-  interval: 1m
+  interval: 5m  # each check costs the 2 GB node some CPU; a deploy starts up to 5 minutes after a push
   url: ssh://git@github.com/Shreya-Sebastian/JobRadar
   secretRef:
     name: flux-deploy-key

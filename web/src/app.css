@@ -40,6 +40,7 @@
     --c-rose: #be123c; --c-amber: #92400e;
     --c-sky: #0369a1; --c-indigo: #4338ca; --c-teal: #115e59; --c-emerald: #065f46; --c-violet: #6d28d9;
     --hero-a: #065f46; --hero-b: #047857; --hero-c: #0e7490; --faint: #64748b; --logo-edge: #0f172a;
+    --logo-glow: 0 1px 2px rgb(15 23 42 / .25), 0 6px 16px rgb(14 116 144 / .22);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -57,7 +58,8 @@
       --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
       --hero-bg: linear-gradient(135deg, color-mix(in oklab, #34d399 16%, #131c2e) 0%, color-mix(in oklab, #5eead4 12%, #131c2e) 55%, color-mix(in oklab, #7dd3fc 12%, #131c2e) 100%);
       --c-sky: #7dd3fc; --c-indigo: #a5b4fc; --c-teal: #5eead4; --c-emerald: #6ee7b7; --c-violet: #c4b5fd;
-      --hero-a: #064e3b; --hero-b: #065f46; --hero-c: #164e63; --faint: #7f8da3; --logo-edge: #334155;
+      --hero-a: #064e3b; --hero-b: #065f46; --hero-c: #164e63; --faint: #7f8da3; --logo-edge: #2a7f78;
+      --logo-glow: 0 0 0 1px rgb(45 212 191 / .28), 0 0 20px rgb(45 212 191 / .25);
     }
   }
   :root[data-theme="dark"] {
@@ -75,7 +77,8 @@
       --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
       --hero-bg: linear-gradient(135deg, color-mix(in oklab, #34d399 16%, #131c2e) 0%, color-mix(in oklab, #5eead4 12%, #131c2e) 55%, color-mix(in oklab, #7dd3fc 12%, #131c2e) 100%);
       --c-sky: #7dd3fc; --c-indigo: #a5b4fc; --c-teal: #5eead4; --c-emerald: #6ee7b7; --c-violet: #c4b5fd;
-      --hero-a: #064e3b; --hero-b: #065f46; --hero-c: #164e63; --faint: #7f8da3; --logo-edge: #334155;
+      --hero-a: #064e3b; --hero-b: #065f46; --hero-c: #164e63; --faint: #7f8da3; --logo-edge: #2a7f78;
+      --logo-glow: 0 0 0 1px rgb(45 212 191 / .28), 0 0 20px rgb(45 212 191 / .25);
   }
   [hidden] { display: none !important; }
   body { @apply bg-bg text-[15px]/relaxed text-ink antialiased; }
@@ -132,7 +135,7 @@
   .brand { @apply flex min-w-0 items-center gap-3 text-ink no-underline; }
   .brand h1, .brand b { @apply truncate text-[1.375rem] font-bold tracking-tight; }
   .brand:hover h1, .brand:hover b { @apply text-accent; }
-  .logo { @apply size-10 shrink-0; }
+  .logo { @apply size-10 shrink-0; border-radius: 25%; box-shadow: var(--logo-glow); }  /* lifted off the header */
   .topbar-right { @apply flex items-center gap-2.5; }
   .langswitch { @apply inline-flex rounded-lg border border-line bg-bg p-0.5; }
   .langswitch > * { @apply rounded-md border-0 bg-transparent px-2.5 py-1 text-xs font-semibold text-muted no-underline shadow-none

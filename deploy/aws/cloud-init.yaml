@@ -38,7 +38,8 @@ runcmd:
   - snap install aws-cli --classic
   # memory trims for a 2 GB node: no metrics-server, a soft memory cap for k3s, no multipathd (unused on EC2)
   - mkdir -p /etc/rancher/k3s && printf 'disable:\n  - metrics-server\n' > /etc/rancher/k3s/config.yaml
-  - echo 'GOMEMLIMIT=400MiB' >> /etc/systemd/system/k3s.service.env
+  # (at 400 MiB the k3s heap sat at the cap and k3s spent more than one core on garbage collection, 6 Oct 2026)
+  - echo 'GOMEMLIMIT=640MiB' >> /etc/systemd/system/k3s.service.env
   - systemctl disable --now multipathd.service multipathd.socket || true
   - curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server --tls-san ${public_ip}" sh -
   - sleep 30

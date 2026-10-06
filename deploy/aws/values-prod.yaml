@@ -66,6 +66,7 @@ worker:
       maxUnavailable: 1
 
 redis:
+  maxmemory: 96mb  # under the 128Mi limit: Redis evicts expiring keys instead of being killed
   resources:
     requests: {cpu: 50m, memory: 32Mi}
     limits: {cpu: 250m, memory: 128Mi}

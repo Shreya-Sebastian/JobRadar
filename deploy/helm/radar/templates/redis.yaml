@@ -36,7 +36,10 @@ spec:
       containers:
         - name: redis
           image: {{ .Values.redis.image }}
-          args: ["redis-server", "--save", "60", "1", "--appendonly", "no", "--maxmemory", "200mb", "--maxmemory-policy", "allkeys-lru"]
+          # maxmemory stays below the container limit, or Redis is killed before it starts evicting; only keys with
+          # an expiry are evicted (response cache, rate limits), never the job queue
+          args: ["redis-server", "--save", "60", "1", "--appendonly", "no", "--maxmemory", {{ .Values.redis.maxmemory | quote }},
+                 "--maxmemory-policy", "volatile-lru"]
           ports:
             - containerPort: 6379
           resources: {{- toYaml .Values.redis.resources | nindent 12 }}

@@ -29,6 +29,7 @@ google:
 redis:
   enabled: true               # in-cluster Redis for the queue, rate limits and response cache
   image: redis:7-alpine
+  maxmemory: 200mb            # keep below resources.limits.memory
   storage: 1Gi
   resources:
     requests: {cpu: 50m, memory: 64Mi}

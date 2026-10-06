@@ -769,9 +769,12 @@
     $$("#pops .pop").forEach((p) => { p.hidden = p.dataset.pop !== key; });
     $$("#pillbar .pill[data-pop]").forEach((b) => { const on = b.dataset.pop === key; b.classList.toggle("open", on); b.setAttribute("aria-expanded", on); });
     if (!key) return;
+    // right under the pill that opened it (the pills wrap onto more rows in Dutch, so a fixed place drifts away)
     const pill = $(`#pillbar .pill[data-pop="${key}"]`), pop = $(`#pops .pop[data-pop="${key}"]`), host = $("#pops");
-    const left = pill.getBoundingClientRect().left - host.getBoundingClientRect().left;
-    pop.style.left = Math.max(0, Math.min(left, host.clientWidth - pop.offsetWidth)) + "px";
+    const pr = pill.getBoundingClientRect(), hr = host.getBoundingClientRect();
+    if (getComputedStyle(pop).position !== "absolute") return;  // phones: the panel sits in the page under the pills
+    pop.style.top = Math.round(pr.bottom - hr.top + 6) + "px";
+    pop.style.left = Math.max(0, Math.min(pr.left - hr.left, host.clientWidth - pop.offsetWidth)) + "px";
   }
   function bindPills() {
     $("#pillbar").addEventListener("click", (e) => {
@@ -781,6 +784,8 @@
     $("#pillbar").addEventListener("scroll", () => openPop(null), { passive: true });
     document.addEventListener("click", (e) => { if (!e.target.closest("#pillbar, #pops")) openPop(null); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") openPop(null); });
+    // the pills reflow on a resize (or a phone's keyboard opening): keep the open panel under its pill
+    window.addEventListener("resize", () => { const open = $("#pillbar .pill.open"); if (open) openPop(open.dataset.pop); });
   }
   let jobsBuilt = false;
   function buildJobsFilters() {

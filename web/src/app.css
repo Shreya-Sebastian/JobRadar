@@ -334,7 +334,7 @@
   .pill-s.human { @apply bg-accent/15 text-accent; }
   .pill-s.bot { @apply bg-accent-2/15 text-accent-2; }
   .pops { @apply relative z-30; }
-  .pop { @apply absolute top-1.5 flex w-[min(32rem,100%)] flex-col gap-4 rounded-2xl border border-line bg-card p-4 shadow-xl; }
+  .pop { @apply absolute top-1.5 flex w-[min(32rem,100%)] flex-col gap-4 rounded-2xl border border-line bg-card p-4 shadow-xl; }  /* top and left set under the pill (app.js openPop) */
   .pop .field > label { @apply text-sm font-semibold text-ink; }
   .results-head { @apply mt-5 mb-2.5 flex flex-wrap items-center gap-x-3 gap-y-2; scroll-margin-top: 8.5rem; }  /* clear of the sticky header */
   .results-head .count { @apply mr-auto ml-0 text-sm font-semibold text-ink; }

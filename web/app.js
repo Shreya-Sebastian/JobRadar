@@ -88,7 +88,7 @@
      
       "trust.seen": "Still listed on the employer's own site on {d}", "trust.checked": "page opened and checked on {d}",
       "trust.expires": "closes on {d}",
-      "loading": "Loading the latest jobs…",
+      "loading": "Loading the latest jobs…", "jobs.failed": "The jobs could not be loaded.", "jobs.retry": "Try again",
       "pw.choose": "Choose your new password.", "pw.label": "Password", "pw.none": "No password yet. You sign in with an e-mail link or Google; add a password to sign in with it too.",
       "pw.has": "You can sign in with your password, an e-mail link or Google.", "pw.set": "Set a password", "pw.change": "Change password",
       "pw.remove": "Remove password", "pw.current": "Current password", "pw.new": "New password (10+ characters)", "pw.repeat": "Repeat the new password",
@@ -201,7 +201,7 @@
      
       "trust.seen": "Nog vermeld op de eigen site van de werkgever op {d}", "trust.checked": "pagina geopend en gecontroleerd op {d}",
       "trust.expires": "sluit op {d}",
-      "loading": "De nieuwste vacatures laden…",
+      "loading": "De nieuwste vacatures laden…", "jobs.failed": "De vacatures konden niet worden geladen.", "jobs.retry": "Opnieuw proberen",
       "pw.choose": "Kies je nieuwe wachtwoord.", "pw.label": "Wachtwoord", "pw.none": "Nog geen wachtwoord. Je logt in met een e-maillink of Google; voeg een wachtwoord toe om daar ook mee in te loggen.",
       "pw.has": "Je kunt inloggen met je wachtwoord, een e-maillink of Google.", "pw.set": "Wachtwoord instellen", "pw.change": "Wachtwoord wijzigen",
       "pw.remove": "Wachtwoord verwijderen", "pw.current": "Huidig wachtwoord", "pw.new": "Nieuw wachtwoord (10+ tekens)", "pw.repeat": "Herhaal het nieuwe wachtwoord",
@@ -818,8 +818,12 @@
     return fresh ? ` <span class="ok small" title="${esc(trustText(i))}">✓</span>` : "";
   }
   function age(i) { return i.age_days === 0 ? t("today") : i.age_days === 1 ? t("yesterday") : t("days.ago", { d: i.age_days }); }
+  // the list while a search runs: placeholder rows once it takes a moment, and only the latest search's answer is shown
+  const SKELETON = '<li class="job skel" aria-hidden="true"><span class="job-logo"></span><div class="job-body"><i class="bar w-3/5"></i><i class="bar w-2/5"></i><i class="bar w-4/5"></i></div></li>'.repeat(5);
+  let jobsRequest = 0;
   async function refreshJobs(resetPage = false) {
     if (resetPage) state.page = 1;
+    const mine = ++jobsRequest, list = $("#postings");
     $("#active-skill").hidden = !state.skill; $("#active-skill-name").textContent = state.skill || "";
     const p = jobParams();
     p.set("page", state.page); p.set("size", state.size);
@@ -827,7 +831,18 @@
     if (have.length) p.set("skills_have", have.join(","));
     if (state.sort !== "match" || have.length) p.set("sort", state.sort);
     syncJobsUrl();
-    const d = await api("/api/postings", p);
+    list.setAttribute("aria-busy", "true");
+    const slow = setTimeout(() => { if (mine === jobsRequest) { list.innerHTML = SKELETON; $("#count").textContent = t("loading"); } }, 150);
+    let d;
+    try { d = await api("/api/postings", p); }
+    catch (e) {
+      if (mine !== jobsRequest) return;
+      $("#count").textContent = "";
+      list.innerHTML = `<li class="jobs-empty muted">${t("jobs.failed")} <button class="link" id="jobs-retry">${t("jobs.retry")}</button></li>`;
+      $("#jobs-retry").addEventListener("click", () => refreshJobs());
+      return;
+    } finally { clearTimeout(slow); if (mine === jobsRequest) list.removeAttribute("aria-busy"); }
+    if (mine !== jobsRequest) return;  // a newer search has started: its answer wins
     const pages = Math.max(1, Math.ceil(d.total / d.size));
     $("#count").textContent = d.total === 1 ? t("jobs.match.one") : t("jobs.match", { n: fmt(d.total) });
     $("#page-info").textContent = t("page", { p: d.page, t: pages });
@@ -1287,7 +1302,10 @@
   });
   applyI18n();
   $("#kpis").hidden = !["#market", "#overview"].includes(location.hash);  // no placeholder flash on other tabs
-  if (["", "#jobs"].includes(location.hash.split("?")[0])) $("#boot").hidden = true;  // the job list shows placeholders
+  // the Jobs tab is open in the page from the start, so its placeholder rows show while the app loads; another tab
+  // in the address gets the loading message instead
+  if (["", "#jobs"].includes(location.hash.split("?")[0])) $("#boot").hidden = true;
+  else $('.tab[data-tab="jobs"]').classList.remove("on");
   bindAccount();
   account.load().then(() => { renderAccount(); jobFilters = null; }).then(loadHeader).then(route).catch((e) => { $("#kpis").hidden = false; $("#kpis").innerHTML = `<div class="kpi bad"><b>!</b><span>${esc(t("fail", { e: e.message }))}</span></div>`; });
 })();

@@ -76,7 +76,7 @@
 </section>
 
 <!-- ============ JOBS ============ -->
-<section class="tab" data-tab="jobs">
+<section class="tab on" data-tab="jobs">
  <div class="hero">
   <p class="hero-title" data-i18n="hero.title">Find tech jobs in the Netherlands</p>
   <p class="hero-sub" id="hero-sub">&nbsp;</p>
@@ -99,7 +99,7 @@
     <div class="pop" data-pop="more" hidden><label class="check"><input type="checkbox" id="f-noenrol"> <span data-i18n="f.noenrol">Hide internships for enrolled students only</span></label><label class="check"><input type="checkbox" id="f-saved"> <span data-i18n="f.saved">Saved jobs only</span></label></div>
   </div>
   <div class="results-head">
-    <span class="count" id="count"></span>
+    <span class="count" id="count" data-i18n="loading">Loading the latest jobs…</span>
     <div class="active-skill" id="active-skill" hidden><span data-i18n="f.skill">Skill</span>: <b id="active-skill-name"></b> <button id="clear-skill" title="clear">×</button></div>
     <button class="link" id="f-profile" data-i18n="f.profile" hidden>Use my profile</button>
     <button class="link" id="f-reset" data-i18n="f.reset">Clear filters</button>
@@ -301,6 +301,6 @@
   <p class="foot-bottom"><a href="{{PRIVACY_PATH}}" data-i18n="privacy">Privacy</a> · <a href="{{FEEDBACK_PATH}}" data-i18n="feedback">Feedback</a>{{SOURCE_LINK}}</p>
  </div>
 </footer>
-<script src="/static/app.js?v=108"></script>
+<script src="/static/app.js?v=109"></script>
 </body>
 </html>

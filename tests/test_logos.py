@@ -71,13 +71,14 @@ def test_names_that_differ_only_in_case_get_their_own_logo_address(fresh_db):
         assert sorted(c.slug for c in s.query(CompanyLogo)) == ["deephealth", "deephealth-2"]
 
 
-def _png(colour, size=(40, 20), mode="RGBA", background=(0, 0, 0, 0)):
+def _png(colour, size=(160, 80), mode="RGBA", background=(0, 0, 0, 0)):
     import io
 
     from PIL import Image, ImageDraw
 
     im = Image.new(mode, size, background)
-    ImageDraw.Draw(im).rectangle((10, 5, 30, 15), fill=colour)
+    w, h = size
+    ImageDraw.Draw(im).rectangle((w // 4, h // 4, 3 * w // 4, 3 * h // 4), fill=colour)  # the middle half
     out = io.BytesIO()
     im.save(out, "PNG")
     return out.getvalue()
@@ -93,17 +94,34 @@ def test_blank_logos_are_dropped_and_white_ones_get_a_dark_plate():
 
     from PIL import Image
 
-    assert Image.open(BytesIO(data)).size == (21, 11)  # cropped to what it shows
+    assert Image.open(BytesIO(data)).size == (81, 41)  # cropped to what it shows
     # white marks on transparent (an outline: a solid white block would be a placeholder)
     import io
 
     from PIL import Image as Img
     from PIL import ImageDraw
 
-    im = Img.new("RGBA", (40, 20), (0, 0, 0, 0))
-    ImageDraw.Draw(im).rectangle((5, 3, 35, 17), outline=(255, 255, 255, 255), width=2)
+    im = Img.new("RGBA", (160, 80), (0, 0, 0, 0))
+    ImageDraw.Draw(im).rectangle((20, 12, 140, 68), outline=(255, 255, 255, 255), width=6)
     buf = io.BytesIO()
     im.save(buf, "PNG")
     assert logos.tidy("image/png", buf.getvalue())[2] is True
     assert logos.tidy("image/svg+xml", b'<svg><path fill="#ffffff" d="M0 0h1v1z"/></svg>')[2] is True
     assert logos.tidy("image/svg+xml", b'<svg><path fill="#003366" d="M0 0h1v1z"/></svg>')[2] is False
+
+
+
+def test_white_canvas_is_trimmed_small_images_are_dropped_and_the_sharpest_wins():
+    from io import BytesIO
+
+    from PIL import Image
+
+    # a red mark in the middle of a big white canvas: trimmed to the mark and a small margin
+    _, data, _ = logos.tidy("image/png", _png((200, 30, 30, 255), size=(400, 400), background=(255, 255, 255, 255)))
+    w, h = Image.open(BytesIO(data)).size
+    assert 200 <= w < 260 and 200 <= h < 260  # the 201 px mark and a 6% margin, not the 400 px canvas
+    # a 16 px favicon is too small to look sharp
+    assert logos.tidy("image/png", _png((200, 30, 30, 255), size=(16, 16))) is None
+    big, small = logos.tidy("image/png", _png((0, 80, 160, 255), size=(400, 400))), \
+        logos.tidy("image/png", _png((0, 80, 160, 255), size=(100, 100)))
+    assert logos.quality(big) > logos.quality(small)

@@ -368,7 +368,7 @@
     :root:not([data-theme="light"]) .job-logo { color: color-mix(in oklab, var(--sc, #64748b) 60%, white); }
   }
   /* a logo sits on a white plate in both themes: most are drawn for a light background */
-  .job-logo img { @apply absolute inset-0 size-full bg-white object-contain p-1.5 ring-1 ring-line ring-inset; border-radius: inherit; }
+  .job-logo img { @apply absolute inset-0 size-full bg-white object-contain p-1 ring-1 ring-line ring-inset; border-radius: inherit; }
   .job-body { @apply min-w-0 flex-1; }
   .job-top { @apply flex items-start gap-3; }
   .job-title { @apply text-[17px] leading-snug font-semibold text-ink no-underline hover:text-accent; }

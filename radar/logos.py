@@ -23,6 +23,7 @@ from radar.config import settings
 log = logging.getLogger(__name__)
 
 MAX_BYTES = 150_000
+MIN_PX = 40  # the smallest logo (longest side, once cropped) worth showing
 PAGE_BYTES = 800_000  # a page is read this far: the logo and the icons sit in its head and header
 RETRY_DAYS = 30
 REFRESH_DAYS = 90
@@ -170,8 +171,22 @@ def tidy(ctype: str, data: bytes) -> tuple[str, bytes, bool] | None:
     if not box:
         return None  # fully transparent
     im = im.crop(box)
-    if max(im.size) < 12:
-        return None
+    # a mark on a white canvas: trim the white too, so the mark fills its tile (a coloured canvas, such as DHL's
+    # yellow, is part of the logo and stays)
+    from PIL import ImageChops
+
+    corner = im.getpixel((0, 0))
+    if corner[3] > 240 and (0.2126 * corner[0] + 0.7152 * corner[1] + 0.0722 * corner[2]) / 255 > 0.92:
+        rgb = im.convert("RGB")
+        diff = ImageChops.difference(rgb, Image.new("RGB", rgb.size, corner[:3])).convert("L")
+        box = diff.point(lambda v: 255 if v > 28 else 0).getbbox()
+        if not box:
+            return None  # a plain white canvas
+        pad = round(max(box[2] - box[0], box[3] - box[1]) * 0.06)
+        im = im.crop((max(0, box[0] - pad), max(0, box[1] - pad), min(im.width, box[2] + pad),
+                      min(im.height, box[3] + pad)))
+    if max(im.size) < MIN_PX:
+        return None  # too small to look sharp in a card: the sector icon reads better than a blurred logo
     raw = im.tobytes()
     n = len(raw) // 4
     on_white = on_dark = opaque = 0
@@ -189,7 +204,7 @@ def tidy(ctype: str, data: bytes) -> tuple[str, bytes, bool] | None:
         dark = True  # light marks on a transparent background (a near-solid white tile is a placeholder, not a mark)
     else:
         return None  # nothing that would show: a white square, a blank placeholder
-    im.thumbnail((128, 128))
+    im.thumbnail((256, 256))  # sharp on high-density screens at the card's 48 px
     out = io.BytesIO()
     im.save(out, "PNG", optimize=True)
     return "image/png", out.getvalue(), dark
@@ -230,6 +245,20 @@ def _read(url: str, client: httpx.Client, limit: int) -> tuple[int, str, bytes, 
         return None
 
 
+def quality(got: tuple[str, bytes, bool]) -> int:
+    """How well a tidied logo will show in a square tile: its resolution (longest side, up to 256 px), with a bonus
+    for a squarish shape. An SVG scales to any size."""
+    import io
+
+    ctype, data, _ = got
+    if ctype == "image/svg+xml":
+        return 180
+    from PIL import Image
+
+    w, h = Image.open(io.BytesIO(data)).size
+    return min(max(w, h), 256) + (40 if 0.5 <= w / max(h, 1) <= 2 else 0)
+
+
 def sniff(data: bytes) -> str | None:
     """The image type from the file's first bytes: some CDNs serve logos as application/octet-stream."""
     head = data[:16]
@@ -268,10 +297,18 @@ def find_logo(page_url: str, client: httpx.Client, depth: int = 0) -> tuple[str,
         return None
     html, final = page[2].decode("utf-8", "replace"), page[3]
     del page
+    # the sharpest of the usable candidates: a page often offers a 180 px touch icon and a 16 px favicon
+    best, best_score = None, -1
     for url in candidates(html, final):
         got = download(url, client)
         if got:
-            return url, *got
+            score = quality(got)
+            if score > best_score:
+                best, best_score = (url, *got), score
+            if score >= 200:
+                break  # sharp and squarish: no need to look further
+    if best:
+        return best
     site = website(html, final) if ATS_HOSTS.search(urlparse(final).netloc) else None
     return find_logo(site, client, depth + 1) if site and depth == 0 else None
 

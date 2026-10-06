@@ -21,7 +21,7 @@ WHITE = (255, 255, 255)
 
 # the logo: a pyramid of diamonds (4, 3, 2 and 1) in a night-blue tile. The other jobs are dim, one path of bright
 # diamonds (cyan to green) climbs to the match, an orange diamond lifted off the top
-TILE = "#0f172a"
+TILE = "#020617"  # near black: the diamonds stand out most
 DIM = ("#186c82", "#1d6c6d", "#206c5c")  # rows from the bottom: the path colours at 45% on the tile, clear but quieter
 PATH = ("#22d3ee", "#2dd4bf", "#34d399")
 MATCH = "#fb923c"
@@ -100,7 +100,7 @@ def card() -> Image.Image:
 
 def main() -> None:
     if "--header" in sys.argv:
-        print(svg('fill="#0f172a" stroke="var(--logo-edge, #0f172a)"').replace(
+        print(svg(f'fill="{TILE}" stroke="var(--logo-edge, {TILE})"').replace(
             '<svg xmlns="http://www.w3.org/2000/svg" ', '<svg class="logo" aria-hidden="true" '))
         return
     (WEB / "favicon.svg").write_text(svg() + chr(10), encoding="utf-8")

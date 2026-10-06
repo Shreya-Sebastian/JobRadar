@@ -186,6 +186,24 @@
   .grid.two { grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); }
   .grid.three { grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); }
   .grid > .card { @apply mt-0; }
+  /* structure: each card's title sits in a strip ruled off from its content */
+  .tab .card > h2:first-child, .tab .card > .card-head:first-child, .report .card > h2:first-child {
+    @apply -mx-5 -mt-5 mb-4 rounded-t-2xl border-b border-line px-5 py-3.5;
+    background: color-mix(in oklab, var(--chip) 45%, transparent); }
+  .tab .card > .card-head:first-child h2 { @apply m-0; }
+  .tab .card > h3 { @apply mt-5 border-t border-line pt-4; }
+  .card details { @apply rounded-xl border border-line px-3.5 py-2.5; }
+  /* a bordered box inside a card, its rows ruled */
+  .panel { @apply min-w-0 rounded-xl border border-line px-4 pt-3 pb-1; }
+  .panel > h3 { @apply -mx-4 mt-0 mb-1 border-b border-line px-4 pb-2.5; }
+  .panel .rbar { @apply mb-0 py-2; }
+  .panel .rbar + .rbar { @apply border-t border-line; }
+  /* the profile's preferences in labelled groups */
+  fieldset.group { @apply m-0 mt-4 flex min-w-0 flex-col gap-3 rounded-xl border border-line px-4 pt-2 pb-4; }
+  fieldset.group:first-of-type { @apply mt-0; }
+  fieldset.group > legend { @apply px-1.5 text-xs font-semibold tracking-wider text-muted uppercase; }
+  fieldset.group label.check { @apply pb-0; }
+  .matches > li + li { @apply border-t border-line pt-2.5; }
   .hint { @apply ml-1.5 text-xs font-normal text-muted; }
   .chart-key { @apply mt-2 mb-0 flex items-center gap-1.5 text-xs text-muted; }
   .chart-key i { @apply inline-block size-2.5 rounded-full; background: var(--accent-2); }
@@ -364,8 +382,10 @@
   .sort select { @apply py-1.5; }
   .jobs { @apply m-0 flex list-none flex-col gap-2.5 p-0; }
   .jobs-empty { @apply rounded-2xl border border-dashed border-line p-8 text-center; }
-  .job { @apply flex gap-4 rounded-2xl border border-line bg-card p-4 transition hover:-translate-y-px hover:border-accent/50
+  .job { @apply flex gap-4 rounded-2xl border border-line bg-card p-4 transition hover:-translate-y-px
     hover:shadow-md sm:p-5; border-left: 4px solid var(--sc, var(--line)); box-shadow: var(--shadow-card); }
+  /* on hover the other three sides take a tint of the card's own colour; the coloured left edge stays as it is */
+  .job:not(.skel):hover { border-color: color-mix(in oklab, var(--sc, var(--accent)) 45%, var(--line)); border-left-color: var(--sc, var(--line)); }
   .job-logo { @apply relative grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl;
     background: color-mix(in oklab, var(--sc, #64748b) 13%, var(--card)); color: var(--sc, #64748b); }
   .job-logo svg { @apply size-6; }

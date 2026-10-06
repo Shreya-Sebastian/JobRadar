@@ -24,7 +24,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="/static/app.css?v=28">
+<link rel="stylesheet" href="/static/app.css?v=29">
 <script src="/static/vendor/chart.umd.min.js"></script>
 <script src="/static/vendor/d3.min.js"></script>
 <script src="/static/theme.js?v=1"></script>
@@ -114,15 +114,15 @@
 <!-- ============ MARKET ============ -->
 <section class="tab" data-tab="market">
   <div class="card mk-report">
-    <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+    <div class="card-head flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
       <h2 class="m-0" data-i18n="rep.title">Weekly market report</h2>
       <a class="text-sm font-medium" id="rep-link" href="/market-report" data-i18n="rep.open">View full report →</a>
     </div>
     <p class="small muted mt-1 mb-3" id="rep-range"></p>
     <div class="kpis" id="rep-tiles"></div>
     <div class="grid two mt-4">
-      <div><h3 class="mt-0" data-i18n="rep.skills">Most requested skills</h3><div id="rep-skills"></div></div>
-      <div><h3 class="mt-0" data-i18n="rep.positions">Most common job titles</h3><div id="rep-positions"></div></div>
+      <div class="panel"><h3 data-i18n="rep.skills">Most requested skills</h3><div id="rep-skills"></div></div>
+      <div class="panel"><h3 data-i18n="rep.positions">Most common job titles</h3><div id="rep-positions"></div></div>
     </div>
   </div>
   <div class="grid two">
@@ -170,21 +170,31 @@
   <div class="grid two">
     <div class="card">
       <h2 data-i18n="p.looking">Job preferences</h2>
-      <div class="field"><label data-i18n="p.roles">Roles</label><div class="chips toggles" id="p-roles"></div></div>
-      <div class="field"><label data-i18n="f.position">Job title</label><div class="chipinput" id="p-position"></div></div>
-      <div class="field"><label data-i18n="p.levels">Experience level</label><div class="chips toggles" id="p-levels"></div></div>
-      <div class="field"><label data-i18n="p.exp">Years of experience</label><div class="chips toggles" id="p-exp"></div></div>
-      <div class="field"><label data-i18n="f.degree">Education</label><div class="chips toggles" id="p-degree"></div></div>
-      <div class="field"><label data-i18n="f.sector">Sector</label><div class="chips toggles" id="p-sector"></div></div>
-      <div class="field"><label data-i18n="f.emp">Company size</label><div class="chips toggles" id="p-emp"></div></div>
-      <div class="field"><label data-i18n="f.size">Open jobs at the company</label><div class="chips toggles" id="p-size"></div></div>
-      <div class="field"><label data-i18n="f.remote">Remote</label><div class="chips toggles" id="p-remote"></div></div>
-      <div class="field"><label data-i18n="f.cities">Cities</label><div class="chipinput" id="p-cities"></div></div>
-      <div class="field"><label data-i18n="p.exclude">Employers to hide</label><div class="chipinput" id="p-exclude"></div></div>
-      <div class="field"><label data-i18n="p.language">Language</label><select id="p-language" data-i18n-title="f.language.hint" title="&quot;No Dutch required&quot; hides jobs that ask for Dutch."><option value="" data-i18n="f.language.any" selected>All jobs</option><option value="nl" data-i18n="f.language.nl">Dutch-speaking jobs</option><option value="en" data-i18n="f.language.en">No Dutch required</option></select></div>
-      <label class="check"><input type="checkbox" id="p-visa"> <span data-i18n="p.visa">Only jobs that mention visa sponsorship</span></label>
-      <label class="check"><input type="checkbox" id="p-agencies"> <span data-i18n="p.agencies">Hide recruitment agencies</span></label>
-      <label class="check"><input type="checkbox" id="p-noenrol"> <span data-i18n="f.noenrol">Hide internships for enrolled students only</span></label>
+      <fieldset class="group"><legend data-i18n="p.g.role">Role</legend>
+        <div class="field"><label data-i18n="p.roles">Roles</label><div class="chips toggles" id="p-roles"></div></div>
+        <div class="field"><label data-i18n="f.position">Job title</label><div class="chipinput" id="p-position"></div></div>
+      </fieldset>
+      <fieldset class="group"><legend data-i18n="p.g.exp">Experience and education</legend>
+        <div class="field"><label data-i18n="p.levels">Experience level</label><div class="chips toggles" id="p-levels"></div></div>
+        <div class="field"><label data-i18n="p.exp">Years of experience</label><div class="chips toggles" id="p-exp"></div></div>
+        <div class="field"><label data-i18n="f.degree">Education</label><div class="chips toggles" id="p-degree"></div></div>
+        <label class="check"><input type="checkbox" id="p-noenrol"> <span data-i18n="f.noenrol">Hide internships for enrolled students only</span></label>
+      </fieldset>
+      <fieldset class="group"><legend data-i18n="p.g.employer">Employer</legend>
+        <div class="field"><label data-i18n="f.sector">Sector</label><div class="chips toggles" id="p-sector"></div></div>
+        <div class="field"><label data-i18n="f.emp">Company size</label><div class="chips toggles" id="p-emp"></div></div>
+        <div class="field"><label data-i18n="f.size">Open jobs at the company</label><div class="chips toggles" id="p-size"></div></div>
+        <div class="field"><label data-i18n="p.exclude">Employers to hide</label><div class="chipinput" id="p-exclude"></div></div>
+        <label class="check"><input type="checkbox" id="p-agencies"> <span data-i18n="p.agencies">Hide recruitment agencies</span></label>
+      </fieldset>
+      <fieldset class="group"><legend data-i18n="p.g.where">Location</legend>
+        <div class="field"><label data-i18n="f.remote">Remote</label><div class="chips toggles" id="p-remote"></div></div>
+        <div class="field"><label data-i18n="f.cities">Cities</label><div class="chipinput" id="p-cities"></div></div>
+      </fieldset>
+      <fieldset class="group"><legend data-i18n="p.g.lang">Language and visa</legend>
+        <div class="field"><label data-i18n="p.language">Language</label><select id="p-language" data-i18n-title="f.language.hint" title="&quot;No Dutch required&quot; hides jobs that ask for Dutch."><option value="" data-i18n="f.language.any" selected>All jobs</option><option value="nl" data-i18n="f.language.nl">Dutch-speaking jobs</option><option value="en" data-i18n="f.language.en">No Dutch required</option></select></div>
+        <label class="check"><input type="checkbox" id="p-visa"> <span data-i18n="p.visa">Only jobs that mention visa sponsorship</span></label>
+      </fieldset>
       <div class="row mt">
         <button class="primary" id="p-save" data-i18n="p.save">Save profile</button>
         <button id="p-export" data-i18n="p.export">Export</button>
@@ -299,6 +309,6 @@
   <p class="foot-bottom"><a href="{{PRIVACY_PATH}}" data-i18n="privacy">Privacy</a> · <a href="{{FEEDBACK_PATH}}" data-i18n="feedback">Feedback</a>{{SOURCE_LINK}}</p>
  </div>
 </footer>
-<script src="/static/app.js?v=117"></script>
+<script src="/static/app.js?v=118"></script>
 </body>
 </html>

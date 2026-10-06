@@ -40,7 +40,7 @@
     --c-rose: #be123c; --c-amber: #92400e;
     --c-sky: #0369a1; --c-indigo: #4338ca; --c-teal: #115e59; --c-emerald: #065f46; --c-violet: #6d28d9;
     --hero-a: #065f46; --hero-b: #047857; --hero-c: #0e7490; --faint: #64748b; --logo-edge: #0f172a;
-    --logo-glow: 0 1px 2px rgb(15 23 42 / .25), 0 6px 16px rgb(14 116 144 / .22);
+    --logo-glow: 0 1px 2px rgb(15 23 42 / .22);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -58,8 +58,8 @@
       --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
       --hero-bg: linear-gradient(135deg, color-mix(in oklab, #34d399 16%, #131c2e) 0%, color-mix(in oklab, #5eead4 12%, #131c2e) 55%, color-mix(in oklab, #7dd3fc 12%, #131c2e) 100%);
       --c-sky: #7dd3fc; --c-indigo: #a5b4fc; --c-teal: #5eead4; --c-emerald: #6ee7b7; --c-violet: #c4b5fd;
-      --hero-a: #064e3b; --hero-b: #065f46; --hero-c: #164e63; --faint: #7f8da3; --logo-edge: #2a7f78;
-      --logo-glow: 0 0 0 1px rgb(45 212 191 / .28), 0 0 20px rgb(45 212 191 / .25);
+      --hero-a: #064e3b; --hero-b: #065f46; --hero-c: #164e63; --faint: #7f8da3; --logo-edge: #475569;
+      --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
     }
   }
   :root[data-theme="dark"] {
@@ -77,8 +77,8 @@
       --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
       --hero-bg: linear-gradient(135deg, color-mix(in oklab, #34d399 16%, #131c2e) 0%, color-mix(in oklab, #5eead4 12%, #131c2e) 55%, color-mix(in oklab, #7dd3fc 12%, #131c2e) 100%);
       --c-sky: #7dd3fc; --c-indigo: #a5b4fc; --c-teal: #5eead4; --c-emerald: #6ee7b7; --c-violet: #c4b5fd;
-      --hero-a: #064e3b; --hero-b: #065f46; --hero-c: #164e63; --faint: #7f8da3; --logo-edge: #2a7f78;
-      --logo-glow: 0 0 0 1px rgb(45 212 191 / .28), 0 0 20px rgb(45 212 191 / .25);
+      --hero-a: #064e3b; --hero-b: #065f46; --hero-c: #164e63; --faint: #7f8da3; --logo-edge: #475569;
+      --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
   }
   [hidden] { display: none !important; }
   body { @apply bg-bg text-[15px]/relaxed text-ink antialiased; }
@@ -135,7 +135,7 @@
   .brand { @apply flex min-w-0 items-center gap-3 text-ink no-underline; }
   .brand h1, .brand b { @apply truncate text-[1.375rem] font-bold tracking-tight; }
   .brand:hover h1, .brand:hover b { @apply text-accent; }
-  .logo { @apply size-10 shrink-0; border-radius: 25%; box-shadow: var(--logo-glow); }  /* lifted off the header */
+  .logo { @apply size-10 shrink-0; border-radius: 25%; box-shadow: var(--logo-glow); }  /* a crisp edge against the header */
   .topbar-right { @apply flex items-center gap-2.5; }
   .langswitch { @apply inline-flex rounded-lg border border-line bg-bg p-0.5; }
   .langswitch > * { @apply rounded-md border-0 bg-transparent px-2.5 py-1 text-xs font-semibold text-muted no-underline shadow-none
@@ -147,9 +147,13 @@
   .tabs a.on { @apply text-ink; border-color: var(--tab); }
   /* each tab in a colour of its own: its icon, and its underline when open */
   .tabs a { @apply inline-flex items-center gap-1.5; }
-  .tabs a svg { @apply size-[1.1rem] shrink-0; }  /* the tab text's own colour; the open tab's in the accent */
-  .tabs a.on svg { color: var(--accent); }
-  .tabs a { --tab: var(--accent); }  /* one colour for every tab: icons and the underline */
+  .tabs a svg { @apply size-[1.1rem] shrink-0 transition-colors; }
+  .tabs a.on svg, .tabs a:hover svg { color: var(--tab); }
+  /* grey at rest; each tab's own colour for its icon and underline once open (or under the pointer) */
+  .tabs a[data-tab="jobs"] { --tab: var(--accent); }
+  .tabs a[data-tab="tracker"] { --tab: var(--c-indigo); }
+  .tabs a[data-tab="market"] { --tab: var(--c-sky); }
+  .tabs a[data-tab="profile"] { --tab: var(--c-violet); }
   .tab-controls { @apply ml-auto flex items-center gap-2; }
   .tag { @apply max-w-2xl text-sm text-muted; }
 
@@ -349,6 +353,7 @@
   .board { @apply grid gap-4 overflow-x-auto pb-2; grid-template-columns: repeat(4, minmax(250px, 1fr));
     scroll-snap-type: x mandatory; }
   .board-empty { @apply rounded-2xl border border-dashed border-line p-10 text-center; grid-column: 1 / -1; }
+  .board:has(> .board-empty) { display: block; overflow: visible; margin-inline: 0; padding-inline: 0; }  /* no columns, no scrolling */
   .col { @apply flex min-h-[200px] flex-col rounded-2xl border border-line p-3 transition-colors; scroll-snap-align: start;
     background: color-mix(in oklab, var(--chip) 55%, var(--bg)); }
   .col.over { @apply border-accent bg-accent/10; }

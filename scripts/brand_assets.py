@@ -22,7 +22,7 @@ WHITE = (255, 255, 255)
 # the logo: a pyramid of diamonds (4, 3, 2 and 1) in a night-blue tile. The other jobs are dim, one path of bright
 # diamonds (cyan to green) climbs to the match, an orange diamond lifted off the top
 TILE = "#0f172a"
-DIM = ("#164e63", "#134e4a", "#064e3b")  # rows from the bottom
+DIM = ("#186c82", "#1d6c6d", "#206c5c")  # rows from the bottom: the path colours at 45% on the tile, clear but quieter
 PATH = ("#22d3ee", "#2dd4bf", "#34d399")
 MATCH = "#fb923c"
 ON_PATH = (2, 1, 1)  # which diamond in each row lies on the path

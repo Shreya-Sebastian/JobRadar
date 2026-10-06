@@ -144,10 +144,14 @@ def test_hand_chosen_logos_win_and_are_kept(fresh_db, tmp_path, monkeypatch):
         s.flush()
         s.add(Posting(source_id=src.id, external_id="1", title="Engineer", company="Acme Group", url="https://x/1",
                       content_hash="1", dedup_key="1", first_seen=now, last_seen=now, is_tech=True))
+        # a second spelling of the same employer: one file, but a slug of its own
+        s.add(Posting(source_id=src.id, external_id="2", title="Engineer", company="ACME group", url="https://x/2",
+                      content_hash="2", dedup_key="2", first_seen=now, last_seen=now, is_tech=True))
     with session_scope() as s:
-        assert logos.import_manual(s) == {"manual": 1, "unusable": 0}
+        assert logos.import_manual(s) == {"manual": 2, "unusable": 0}
         row = s.get(CompanyLogo, "Acme Group")
         assert row.status == "ok" and row.image_url == "manual:acme-group.png"
+        assert {row.slug, s.get(CompanyLogo, "ACME group").slug} == {"acme-group", "acme-group-2"}
         # a later lookup leaves it alone, also with retry_missing
         assert logos.refresh(s, now=now, client=object(), retry_missing=True)["looked_up"] == 0
         assert logos.recheck(s)["kept"] == 0

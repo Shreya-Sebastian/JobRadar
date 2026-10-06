@@ -468,6 +468,7 @@ def import_manual(session) -> dict:
     if not files:
         return {"manual": 0}
     companies = session.scalars(select(Posting.company).where(Posting.closed_at.is_(None)).distinct()).all()
+    slugs = set(session.scalars(select(CompanyLogo.slug)))
     stored = skipped = 0
     for company in companies:
         f = files.get(slug_of(company or ""))
@@ -478,14 +479,28 @@ def import_manual(session) -> dict:
             log.warning("manual logo %s shows nothing usable", f.name)
             skipped += 1
             continue
-        row = session.get(CompanyLogo, company) or CompanyLogo(company=company, slug=slug_of(company))
+        row = session.get(CompanyLogo, company)
+        if row is None:
+            # two spellings of one employer share the file, each with a slug of its own: number the second
+            slug = base = slug_of(company)
+            n = 1
+            while slug in slugs:
+                n += 1
+                slug = f"{base}-{n}"
+            slugs.add(slug)
+            row = CompanyLogo(company=company, slug=slug)
         row.status, row.content_type, row.data = "ok", got[0], got[1]
         row.dark = got[2] or f.stem.endswith(".dark")
         row.image_url, row.page_url, row.fetched_at = f"manual:{f.name}", None, datetime.utcnow()
-        session.add(row)
-        session.commit()
-        session.expunge(row)
-        stored += 1
+        try:
+            session.add(row)
+            session.commit()
+            session.expunge(row)
+            stored += 1
+        except Exception as e:  # one bad row never stops the rest
+            session.rollback()
+            log.warning("manual logo for %s not saved: %s", company, e)
+            skipped += 1
     _known.clear()
     return {"manual": stored, "unusable": skipped}
 

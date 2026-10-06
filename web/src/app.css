@@ -34,7 +34,7 @@
     --c-sky-bg: oklch(0.95 0.035 235); --c-indigo-bg: oklch(0.95 0.035 275); --c-teal-bg: oklch(0.95 0.035 190); --c-emerald-bg: oklch(0.95 0.035 160);
     --c-violet-bg: oklch(0.95 0.035 305); --c-rose-bg: oklch(0.95 0.035 12); --c-amber-bg: oklch(0.95 0.035 70);
     --shadow-card: 0 1px 2px rgb(15 23 42 / .04), 0 2px 8px rgb(15 23 42 / .05);
-    --hero-bg: linear-gradient(120deg, #ecfdf5 0%, #e6f7f4 45%, #e0f2fe 100%);
+    --hero-bg: linear-gradient(120deg, oklch(0.95 0.05 165) 0%, oklch(0.95 0.045 190) 45%, oklch(0.94 0.045 235) 100%);
     --accent: #047857; --accent-2: #f97316; --on-accent: #ffffff; --chip: #f1f5f9; --chip-ink: #334155;
     --ok: #059669; --bad: #dc2626; --warn: #d97706;
     --tag-lang-fg: var(--c-emerald); --tag-lang-bg: var(--c-emerald-bg); --tag-visa-fg: var(--c-amber); --tag-visa-bg: var(--c-amber-bg);
@@ -191,6 +191,11 @@
   .grid.two { grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); }
   .grid.three { grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); }
   .grid > .card { @apply mt-0; }
+  /* the Skills box in blue: its title mark, links, buttons and chips take the blue instead of the site's green */
+  .skills-card { --hc: var(--c-sky); --accent: var(--c-sky); --on-accent: #ffffff;
+                 border-color: color-mix(in oklab, var(--c-sky) 30%, var(--line)); }
+  :root[data-theme="dark"] .skills-card { --on-accent: #082f49; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .skills-card { --on-accent: #082f49; } }
   /* structure: each card's title sits in a strip ruled off from its content */
   .tab .card > h2:first-child, .tab .card > .card-head:first-child, .report .card > h2:first-child {
     @apply -mx-5 -mt-5 mb-4 rounded-t-2xl border-b border-line px-5 py-3.5;

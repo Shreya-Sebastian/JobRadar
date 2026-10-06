@@ -125,3 +125,26 @@ def test_white_canvas_is_trimmed_small_images_are_dropped_and_the_sharpest_wins(
     big, small = logos.tidy("image/png", _png((0, 80, 160, 255), size=(400, 400))), \
         logos.tidy("image/png", _png((0, 80, 160, 255), size=(100, 100)))
     assert logos.quality(big) > logos.quality(small)
+
+
+def test_hand_chosen_logos_win_and_are_kept(fresh_db, tmp_path, monkeypatch):
+    from radar.config import settings
+    from radar.models import Posting, Source
+
+    (tmp_path / "logos").mkdir()
+    (tmp_path / "logos" / "acme-group.png").write_bytes(_png((0, 80, 160, 255), size=(200, 200)))
+    monkeypatch.setattr(settings, "data_dir", tmp_path)
+    now = datetime.utcnow()
+    with session_scope() as s:
+        src = Source(company="Acme Group", ats="lever", slug="acme", kind="employer")
+        s.add(src)
+        s.flush()
+        s.add(Posting(source_id=src.id, external_id="1", title="Engineer", company="Acme Group", url="https://x/1",
+                      content_hash="1", dedup_key="1", first_seen=now, last_seen=now, is_tech=True))
+    with session_scope() as s:
+        assert logos.import_manual(s) == {"manual": 1, "unusable": 0}
+        row = s.get(CompanyLogo, "Acme Group")
+        assert row.status == "ok" and row.image_url == "manual:acme-group.png"
+        # a later lookup leaves it alone, also with retry_missing
+        assert logos.refresh(s, now=now, client=object(), retry_missing=True)["looked_up"] == 0
+        assert logos.recheck(s)["kept"] == 0

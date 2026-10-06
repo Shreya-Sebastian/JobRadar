@@ -563,6 +563,7 @@ def cmd_logos(args: argparse.Namespace) -> None:
     with session_scope() as s:
         if args.recheck:
             print(logos.recheck(s))
+        print(logos.import_manual(s))
         print(logos.refresh(s, limit=args.limit, retry_missing=args.retry_missing))
 
 

@@ -13,6 +13,7 @@ from __future__ import annotations
 import logging
 import re
 from datetime import datetime, timedelta
+from pathlib import Path
 from urllib.parse import urljoin, urlparse
 
 import httpx
@@ -354,9 +355,10 @@ def refresh(session, limit: int = 120, now: datetime | None = None, client: http
             best[company] = cand
     # without the image data: only which employers are done, and when
     known = {c.company: c for c in session.scalars(select(CompanyLogo).options(defer(CompanyLogo.data)))}
-    due = [c for c in sorted(best, key=lambda c: -total[c])
-           if c not in known or (retry_missing and known[c].status != "ok")
-           or known[c].fetched_at < now - timedelta(days=REFRESH_DAYS if known[c].status == "ok" else RETRY_DAYS)]
+    manual = {c for c, row in known.items() if (row.image_url or "").startswith("manual:")}
+    due = [c for c in sorted(best, key=lambda c: -total[c]) if c not in manual and (
+           c not in known or (retry_missing and known[c].status != "ok")
+           or known[c].fetched_at < now - timedelta(days=REFRESH_DAYS if known[c].status == "ok" else RETRY_DAYS))]
     due = due[:limit]
     client = client or _client()
     found = missing = 0
@@ -406,6 +408,49 @@ def refresh(session, limit: int = 120, now: datetime | None = None, client: http
     return {"looked_up": len(due), "found": found, "missing": missing, "errors": errors}
 
 
+MANUAL_TYPES = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp",
+                ".svg": "image/svg+xml", ".ico": "image/x-icon"}
+
+
+def manual_files() -> dict[str, Path]:
+    """data/logos/<slug>.<ext>: logos chosen by hand, which win over any lookup (named by slug_of(company))."""
+    folder = Path(settings.data_dir) / "logos"
+    if not folder.is_dir():
+        return {}
+    return {f.stem: f for f in folder.iterdir() if f.suffix.lower() in MANUAL_TYPES}
+
+
+def import_manual(session) -> dict:
+    """Store every hand-chosen logo in data/logos for the employers with live postings it is named after."""
+    from sqlalchemy import select
+
+    from radar.models import CompanyLogo, Posting
+
+    files = manual_files()
+    if not files:
+        return {"manual": 0}
+    companies = session.scalars(select(Posting.company).where(Posting.closed_at.is_(None)).distinct()).all()
+    stored = skipped = 0
+    for company in companies:
+        f = files.get(slug_of(company or ""))
+        if not f:
+            continue
+        got = tidy(MANUAL_TYPES[f.suffix.lower()], f.read_bytes())
+        if not got:
+            log.warning("manual logo %s shows nothing usable", f.name)
+            skipped += 1
+            continue
+        row = session.get(CompanyLogo, company) or CompanyLogo(company=company, slug=slug_of(company))
+        row.status, row.content_type, row.data, row.dark = "ok", got[0], got[1], got[2]
+        row.image_url, row.page_url, row.fetched_at = f"manual:{f.name}", None, datetime.utcnow()
+        session.add(row)
+        session.commit()
+        session.expunge(row)
+        stored += 1
+    _known.clear()
+    return {"manual": stored, "unusable": skipped}
+
+
 def known_domains() -> dict[str, str]:
     """data/company_domains.tsv: employer -> official website, for employers whose board shows no logo."""
     from pathlib import Path
@@ -434,6 +479,9 @@ def recheck(session) -> dict:
     kept = dropped = 0
     for company in session.scalars(select(CompanyLogo.company).where(CompanyLogo.status == "ok")).all():
         row = session.get(CompanyLogo, company)
+        if (row.image_url or "").startswith("manual:"):
+            session.expunge(row)
+            continue  # chosen by hand: kept as it is
         got = tidy(row.content_type or "", row.data or b"")
         if got is None:
             row.status, row.data = "none", None

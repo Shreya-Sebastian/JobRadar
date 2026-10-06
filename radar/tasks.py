@@ -179,7 +179,7 @@ def logos() -> dict:
 
     init_db()
     with session_scope() as s:
-        out = lg.refresh(s)
+        out = {**lg.import_manual(s), **lg.refresh(s)}
     log.info("logos: %s", out)
     return out
 

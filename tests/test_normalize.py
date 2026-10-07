@@ -41,6 +41,21 @@ def test_regions_are_not_cities():
     # a list of countries is not a city: the card showed "United Kingdom" for a role open in five countries incl. NL
     assert plausible_place("United Kingdom; Canada; Germany; United States; The Netherlands") is None
     assert plausible_place("Hauts-de-France") is None and plausible_place("Harderwijk") == "Harderwijk"
+    # Dutch regions are not towns either
+    assert plausible_place("Randstad") is None and plausible_place("Noord-Brabant, Nederland") is None
+    assert plausible_place("Zuid Holland") is None and plausible_place("Zuid-Nederland") is None
+    assert plausible_place("Oosterhout") == "Oosterhout" and plausible_place("Westland") == "Westland"
+
+
+def test_a_place_abroad_given_only_as_the_city_is_abroad():
+    # vidaXL lists some jobs with an empty location, the city "Hyderabad" and the country "Nederland"
+    raw = RawPosting(external_id="1", title="QA Engineer", url="https://x/1", location=None, city="Hyderabad",
+                     country="NL", description_text="Test our web shop.")
+    n = normalize(raw, "vidaXL")
+    assert n["country"] == "IN" and n["city"] is None
+    region = RawPosting(external_id="2", title="Data Engineer", url="https://x/2", location="Randstad", country="NL",
+                        description_text="Build pipelines.")
+    assert normalize(region, "Xebia")["city"] is None
 
 
 def test_remote_and_title_normalisation():

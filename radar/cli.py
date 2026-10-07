@@ -221,7 +221,7 @@ def cmd_verify_sources(args: argparse.Namespace) -> None:
 def cmd_recheck_countries(_: argparse.Namespace) -> None:
     """Apply the current country and place rules to stored open postings: the crawler re-reads only new or changed
     pages, so a rule fix would otherwise never reach postings it already has. Postings now outside the configured
-    countries are closed; region words stored as a city ("EMEA") are cleared."""
+    countries are closed; region words stored as a city ("EMEA", "Randstad") are cleared."""
     from datetime import datetime
 
     from sqlalchemy import select, update
@@ -240,7 +240,7 @@ def cmd_recheck_countries(_: argparse.Namespace) -> None:
                          .where(Posting.closed_at.is_(None))).all()
         now = datetime.utcnow()
         for pid, location, country, city in rows:
-            new = detect_country(location, country)
+            new = detect_country(location or city, country)  # some boards name the place only as the city
             if keep is not None and new and new not in keep:
                 s.execute(update(Posting).where(Posting.id == pid).values(country=new, closed_at=now))
                 closed += 1

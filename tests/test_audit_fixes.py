@@ -271,3 +271,22 @@ def test_foreign_locale_sitemap_has_an_english_twin():
     assert better_locale_sitemap("https://c.example/ca/fr/sitemap_index.xml") == \
         "https://c.example/global/en/sitemap_index.xml"
     assert better_locale_sitemap("https://c.example/global/en/sitemap_index.xml") is None
+
+
+def test_recheck_closes_jobs_abroad_named_only_by_city_and_clears_regions(fresh_db):
+    from radar.cli import cmd_recheck_countries
+
+    with session_scope() as s:
+        src = _src(s)
+        ingest(s, src, [_raw("india"), _raw("region"), _raw("nl")])
+        # as stored before the rule: no location text, the city "Hyderabad" and the board's "Nederland"
+        india = s.query(Posting).filter_by(external_id="india").one()
+        india.location_raw, india.city, india.country = None, "Hyderabad", "NL"
+        s.query(Posting).filter_by(external_id="region").one().city = "Randstad"
+    cmd_recheck_countries(None)
+    with session_scope() as s:
+        india = s.query(Posting).filter_by(external_id="india").one()
+        assert india.closed_at is not None and india.country == "IN"
+        region = s.query(Posting).filter_by(external_id="region").one()
+        assert region.closed_at is None and region.city is None
+        assert s.query(Posting).filter_by(external_id="nl").one().city == "Utrecht"

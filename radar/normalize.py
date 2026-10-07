@@ -140,8 +140,9 @@ _COUNTRY_ITEM = re.compile(
     re.I,
 )
 _DUTCH_REGION = re.compile(
-    r"\b(?:noord-holland|zuid-holland|north holland|south holland|noord-brabant|north brabant|gelderland|overijssel|"
-    r"limburg|friesland|frysl[aâ]n|drenthe|flevoland|zeeland|randstad)\b",
+    r"\b(?:noord[- ]holland|zuid[- ]holland|north[- ]holland|south[- ]holland|noord[- ]brabant|north[- ]brabant|"
+    r"gelderland|overijssel|limburg|friesland|frysl[aâ]n|drenthe|flevoland|zeeland|randstad|"
+    r"(?:noord|zuid|oost|west|midden)[- ]nederland)\b",
     re.I,
 )
 
@@ -209,6 +210,8 @@ def plausible_place(value: str | None) -> str | None:
     if not 2 <= len(v) <= 40 or _NOT_A_PLACE.search(v) or not re.fullmatch(r"[A-Za-zÀ-ÿ' .-]+", v):
         return None
     if place_country(v):  # a country or region ("United Kingdom" first in a list that also names the Netherlands)
+        return None
+    if _DUTCH_REGION.search(v):  # a province or "Randstad": a region, not a town
         return None
     words = v.split()
     return " ".join(
@@ -346,7 +349,8 @@ def normalize(raw: RawPosting, company: str) -> dict:
 
     text = scrub_contact(raw.text())
     city = raw.city if raw.city in NL_CITIES else detect_city(raw.location) or detect_city(raw.city)
-    country = detect_country(raw.location, raw.country)
+    # a board that names its place only in the city field ("Hyderabad", with the country field "Nederland")
+    country = detect_country(raw.location or raw.city, raw.country)
     if city and not country:
         country = "NL"
     remote = is_remote(raw.location, raw.remote)

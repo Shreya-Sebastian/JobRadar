@@ -57,7 +57,8 @@ def test_job_page_addresses(fresh_db):
     c = TestClient(app)
     moved = c.get(f"/job/{pid}/old-title", headers=BROWSER, follow_redirects=False)
     assert moved.status_code == 301 and moved.headers["location"] == f"/job/{pid}/senior-backend-engineer"
-    assert c.get(f"/job/{other}/office-manager", headers=BROWSER).status_code == 404  # not a tech listing
+    gone = c.get(f"/job/{other}/office-manager", headers=BROWSER)
+    assert gone.status_code == 410 and 'content="noindex"' in gone.text  # not a tech listing: gone for good
     assert c.get("/job/999999/x", headers=BROWSER).status_code == 404
     with session_scope() as s:
         s.get(Posting, pid).closed_at = datetime.utcnow()
@@ -69,8 +70,45 @@ def test_sitemap_lists_job_pages(fresh_db):
     from radar.api import app
 
     pid, _ = _setup()
-    sm = TestClient(app).get("/sitemap.xml").text
-    assert f"/job/{pid}/senior-backend-engineer" in sm and f"/nl/vacature/{pid}/senior-backend-engineer" in sm
+    c = TestClient(app)
+    sm = c.get("/sitemap.xml").text
+    # once, in the language of the vacancy (English here); the Dutch page stays reachable through hreflang
+    assert f"/job/{pid}/senior-backend-engineer" in sm and f"/nl/vacature/{pid}/" not in sm
+    with session_scope() as s:
+        p = s.get(Posting, pid)
+        p.extraction = {**(p.extraction or {}), "posting_language": "nl"}
+    from radar import cache
+    from radar.stats import CACHE
+
+    CACHE.invalidate()
+    with cache._local_lock:
+        cache._local.clear()
+    sm = c.get("/sitemap.xml").text
+    assert f"/nl/vacature/{pid}/senior-backend-engineer" in sm and f"/job/{pid}/" not in sm
+
+
+def test_sitemap_falls_back_to_the_last_one_built(fresh_db, monkeypatch):
+    from radar import api, cache
+
+    _setup()
+    c = TestClient(api.app)
+    first = c.get("/sitemap.xml").text
+    with cache._local_lock:
+        cache._local.clear()
+
+    def broken(*a, **k):
+        raise RuntimeError("database away")
+
+    monkeypatch.setattr(api, "_pages_objects", broken)
+    again = c.get("/sitemap.xml")
+    assert again.status_code == 200 and again.text == first
+
+
+def test_font_files_have_their_own_type(fresh_db):
+    from radar.api import app
+
+    r = TestClient(app).get("/static/fonts/instrument-sans-latin.woff2")
+    assert r.status_code == 200 and r.headers["content-type"] == "font/woff2"
 
 
 def test_job_page_keeps_the_employers_formatting(fresh_db):

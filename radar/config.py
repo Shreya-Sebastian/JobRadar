@@ -56,6 +56,7 @@ class Settings(BaseSettings):
     block_scraper_agents: bool = True  # refuse AI-training crawlers and plain HTTP libraries
     # anonymous page-view statistics for /admin/analytics (radar/analytics.py)
     analytics_enabled: bool = True
+    warm_sitemap: bool = True  # build the sitemap when the server starts (off in tests)
     # secret for the admin-only "crawl now" endpoints; unset = the endpoints do not exist
     admin_token: str | None = None
     # Adzuna API (free at https://developer.adzuna.com) for the independent recall check, see radar/recall.py

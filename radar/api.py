@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import logging
+import mimetypes
+import threading
 import time
 from collections.abc import Iterator
 from contextlib import asynccontextmanager
@@ -22,11 +25,15 @@ from radar.metrics import API_REQUESTS, API_SECONDS, QUEUE_DEPTH
 from radar.models import CrawlRun, Source
 
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
+log = logging.getLogger(__name__)
+mimetypes.add_type("font/woff2", ".woff2")  # served from /static/fonts; Python's table does not know it everywhere
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
+    if settings.warm_sitemap:
+        threading.Thread(target=_warm_sitemap, name="warm-sitemap", daemon=True).start()
     yield
     from radar import analytics
 
@@ -95,7 +102,8 @@ async def _http_error(request: Request, exc: StarletteHTTPException):
     from fastapi.exception_handlers import http_exception_handler
 
     path = request.url.path
-    if exc.status_code != 404 or path.startswith("/api/") or "text/html" not in request.headers.get("accept", ""):
+    wants_page = "text/html" in request.headers.get("accept", "")
+    if exc.status_code not in (404, 410) or path.startswith("/api/") or not wants_page:
         return await http_exception_handler(request, exc)  # API clients keep the JSON error
     from html import escape
 
@@ -108,7 +116,7 @@ async def _http_error(request: Request, exc: StarletteHTTPException):
             f'<main class="wrap" style="padding-top:4rem;padding-bottom:4rem"><h1>{escape(title)}</h1>'
             f'<p class="muted">{escape(text)}</p>'
             f'<p><a class="btn primary" href="{home}">{escape(back)}</a></p></main></body></html>')
-    return Response(page, status_code=404, media_type="text/html")
+    return Response(page, status_code=exc.status_code, media_type="text/html")
 
 
 def db() -> Iterator[Session]:
@@ -573,15 +581,43 @@ def sitemap(session: Session = Depends(db)):
             if n >= pages.MIN_INDEXED_POSTINGS:
                 day = lastmod(pages.company_rows(tech, slug))
                 urls += [(f"{base}/company/{slug}", day), (f"{base}/nl/bedrijf/{slug}", day)]
-        for r in tech:  # one page per live listing, in both languages
+        for r in tech:
+            # one URL per live listing, in the language the vacancy is written in (as the Indexing API notices,
+            # radar/indexing.py): both pages carry the same employer text, and listing both halves how many jobs a
+            # search engine gets to; the other language stays linked from the page through hreflang
             day = (r.posted_at or r.first_seen).date().isoformat()
-            urls += [(base + pages.job_path(r.id, r.title, lang), day) for lang in ("en", "nl")]
+            lang = "nl" if r.ex.get("posting_language") == "nl" else "en"
+            urls.append((base + pages.job_path(r.id, r.title, lang), day))
         body = "".join(f"<url><loc>{xml_escape(u)}</loc>" + (f"<lastmod>{d}</lastmod>" if d else "") + "</url>"
                        for u, d in urls)
         return (f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
                 f"{body}</urlset>")
 
-    return Response(cached("sitemap.xml", compute, ttl=3600), media_type="application/xml")
+    global _last_sitemap
+    try:
+        xml = cached("sitemap.xml", compute, ttl=3600)
+    except Exception:
+        if _last_sitemap is None:
+            raise
+        log.exception("sitemap build failed; serving the last one built")
+        xml = _last_sitemap
+    _last_sitemap = xml
+    return Response(xml, media_type="application/xml")
+
+
+_last_sitemap: str | None = None  # served when a rebuild fails, so a crawler never gets an error for the sitemap
+
+
+def _warm_sitemap() -> None:
+    """Build the sitemap in the background at start: a new release starts with an empty cache, and a full build takes
+    seconds."""
+    session = new_session()
+    try:
+        sitemap(session)
+    except Exception:
+        log.exception("sitemap warm-up failed")
+    finally:
+        session.close()
 
 
 @app.get("/companies", include_in_schema=False)
@@ -621,8 +657,10 @@ def job_page(posting_id: int, slug: str = "", session: Session = Depends(db), la
     p = session.get(Posting, posting_id)
     if p is not None and p.duplicate_of:
         p = session.get(Posting, p.duplicate_of)  # a merged copy: the page of the posting it was merged into
-    if p is None or not p.is_tech:
+    if p is None:
         raise HTTPException(404, "no such listing")
+    if not p.is_tech:  # read again and found not to be a tech job: gone for good, so search engines drop it at once
+        raise HTTPException(410, "listing removed")
     path = pages.job_path(p.id, p.title, lang)
     if path != (f"/nl/vacature/{posting_id}/{slug}" if lang == "nl" else f"/job/{posting_id}/{slug}"):
         return RedirectResponse(path, status_code=301)  # the title changed, or a merged copy: one address per job

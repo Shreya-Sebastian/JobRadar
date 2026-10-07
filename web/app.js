@@ -432,7 +432,7 @@
       const s = document.createElement("script"); s.src = src; s.onload = ok;
       s.onerror = () => { chartLibs = null; fail(new Error(`${src} did not load`)); };
       document.head.appendChild(s);
-    }))));
+    }))).then(() => { Chart.defaults.font.family = getComputedStyle(document.body).fontFamily; }));
   // long axis labels ("Simulation / computational") on two lines, so Chart.js does not cut them off
   function wrapLabel(label, max = 26) {
     const s = String(label);

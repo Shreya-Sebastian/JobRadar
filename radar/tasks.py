@@ -197,6 +197,40 @@ def sectors() -> dict:
     return out
 
 
+def recheck_countries() -> dict:
+    """Nightly: the current country and place rules applied to stored open postings. The crawler re-reads only new or
+    changed pages, so a rule fix would otherwise never reach postings it already has. Postings now outside the
+    configured countries are closed (a place abroad given only as the city: vidaXL's "Hyderabad"); region words
+    stored as a city ("EMEA", "Randstad", "Noord-Holland") are cleared."""
+    from sqlalchemy import select, update
+
+    from radar.cache import bump_data_version
+    from radar.config import allowed_countries
+    from radar.models import Posting
+    from radar.normalize import NL_CITIES, detect_country, plausible_place
+
+    init_db()
+    keep = allowed_countries()
+    closed = cleared = 0
+    with session_scope() as s:
+        rows = s.execute(select(Posting.id, Posting.location_raw, Posting.country, Posting.city)
+                         .where(Posting.closed_at.is_(None))).all()
+        now = datetime.utcnow()
+        for pid, location, country, city in rows:
+            new = detect_country(location or city, country)  # some boards name the place only as the city
+            if keep is not None and new and new not in keep:
+                s.execute(update(Posting).where(Posting.id == pid).values(country=new, closed_at=now))
+                closed += 1
+            elif city and city != "Remote" and city not in NL_CITIES and plausible_place(city) is None:
+                s.execute(update(Posting).where(Posting.id == pid).values(city=None))
+                cleared += 1
+    if closed or cleared:
+        bump_data_version()
+    out = {"closed": closed, "cleared": cleared}
+    log.info("recheck_countries: %s", out)
+    return out
+
+
 def qualitycheck() -> dict:
     """Nightly: the data-quality report. Threshold violations are logged as errors (the alert)."""
     from radar.integrity import quality_report, violations

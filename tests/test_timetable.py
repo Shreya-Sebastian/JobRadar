@@ -14,6 +14,13 @@ def test_slots_match_the_cronjob_times():
     assert timetable.slot(by["finalize"], datetime(2026, 9, 29, 20, 30)) is None
     assert timetable.slot(by["linkcheck"], datetime(2026, 9, 29, 3, 15)) == "linkcheck:2026-09-29"
     assert timetable.slot(by["qualitycheck"], datetime(2026, 9, 29, 3, 15)) is None
+    assert timetable.slot(by["recheck_countries"], datetime(2026, 9, 29, 4, 25)) == "recheck_countries:2026-09-29"
+
+
+def test_every_timetable_entry_is_a_task():
+    from radar import tasks
+
+    assert all(callable(getattr(tasks, e.name, None)) for e in timetable.TIMETABLE)
 
 
 def test_tick_enqueues_each_slot_once_across_workers(monkeypatch):

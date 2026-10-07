@@ -219,42 +219,11 @@ def cmd_verify_sources(args: argparse.Namespace) -> None:
 
 
 def cmd_recheck_countries(_: argparse.Namespace) -> None:
-    """Apply the current country and place rules to stored open postings: the crawler re-reads only new or changed
-    pages, so a rule fix would otherwise never reach postings it already has. Postings now outside the configured
-    countries are closed; region words stored as a city ("EMEA", "Randstad") are cleared."""
-    from datetime import datetime
+    """Apply the current country and place rules to stored open postings (also nightly: radar.tasks)."""
+    from radar.tasks import recheck_countries
 
-    from sqlalchemy import select, update
-
-    from radar.cache import bump_data_version
-    from radar.config import allowed_countries
-    from radar.db import init_db, session_scope
-    from radar.models import Posting
-    from radar.normalize import detect_country, plausible_place
-
-    init_db()
-    keep = allowed_countries()
-    closed = cleared = 0
-    with session_scope() as s:
-        rows = s.execute(select(Posting.id, Posting.location_raw, Posting.country, Posting.city)
-                         .where(Posting.closed_at.is_(None))).all()
-        now = datetime.utcnow()
-        for pid, location, country, city in rows:
-            new = detect_country(location or city, country)  # some boards name the place only as the city
-            if keep is not None and new and new not in keep:
-                s.execute(update(Posting).where(Posting.id == pid).values(country=new, closed_at=now))
-                closed += 1
-            elif city and city not in ("Remote",) and plausible_place(city) is None and not _known_city(city):
-                s.execute(update(Posting).where(Posting.id == pid).values(city=None))
-                cleared += 1
-    print(f"closed {closed} postings outside {sorted(keep) if keep else 'all'}; cleared {cleared} region cities")
-    bump_data_version()
-
-
-def _known_city(city: str) -> bool:
-    from radar.normalize import NL_CITIES
-
-    return city in NL_CITIES
+    out = recheck_countries()
+    print(f"closed {out['closed']} postings outside the configured countries; cleared {out['cleared']} region cities")
 
 
 def cmd_rename(_: argparse.Namespace) -> None:

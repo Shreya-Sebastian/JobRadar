@@ -37,6 +37,7 @@ TIMETABLE = [
     Entry("linkcheck", daily_at=(3, 15), timeout_seconds=3600),
     Entry("qualitycheck", daily_at=(3, 45)),
     Entry("sectors", daily_at=(4, 5)),
+    Entry("recheck_countries", daily_at=(4, 25)),  # current place rules on stored postings
     Entry("logos", daily_at=(5, 20), timeout_seconds=3600),
     Entry("index_jobs", every_minutes=60, offset_minutes=25),
     Entry("analytics_nightly", daily_at=(0, 10)),

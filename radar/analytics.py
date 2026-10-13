@@ -11,11 +11,18 @@ with a salt that is replaced every day, so the daily counts do not depend on the
 
 Rows are buffered in memory and written in batches every few seconds, so a page view costs no database round
 trip. Raw rows are kept 90 days (API calls 14 days); `rollup` keeps daily totals for the all-time figures.
+
+Who counts as a person: the user agent is only a claim, and scrapers send a browser's along with a made-up Google
+referrer. So a visit that names a browser is still counted as a bot when it comes from a cloud provider's network,
+probes for files this site does not have (/wp-login.php, /.env), or never runs the page's script: every page sends a
+`seen` event from theme.js, and a visitor without one did not run JavaScript. `_audit` applies these rules when the
+dashboard and the daily totals are computed, so they also hold for rows recorded before the rules existed.
 """
 
 from __future__ import annotations
 
 import hashlib
+import ipaddress
 import logging
 import re
 import secrets
@@ -23,7 +30,9 @@ import threading
 import time
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta
+from functools import lru_cache
 from itertools import islice
+from types import SimpleNamespace
 from urllib.parse import parse_qs, urlparse
 
 from sqlalchemy import delete, func, select, update
@@ -38,16 +47,23 @@ API_DAYS = 14
 IP_DAYS = 30  # then the address is blanked; the rest of the row stays until RAW_DAYS
 AUDIENCES = ("humans", "bots", "all")
 SESSION_GAP = timedelta(minutes=30)
-EVENTS = {"nav", "job_click", "profile_save", "login_request", "gap", "import", "export", "star"}
+EVENTS = {"nav", "job_click", "profile_save", "login_request", "gap", "import", "export", "star", "seen"}
+JS_SINCE = "analytics_js_since"  # Meta key: when the first `seen` event arrived; visits before it are not checked
+JS_GRACE = timedelta(minutes=2)  # a page's `seen` event can arrive a moment after the page itself
 
 # Paths that would only add noise: assets, health checks, polling, admin, the beacon itself
 _SKIP = re.compile(r"^/(static/|logo/|metrics|healthz|readyz|favicon|api/version|api/admin|api/me|api/e$|admin/)")
 _PAGE = re.compile(r"^/(|nl/?|vacatures/.+|jobs/.+|job/.+|nl/vacature/.+|company/.+|nl/bedrijf/.+|companies|"
                    r"privacy|nl/privacy|login|nl/inloggen|feedback|nl/feedback)$")
 _CRAWL = {"/robots.txt", "/sitemap.xml"}
+# requests for software this site does not run: vulnerability scanners
+_PROBE = re.compile(r"\.(php|asp|aspx|jsp|cgi|env|git|bak|sql)\b|^/(wp-|wordpress|\.|cgi-bin|phpmyadmin)", re.I)
 
 _BOTS = [
     ("Googlebot", r"googlebot|google-inspectiontool|googleother"), ("bingbot", r"bingbot|bingpreview"),
+    ("Google (other)", r"mediapartners-google|adsbot-google|feedfetcher-google|google-read-aloud|googleimageproxy|"
+                       r"google-pagerenderer|google web preview|apis-google|google-safety|googleproducer|"
+                       r"google-site-verification|storebot-google|google-extended|google-cloudvertexbot"),
     ("GPTBot", r"gptbot"), ("ChatGPT", r"chatgpt-user|oai-searchbot"), ("ClaudeBot", r"claudebot|claude-user"),
     ("PerplexityBot", r"perplexity"), ("Applebot", r"applebot"), ("DuckDuckBot", r"duckduckbot"),
     ("YandexBot", r"yandex"), ("Baiduspider", r"baiduspider"), ("AhrefsBot", r"ahrefsbot"),
@@ -56,9 +72,32 @@ _BOTS = [
     ("Twitterbot", r"twitterbot"), ("Slackbot", r"slackbot"), ("WhatsApp", r"whatsapp"),
     ("Discordbot", r"discordbot"), ("Uptime monitor", r"uptimerobot|pingdom|statuscake|betteruptime"),
     ("curl", r"^curl/"), ("python", r"python-requests|python-httpx|aiohttp|urllib"), ("Go client", r"go-http-client"),
-    ("Headless", r"headlesschrome|phantomjs|puppeteer|playwright"), ("Bot", r"bot\b|crawler|spider|scrape"),
+    ("Headless", r"headlesschrome|phantomjs|puppeteer|playwright|chrome-lighthouse"),
+    ("Bytespider", r"bytespider"), ("Amazonbot", r"amazonbot"), ("Bot", r"bot\b|crawler|spider|scrape"),
 ]
 _BOT_RX = [(name, re.compile(rx, re.I)) for name, rx in _BOTS]
+
+# Cloud networks that sent browser-like scrapers with a made-up Google referrer (seen in October 2026). People do not
+# browse from these; the other networks such bots use are caught by the script check instead.
+_CLOUDS = {
+    "Alibaba Cloud": ["8.208.0.0/12", "47.74.0.0/15", "47.76.0.0/14", "47.80.0.0/12", "47.96.0.0/11", "47.235.0.0/16",
+                      "47.236.0.0/14", "47.240.0.0/13", "47.250.0.0/15", "47.252.0.0/15", "47.254.0.0/16",
+                      "149.129.0.0/16", "161.117.0.0/16", "170.33.0.0/16", "198.11.128.0/18"],
+    "Tencent Cloud": ["43.128.0.0/10", "49.51.0.0/16", "101.32.0.0/14", "119.28.0.0/15", "124.156.0.0/16",
+                      "129.226.0.0/16", "150.109.0.0/16", "162.62.0.0/16", "170.106.0.0/16"],
+    "Huawei Cloud": ["119.8.0.0/16", "159.138.0.0/16"],
+}
+_CLOUD_NETS = [(name, ipaddress.ip_network(net)) for name, nets in _CLOUDS.items() for net in nets]
+
+
+@lru_cache(maxsize=20000)
+def cloud_network(ip: str | None) -> str | None:
+    """The cloud provider an address belongs to, if it is one of `_CLOUDS`."""
+    try:
+        addr = ipaddress.ip_address(ip or "")
+    except ValueError:
+        return None
+    return next((name for name, net in _CLOUD_NETS if addr in net), None)
 
 
 def parse_agent(ua: str) -> tuple[str, str, str, bool]:
@@ -213,6 +252,9 @@ def record(request, status: int, ms: float, size: int, event: str | None = None,
         return
     ua = request.headers.get("user-agent", "")
     browser, os_name, device, bot = parse_agent(ua)
+    ip = client_ip(request)
+    if not bot and (label := cloud_network(ip) or ("Probe" if _PROBE.search(path) else None)):
+        browser, device, bot = label, "bot", True
     now = datetime.utcnow()
     if kind == "api" and path == "/api/postings" and request.method == "GET":
         detail = _search_detail(request.url.query)
@@ -228,7 +270,7 @@ def record(request, status: int, ms: float, size: int, event: str | None = None,
         "referrer": _referrer(request.headers.get("referer")) if kind == "page" else None,
         "utm_source": utm[:60] if utm else None, "country": (request.headers.get("cf-ipcountry") or "")[:2] or None,
         "browser": browser, "os": os_name, "device": device, "bot": bot,
-        "visitor": request_visitor(request), "ip": client_ip(request)[:45] or None,
+        "visitor": request_visitor(request), "ip": ip[:45] or None,
         "event": event, "detail": detail[:200] if detail else None,
     }
     with _buffer_lock:
@@ -244,7 +286,7 @@ def buffer_size() -> int:
 
 def flush() -> int:
     from radar.db import session_scope
-    from radar.models import PageView
+    from radar.models import Meta, PageView
 
     with _buffer_lock:
         rows = _buffer[:]
@@ -254,6 +296,9 @@ def flush() -> int:
     try:
         with session_scope() as s:
             s.bulk_insert_mappings(PageView, rows)
+            seen = [r["ts"] for r in rows if r["event"] == "seen"]
+            if seen and s.get(Meta, JS_SINCE) is None:
+                s.add(Meta(key=JS_SINCE, value=min(seen).isoformat()))
     except Exception:
         log.exception("analytics flush failed; %d rows dropped", len(rows))
         return 0
@@ -272,6 +317,39 @@ def _ensure_flusher() -> None:
 
     _flusher = threading.Thread(target=loop, name="analytics-flush", daemon=True)
     _flusher.start()
+
+
+# ---------- who is a person ----------
+def js_since(session: Session) -> datetime | None:
+    """When pages started sending the `seen` event; before that a missing one proves nothing."""
+    from radar.models import Meta
+
+    row = session.get(Meta, JS_SINCE)
+    if row:
+        return datetime.fromisoformat(row.value)
+    buffered = [r["ts"] for r in list(_buffer) if r["event"] == "seen"]
+    return min(buffered) if buffered else None
+
+
+def _audit(rows: list, since: datetime | None, until: datetime | None = None) -> list:
+    """`rows` with visits that only claim to be a person marked as bots (see the module docstring). `since` is when
+    the script check started, `until` leaves the most recent visits alone while their `seen` event is on its way."""
+    ran = {r.visitor for r in rows if r.event == "seen"}
+    out = []
+    for r in rows:
+        label = None
+        if not r.bot:
+            label = cloud_network(r.ip) or ("Probe" if _PROBE.search(r.path or "") else None)
+            if (label is None and since is not None and r.kind != "event" and r.visitor not in ran
+                    and since <= r.ts and (until is None or r.ts < until)):
+                label = "No JavaScript"
+        out.append(r if label is None else SimpleNamespace(**{**_fields(r), "bot": True, "browser": label,
+                                                             "device": "bot"}))
+    return out
+
+
+def _fields(r) -> dict:
+    return r._asdict() if hasattr(r, "_asdict") else dict(vars(r))
 
 
 # ---------- dashboard ----------
@@ -324,6 +402,7 @@ def dashboard(session: Session, who: str = "humans", now: datetime | None = None
             PageView.bot, PageView.visitor, PageView.event, PageView.detail, PageView.ip]
     rows = session.execute(select(*cols).where(PageView.ts >= min(since, day_start)).order_by(PageView.ts)).all()
     rows += [_as_row(r) for r in list(_buffer)]  # not yet flushed
+    rows = _audit(rows, js_since(session), until=now - JS_GRACE)
     h24 = [r for r in rows if r.ts >= since]
     today = [r for r in rows if r.ts >= day_start]
     shown = [r for r in h24 if keep(r)]
@@ -387,7 +466,7 @@ def dashboard(session: Session, who: str = "humans", now: datetime | None = None
             "bytes_today": sum(r.bytes for r in today if r.kind != "event"), "bytes_24h": bytes_24,
             "bytes_per_visitor": round(bytes_24 / len(visitors_24)) if visitors_24 else 0,
             "spa_navigations": sum(1 for r in shown if r.event == "nav"),
-            "interactions": sum(1 for r in shown if r.kind == "event" or r.event),
+            "interactions": sum(1 for r in shown if (r.kind == "event" or r.event) and r.event != "seen"),
             "crawler_fetches": sum(1 for r in h24 if r.kind == "crawl"),
             "job_clicks": len(clicks), "searches": sum(1 for r in shown if r.event == "search"),
             "buffered": buffer_size(),
@@ -408,7 +487,7 @@ def dashboard(session: Session, who: str = "humans", now: datetime | None = None
         "job_clicks_by_employer": _top(by_employer),
         "job_clicks_by_job": _top(by_job),
         "searches": _top(Counter(r.detail for r in shown if r.event == "search" and r.detail), 15),
-        "events": _top(Counter(r.event for r in shown if r.event and r.event not in ("nav", "search")), 12),
+        "events": _top(Counter(r.event for r in shown if r.event and r.event not in ("nav", "search", "seen")), 12),
         # every visit of the last 24 hours except the API calls a page makes while it loads, newest first
         "recent": [
             {"ts": r.ts.isoformat(timespec="seconds") + "Z", "kind": r.kind, "path": r.path, "status": r.status,
@@ -424,8 +503,6 @@ def dashboard(session: Session, who: str = "humans", now: datetime | None = None
 
 
 def _as_row(d: dict):
-    from types import SimpleNamespace
-
     return SimpleNamespace(**d)
 
 
@@ -480,9 +557,11 @@ def rollup(session: Session, day: date) -> int:
     from radar.models import DailyStat, PageView
 
     start = datetime(day.year, day.month, day.day)
-    rows = session.execute(select(PageView.kind, PageView.path, PageView.referrer, PageView.country, PageView.bot,
-                                  PageView.visitor).where(PageView.ts >= start, PageView.ts < start + timedelta(days=1),
-                                                          PageView.kind != "event")).all()
+    rows = session.execute(select(PageView.ts, PageView.kind, PageView.path, PageView.referrer, PageView.country,
+                                  PageView.bot, PageView.visitor, PageView.ip, PageView.event)
+                           .where(PageView.ts >= start, PageView.ts < start + timedelta(days=1),
+                                  (PageView.kind != "event") | (PageView.event == "seen"))).all()
+    rows = [r for r in _audit(rows, js_since(session)) if r.kind != "event"]
     session.execute(delete(DailyStat).where(DailyStat.day == day))
     if not rows:
         return 0
@@ -495,6 +574,32 @@ def rollup(session: Session, day: date) -> int:
             out.append(DailyStat(day=day, dim=dim, key=key[:200], hits=n, humans=n))
     session.add_all(out)
     return len(out)
+
+
+def rollup_all(session: Session, now: datetime | None = None) -> dict:
+    """Redo the totals of every finished day whose raw rows are still kept, after the rules for bots changed.
+    Rows older than IP_DAYS have lost their address, so the cloud-network rule can no longer reach them."""
+    from radar.models import DailyStat, PageView
+
+    today = (now or datetime.utcnow()).date()
+    first = session.scalar(select(func.min(PageView.ts)))
+    if first is None:
+        return {"days": 0}
+    before = _google_humans(session)
+    days = [first.date() + timedelta(days=i) for i in range((today - first.date()).days)]
+    for d in days:
+        rollup(session, d)
+    session.commit()
+    return {"days": len(days), "from": days[0].isoformat() if days else None,
+            "google_humans_before": before, "google_humans_after": _google_humans(session),
+            "human_hits_after": session.scalar(select(func.sum(DailyStat.humans)).where(DailyStat.dim == "total"))}
+
+
+def _google_humans(session: Session) -> int:
+    from radar.models import DailyStat
+
+    return session.scalar(select(func.coalesce(func.sum(DailyStat.humans), 0))
+                          .where(DailyStat.dim == "referrer", DailyStat.key.like("google.%"))) or 0
 
 
 def nightly(session: Session, now: datetime | None = None) -> dict:

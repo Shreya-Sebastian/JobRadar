@@ -612,6 +612,16 @@ def cmd_analytics_nightly(_: argparse.Namespace) -> None:
     print(analytics_nightly())
 
 
+def cmd_analytics_rollup(_: argparse.Namespace) -> None:
+    """Redo the daily visit totals of every day still held raw, with the current rules for bots."""
+    from radar import analytics
+    from radar.db import init_db, session_scope
+
+    init_db()
+    with session_scope() as s:
+        print(analytics.rollup_all(s))
+
+
 def cmd_send_alerts(_: argparse.Namespace) -> None:
     """E-mail due job alerts (Kubernetes CronJob)."""
     from radar.tasks import send_alerts
@@ -807,6 +817,8 @@ def main(argv: list[str] | None = None) -> None:
 
     sub.add_parser("schedule", help="enqueue due sources onto the Redis queue").set_defaults(fn=cmd_schedule)
     sub.add_parser("analytics-nightly", help="roll up visit statistics").set_defaults(fn=cmd_analytics_nightly)
+    sub.add_parser("analytics-rollup", help="redo all daily visit totals with the current bot rules").set_defaults(
+        fn=cmd_analytics_rollup)
     sub.add_parser("send-alerts", help="e-mail due job alerts").set_defaults(fn=cmd_send_alerts)
     sub.add_parser("finalize", help="dedup + gauges + cache version bump").set_defaults(fn=cmd_finalize)
     p = sub.add_parser("worker", help="run a queue worker")

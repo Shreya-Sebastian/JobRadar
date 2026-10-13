@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from radar import analytics
 from radar.config import settings
 from radar.db import session_scope
-from radar.models import DailyStat, PageView
+from radar.models import DailyStat, Meta, PageView
 
 CHROME = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
           "Chrome/128.0 Safari/537.36")
@@ -170,3 +170,58 @@ def test_ip_addresses_are_erased_after_30_days(fresh_db):
     with session_scope() as s:
         analytics.nightly(s, now=now)
         assert sorted(r.ip or "-" for r in s.query(PageView)) == ["-", "198.51.100.7"]
+
+
+def test_scrapers_posing_as_people_are_counted_as_bots(client):
+    """What the live site saw: browser user agents with a Google referrer from cloud networks, and pages fetched
+    without their script ever running. Only visitors whose page sent `seen` count as people."""
+    google = "https://www.google.com/"
+    person = {"user-agent": CHROME, "cf-connecting-ip": "203.0.113.5", "referer": google}
+    client.get("/", headers=person)
+    client.post("/api/e", json={"e": "seen", "p": "/"}, headers=person)  # theme.js, once the page has loaded
+    phone = {"user-agent": IPHONE, "cf-connecting-ip": "198.51.100.7", "referer": google}
+    client.get("/companies", headers=phone)
+    client.post("/api/e", json={"e": "seen", "p": "/companies"}, headers=phone)
+    client.get("/companies", headers={"user-agent": CHROME, "cf-connecting-ip": "47.79.205.241", "referer": google})
+    client.get("/", headers={"user-agent": IPHONE, "cf-connecting-ip": "43.159.140.236"})
+    client.get("/wp-login.php", headers={"user-agent": CHROME, "cf-connecting-ip": "45.141.235.110"})
+    no_script = {"user-agent": CHROME, "cf-connecting-ip": "200.1.2.3", "referer": google}
+    client.get("/", headers=no_script)
+    analytics.flush()
+
+    with session_scope() as s:  # the script check leaves the last two minutes alone, so move every visit back
+        for r in s.query(PageView):
+            r.ts -= timedelta(minutes=5)
+        s.get(Meta, analytics.JS_SINCE).value = (datetime.utcnow() - timedelta(minutes=10)).isoformat()
+        assert {r.browser for r in s.query(PageView) if r.bot} == {"Alibaba Cloud", "Tencent Cloud", "Probe"}
+    d = client.get("/api/admin/analytics", headers={"Authorization": "Bearer secret-token"}).json()
+    assert d["kpi"]["views_24h"] == 2 and d["referrers"] == [{"key": "google.com", "hits": 2}]
+    assert {b["key"] for b in d["bots"]} == {"Alibaba Cloud", "Tencent Cloud", "Probe", "No JavaScript"}
+    assert d["kpi"]["interactions"] == 0 and d["events"] == []  # `seen` is bookkeeping, not something people did
+
+    with session_scope() as s:  # the daily totals apply the same rules
+        day = s.query(PageView).first().ts.date()
+        analytics.rollup(s, day)
+        google_humans = s.query(DailyStat).filter_by(day=day, dim="referrer", key="google.com").one().humans
+        assert google_humans == 2
+
+
+def test_rules_reach_rows_recorded_before_them(fresh_db):
+    """Rows stored as people by the old rules are counted again by `rollup_all`; the script check starts only when
+    the first `seen` event arrived, since earlier pages did not send one."""
+    day = datetime(2026, 10, 1, 12, 0)
+    with session_scope() as s:
+        for ip, visitor in (("47.79.1.1", "a"), ("43.156.2.2", "b"), ("203.0.113.5", "c")):
+            s.add(PageView(ts=day, kind="page", path="/", status=200, ip=ip, visitor=visitor, bot=False,
+                           referrer="google.com", browser="Chrome"))
+    with session_scope() as s:
+        out = analytics.rollup_all(s, now=datetime(2026, 10, 3, 3, 0))
+    assert out["days"] == 2 and out["google_humans_after"] == 1
+
+
+def test_cloud_networks():
+    assert analytics.cloud_network("47.79.207.7") == "Alibaba Cloud"
+    assert analytics.cloud_network("170.106.35.153") == "Tencent Cloud"
+    assert analytics.cloud_network("62.108.7.25") is None and analytics.cloud_network("2a02:a44c::1") is None
+    assert analytics.cloud_network("") is None and analytics.cloud_network(None) is None
+    assert analytics.parse_agent("Mediapartners-Google")[3] is True

@@ -28,5 +28,13 @@
     window.dispatchEvent(new CustomEvent("themechange", { detail: next }));
   });
   document.addEventListener("DOMContentLoaded", paint);
+  // tells the visit statistics that this page's script ran (radar/analytics.py): scrapers that only fetch the HTML
+  // never send it, whatever browser they claim to be
+  addEventListener("load", () => {
+    if (location.pathname.startsWith("/admin")) return;
+    try {
+      navigator.sendBeacon("/api/e", new Blob([JSON.stringify({ e: "seen", p: location.pathname })], { type: "application/json" }));
+    } catch { /* statistics are optional */ }
+  });
   if (dark.addEventListener) dark.addEventListener("change", () => { if (!root.dataset.theme) { paint(); window.dispatchEvent(new CustomEvent("themechange")); } });
 })();

@@ -114,25 +114,52 @@ def bump_data_version() -> str:
     return v
 
 
+def _full(key: str) -> str:
+    return f"api:{CODE_VERSION}:{data_version()}:{key}"
+
+
 def cached(key: str, fn, ttl: int | None = None) -> Any:
     """Return fn() cached under key for the current data version."""
-    ttl = ttl or settings.cache_ttl_seconds
-    full = f"api:{CODE_VERSION}:{data_version()}:{key}"
+    full = _full(key)
     r = _redis()
     if r is not None:
         hit = r.get(full)
         if hit is not None:
             return json.loads(hit)
-        value = fn()
-        r.setex(full, ttl, json.dumps(value, default=str))
-        return value
-    with _local_lock:
-        entry = _local.get(full)
-        if entry and entry[0] > time.monotonic():
-            return entry[1]
+    else:
+        with _local_lock:
+            entry = _local.get(full)
+            if entry and entry[0] > time.monotonic():
+                return entry[1]
     value = fn()
+    _put(full, value, ttl, r)
+    return value
+
+
+def store(key: str, value: Any, ttl: int | None = None) -> None:
+    """Put a freshly built value in the cache under key, replacing what is there (the warmer in radar/api.py)."""
+    _put(_full(key), value, ttl, _redis())
+
+
+def _put(full: str, value: Any, ttl: int | None, r) -> None:
+    ttl = ttl or settings.cache_ttl_seconds
+    if r is not None:
+        r.setex(full, ttl, json.dumps(value, default=str))
+        return
     with _local_lock:
         _local[full] = (time.monotonic() + ttl, value)
         if len(_local) > 2000:
             _local.clear()
-    return value
+
+
+def seconds_left(key: str) -> float | None:
+    """How long the value cached under key still lasts for the current data version; None when there is none."""
+    full = _full(key)
+    r = _redis()
+    if r is not None:
+        left = r.ttl(full)  # -2: no such key; -1: no expiry
+        return None if left is None or left == -2 else (float("inf") if left == -1 else float(left))
+    with _local_lock:
+        entry = _local.get(full)
+    left = entry[0] - time.monotonic() if entry else None
+    return left if left is not None and left > 0 else None

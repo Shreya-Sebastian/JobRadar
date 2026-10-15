@@ -1598,7 +1598,9 @@
   if (["", "#discover", "#jobs"].includes(location.hash.split("?")[0])) $("#boot").hidden = true;
   else $('.tab[data-tab="jobs"]').classList.remove("on");
   bindAccount();
-  booting = account.load().then(() => { renderAccount(); jobFilters = null; }).then(loadHeader);
+  // the account and the filter options in parallel: neither needs the other, and a signed-in visitor would
+  // otherwise wait for two account requests before the rest even starts
+  booting = Promise.all([account.load().then(() => { renderAccount(); jobFilters = null; }), loadHeader()]);
   bindQuiz();
   bindSavedSearches();
   booting.then(() => { booting = null; }).then(route).then(maybeQuiz).catch((e) => { $("#kpis").hidden = false; $("#kpis").innerHTML = `<div class="kpi bad"><b>!</b><span>${esc(t("fail", { e: e.message }))}</span></div>`; });

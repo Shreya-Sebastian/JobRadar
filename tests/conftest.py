@@ -26,7 +26,7 @@ def _no_analytics(monkeypatch):
     from radar.config import settings
 
     monkeypatch.setattr(settings, "analytics_enabled", False)
-    monkeypatch.setattr(settings, "warm_sitemap", False)  # no build racing the test's own database
+    monkeypatch.setattr(settings, "warm_caches", False)  # no warmer racing the test's own database
     analytics._buffer.clear()
     analytics._salt = None
     yield

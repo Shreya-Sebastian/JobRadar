@@ -280,10 +280,11 @@ class Filters:
 
 
 class _Cache:
-    """Per-process copy of the live rows. Reloaded when the TTL expires or when a finalize job bumps the
-    shared data version in Redis, so every API replica picks up a finished crawl within one request."""
+    """Per-process copy of the live rows. Reloaded when a finalize job bumps the shared data version (twice an
+    hour), so every API replica picks up a finished crawl within one request; the TTL is only a safety net. Each
+    reload costs a second or two of the process's time, so it does not run more often than the data changes."""
 
-    def __init__(self, ttl: float = 300.0):
+    def __init__(self, ttl: float = 3600.0):
         self.ttl = ttl
         self._rows: list[Row] | None = None
         self._at = 0.0
@@ -291,7 +292,9 @@ class _Cache:
         self._lock = threading.Lock()
         self.loads = 0  # counts reloads: part of the cache key of pages built from these rows
 
-    def rows(self, session: Session) -> list[Row]:
+    def rows(self, session: Session, wait: bool = False) -> list[Row]:
+        """The live rows. After a data change a request gets the previous rows while new ones load in the
+        background; wait=True (the cache warmer) loads the current ones first."""
         from radar.cache import data_version
 
         version = data_version()
@@ -299,7 +302,7 @@ class _Cache:
             fresh = self._rows is not None and time.monotonic() - self._at < self.ttl and version == self._version
             if fresh:
                 return self._rows
-            if self._rows is None:
+            if self._rows is None or wait:
                 # first request in this process: nothing to serve yet, load synchronously
                 self._rows = load_rows(session)
                 self._at = time.monotonic()

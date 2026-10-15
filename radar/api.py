@@ -32,8 +32,8 @@ mimetypes.add_type("font/woff2", ".woff2")  # served from /static/fonts; Python'
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
-    if settings.warm_sitemap:
-        threading.Thread(target=_warm_sitemap, name="warm-sitemap", daemon=True).start()
+    if settings.warm_caches:
+        threading.Thread(target=_keep_warm, name="warm-caches", daemon=True).start()
     yield
     from radar import analytics
 
@@ -172,12 +172,16 @@ def _key(request: Request) -> str:
     return f"{request.url.path}?{request.url.query}"
 
 
+def _overview_data(session: Session) -> dict:
+    return {**stats.overview(session), "new": stats.new_jobs(session)}  # the "new in the last 7 days" figure
+
+
+OVERVIEW_TTL = 120  # it names the last crawl, which moves without a data change
+
+
 @app.get("/api/overview")
 def overview(request: Request, session: Session = Depends(db)):
-    def compute():
-        return {**stats.overview(session), "new": stats.new_jobs(session)}  # the "new in the last 7 days" figure
-
-    return cached(_key(request), compute, ttl=60)
+    return cached(_key(request), lambda: _overview_data(session), ttl=OVERVIEW_TTL)
 
 
 @app.get("/api/skills")
@@ -353,21 +357,22 @@ def coverage(request: Request, session: Session = Depends(db)):
     return cached(_key(request), compute, ttl=600)
 
 
+def _filter_data(session: Session) -> dict:
+    rows = [r for r in stats.CACHE.rows(session) if r.closed_at is None]
+    return {
+        "cities": [d["key"] for d in stats.breakdown(rows, "city", 40)],
+        "companies": [d["key"] for d in stats.breakdown(rows, "company", 300)],
+        "roles": [d["key"] for d in stats.breakdown(rows, "role_family", 20)],
+        "seniorities": [d["key"] for d in stats.breakdown(rows, "seniority", 10)],
+        "sectors": [d["key"] for d in stats.breakdown(rows, "sector", 30)],
+        "positions": [d["key"] for d in stats.breakdown(rows, "position", 100)],
+        "skills": [d["skill"] for d in stats.skill_counts(rows, 120)],
+    }
+
+
 @app.get("/api/filters")
 def filter_options(request: Request, session: Session = Depends(db)):
-    def compute():
-        rows = [r for r in stats.CACHE.rows(session) if r.closed_at is None]
-        return {
-            "cities": [d["key"] for d in stats.breakdown(rows, "city", 40)],
-            "companies": [d["key"] for d in stats.breakdown(rows, "company", 300)],
-            "roles": [d["key"] for d in stats.breakdown(rows, "role_family", 20)],
-            "seniorities": [d["key"] for d in stats.breakdown(rows, "seniority", 10)],
-            "sectors": [d["key"] for d in stats.breakdown(rows, "sector", 30)],
-            "positions": [d["key"] for d in stats.breakdown(rows, "position", 100)],
-            "skills": [d["skill"] for d in stats.skill_counts(rows, 120)],
-        }
-
-    return cached(_key(request), compute)
+    return cached(_key(request), lambda: _filter_data(session))
 
 
 @app.get("/api/sources")
@@ -554,48 +559,9 @@ def _live_tech_rows(session: Session) -> list[stats.Row]:
 
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap(session: Session = Depends(db)):
-    from xml.sax.saxutils import escape as xml_escape
-
-    from radar import pages
-
-    base = settings.site_url.rstrip("/")
-
-    def lastmod(rows) -> str | None:
-        # when the newest listing on the page appeared: search engines re-crawl pages whose date moved
-        newest = max((r.first_seen for r in rows), default=None)
-        return newest.date().isoformat() if newest else None
-
-    def compute():
-        from radar import seo
-
-        tech = _live_tech_rows(session)
-        rows, landing_pages = _pages_objects(session)
-        live = [r for r in rows if r.closed_at is None]
-        home = lastmod(tech)
-        urls = [(f"{base}/", home), (f"{base}/nl/", home), (f"{base}/companies", home),
-                (f"{base}/market-report", home), (f"{base}/nl/marktrapport", home)]
-        for lp in landing_pages:
-            day = lastmod(seo._filtered(live, lp.filters, lp.city))
-            urls += [(base + lp.nl_path, day), (base + lp.en_path, day)]
-        for _, slug, n in pages.companies(tech):
-            if n >= pages.MIN_INDEXED_POSTINGS:
-                day = lastmod(pages.company_rows(tech, slug))
-                urls += [(f"{base}/company/{slug}", day), (f"{base}/nl/bedrijf/{slug}", day)]
-        for r in tech:
-            # one URL per live listing, in the language the vacancy is written in (as the Indexing API notices,
-            # radar/indexing.py): both pages carry the same employer text, and listing both halves how many jobs a
-            # search engine gets to; the other language stays linked from the page through hreflang
-            day = (r.posted_at or r.first_seen).date().isoformat()
-            lang = "nl" if r.ex.get("posting_language") == "nl" else "en"
-            urls.append((base + pages.job_path(r.id, r.title, lang), day))
-        body = "".join(f"<url><loc>{xml_escape(u)}</loc>" + (f"<lastmod>{d}</lastmod>" if d else "") + "</url>"
-                       for u, d in urls)
-        return (f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-                f"{body}</urlset>")
-
     global _last_sitemap
     try:
-        xml = cached("sitemap.xml", compute, ttl=3600)
+        xml = cached("sitemap.xml", lambda: _sitemap_xml(session), ttl=SITEMAP_TTL)
     except Exception:
         if _last_sitemap is None:
             raise
@@ -605,19 +571,97 @@ def sitemap(session: Session = Depends(db)):
     return Response(xml, media_type="application/xml")
 
 
+SITEMAP_TTL = 3600
+
+
+def _sitemap_xml(session: Session) -> str:
+    from xml.sax.saxutils import escape as xml_escape
+
+    from radar import pages, seo
+
+    base = settings.site_url.rstrip("/")
+
+    def lastmod(rows) -> str | None:
+        # when the newest listing on the page appeared: search engines re-crawl pages whose date moved
+        newest = max((r.first_seen for r in rows), default=None)
+        return newest.date().isoformat() if newest else None
+
+    tech = _live_tech_rows(session)
+    rows, landing_pages = _pages_objects(session)
+    live = [r for r in rows if r.closed_at is None]
+    home = lastmod(tech)
+    urls = [(f"{base}/", home), (f"{base}/nl/", home), (f"{base}/companies", home),
+            (f"{base}/market-report", home), (f"{base}/nl/marktrapport", home)]
+    for lp in landing_pages:
+        day = lastmod(seo._filtered(live, lp.filters, lp.city))
+        urls += [(base + lp.nl_path, day), (base + lp.en_path, day)]
+    for _, slug, n in pages.companies(tech):
+        if n >= pages.MIN_INDEXED_POSTINGS:
+            day = lastmod(pages.company_rows(tech, slug))
+            urls += [(f"{base}/company/{slug}", day), (f"{base}/nl/bedrijf/{slug}", day)]
+    for r in tech:
+        # one URL per live listing, in the language the vacancy is written in (as the Indexing API notices,
+        # radar/indexing.py): both pages carry the same employer text, and listing both halves how many jobs a
+        # search engine gets to; the other language stays linked from the page through hreflang
+        day = (r.posted_at or r.first_seen).date().isoformat()
+        lang = "nl" if r.ex.get("posting_language") == "nl" else "en"
+        urls.append((base + pages.job_path(r.id, r.title, lang), day))
+    body = "".join(f"<url><loc>{xml_escape(u)}</loc>" + (f"<lastmod>{d}</lastmod>" if d else "") + "</url>"
+                   for u, d in urls)
+    return (f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+            f"{body}</urlset>")
+
+
 _last_sitemap: str | None = None  # served when a rebuild fails, so a crawler never gets an error for the sitemap
 
 
-def _warm_sitemap() -> None:
-    """Build the sitemap in the background at start: a new release starts with an empty cache, and a full build takes
-    seconds."""
-    session = new_session()
-    try:
-        sitemap(session)
-    except Exception:
-        log.exception("sitemap warm-up failed")
-    finally:
-        session.close()
+# What every page load or crawler asks for, rebuilt shortly before it expires (and right after a data change), so
+# no visitor waits for a rebuild: on the small server the overview takes over a second and the sitemap several.
+_WARM_MARGIN = 45  # seconds before expiry
+
+
+def _warm_items():
+    from radar.cache import store
+
+    def sitemap_store(session: Session) -> None:
+        global _last_sitemap
+        _last_sitemap = _sitemap_xml(session)
+        store("sitemap.xml", _last_sitemap, SITEMAP_TTL)
+
+    return [("/api/overview?", lambda s: store("/api/overview?", _overview_data(s), OVERVIEW_TTL)),
+            ("/api/filters?", lambda s: store("/api/filters?", _filter_data(s))),
+            ("sitemap.xml", sitemap_store)]
+
+
+def warm_once(session: Session, force: bool = False) -> list[str]:
+    """Rebuild the hot cached responses that are missing or about to expire; returns the keys rebuilt."""
+    from radar.cache import seconds_left
+
+    stats.CACHE.rows(session, wait=True)  # never build from the previous rows after a data change
+    done = []
+    for key, build in _warm_items():
+        left = seconds_left(key)
+        if force or left is None or left < _WARM_MARGIN:
+            build(session)
+            done.append(key)
+    return done
+
+
+def _keep_warm() -> None:
+    from radar.cache import data_version
+
+    seen = None
+    while True:
+        session = new_session()
+        try:
+            version = data_version()
+            warm_once(session, force=seen is not None and version != seen)  # a data change: rebuild everything
+            seen = version
+        except Exception:
+            log.exception("cache warm-up failed")
+        finally:
+            session.close()
+        time.sleep(20)
 
 
 @app.get("/companies", include_in_schema=False)

@@ -10,6 +10,15 @@
   const LEVELS = ["intern", "trainee", "junior", "medior", "senior", "lead", "staff", "manager"];
   const REMOTE = ["remote", "hybrid", "onsite"];
   const EXP = ["none", "1", "2-3", "4-5", "6+", "unspecified"];
+  // the languages a visitor speaks, stored as "en", "nl" or "en,nl" (radar/stats.py fits_languages)
+  const LANGS = ["en", "nl"];
+  const langList = (v) => (v || "").split(",").filter((l) => LANGS.includes(l));
+  function langToggles(el, owner, onChange) {
+    const sel = langList(owner.language);
+    toggles(el, LANGS, sel, (l) => t("f.language." + l), () => {
+      owner.language = LANGS.filter((l) => sel.includes(l)).join(","); onChange && onChange();
+    });
+  }
   const DEGREES = ["bachelor", "master", "phd", "mbo", "unstated"];
   const EMPS = ["1-49", "50-249", "250-4999", "5000+", "unknown"];
 
@@ -31,7 +40,7 @@
       "ov.matches.empty": "Add your skills under <a href=\"#profile\">Profile</a> to get suggestions.",
       "f.search": "Search", "f.search.ph": "title or company", "f.window": "Date posted", "f.window.all": "Any time", "f.window.1": "Past 24 hours",
       "f.window.7": "Past week", "f.window.30": "Past month", "f.window.90": "Past 3 months",
-      "f.language": "Language", "f.language.any": "All jobs", "f.language.nl": "Dutch-speaking jobs", "f.language.en": "No Dutch required", "f.language.hint": "\"No Dutch required\" hides jobs that ask for Dutch.",
+      "f.language": "Languages you speak", "f.language.any": "All jobs", "f.language.nl": "Dutch", "f.language.en": "English", "f.language.hint": "Jobs that need only the languages you tick.",
       "f.sort": "Sort by", "f.sort.newest": "Most recent", "f.sort.match": "Best match", "f.role": "Field", "f.level": "Experience level", "f.remote": "On-site, hybrid or remote",
       "f.cities": "Cities", "f.visa": "Mentions visa sponsorship", "f.agencies": "Hide recruitment agencies", 
       "pill.distance": "Distance", "f.distance.from": "From", "f.distance.none": "Any place", "f.distance.km": "Distance", "f.distance.10": "Within 10 km", "f.distance.25": "Within 25 km", "f.distance.50": "Within 50 km", "f.distance.100": "Within 100 km", "f.distance.remote": "Include remote jobs", "f.distance.note": "Straight-line distance between city centres.", "distance.km": "{k} km", "ss.distance": "within {k} km of {c}", "f.saved": "Saved jobs only", "f.hideseen": "Hide jobs I've opened", "f.hideapplied": "Hide jobs I've applied to or archived", "f.skill": "Skill", "quiz.open": "Quick start", "f.reset": "Clear filters", "f.profile": "Use my profile",
@@ -43,7 +52,7 @@
       "mk.roles": "Field", "mk.hiring": "Who is hiring", "mk.salary": "Salaries (where stated)", "mk.salary.hint": "per year",
       "mk.lang": "Job ad language", "mk.remote": "Remote work",
       "p.looking": "Job preferences", "p.g.role": "Role", "p.g.exp": "Experience and education", "p.g.employer": "Employer", "p.g.where": "Location", "p.g.lang": "Language and visa",
-      "p.roles": "Roles", "p.levels": "Experience level", "p.exclude": "Employers to hide", "p.language": "Language",
+      "p.roles": "Roles", "p.levels": "Experience level", "p.exclude": "Employers to hide", "p.language": "Languages you speak",
       "p.visa": "Only jobs that mention visa sponsorship", "p.agencies": "Hide recruitment agencies", "p.save": "Save profile", "p.export": "Export",
       "p.import": "Import", "p.clear": "Clear", "p.skills": "Skills",
       "p.extract": "Add skills from your CV", "p.cv.ph": "Paste your CV text", "p.extract.btn": "Extract",
@@ -144,7 +153,7 @@
       "ov.matches.empty": "Voeg je skills toe onder <a href=\"#profile\">Profiel</a> voor suggesties.",
       "f.search": "Zoeken", "f.search.ph": "functietitel of werkgever", "f.window": "Datum geplaatst", "f.window.all": "Altijd", "f.window.1": "Afgelopen 24 uur",
       "f.window.7": "Afgelopen week", "f.window.30": "Afgelopen maand", "f.window.90": "Afgelopen 3 maanden",
-      "f.language": "Taal", "f.language.any": "Alle vacatures", "f.language.nl": "Nederlandstalige vacatures", "f.language.en": "Geen Nederlands vereist", "f.language.hint": "\"Geen Nederlands vereist\" verbergt vacatures die om Nederlands vragen.",
+      "f.language": "Talen die je spreekt", "f.language.any": "Alle vacatures", "f.language.nl": "Nederlands", "f.language.en": "Engels", "f.language.hint": "Vacatures die alleen de talen vragen die je aanvinkt.",
       "f.sort": "Sorteren op", "f.sort.newest": "Meest recent", "f.sort.match": "Beste match", "f.role": "Vakgebied", "f.level": "Ervaringsniveau", "f.remote": "Op kantoor, hybride of remote",
       "f.cities": "Steden", "f.visa": "Noemt visumsponsoring", "f.agencies": "Wervingsbureaus verbergen", 
       "pill.distance": "Afstand", "f.distance.from": "Vanaf", "f.distance.none": "Elke plaats", "f.distance.km": "Afstand", "f.distance.10": "Binnen 10 km", "f.distance.25": "Binnen 25 km", "f.distance.50": "Binnen 50 km", "f.distance.100": "Binnen 100 km", "f.distance.remote": "Ook remote vacatures", "f.distance.note": "Hemelsbreed, tussen de stadscentra.", "distance.km": "{k} km", "ss.distance": "binnen {k} km van {c}", "f.saved": "Alleen bewaarde vacatures", "f.hideseen": "Vacatures verbergen die ik heb geopend", "f.hideapplied": "Vacatures verbergen waarop ik heb gesolliciteerd of die ik heb gearchiveerd", "f.skill": "Skill", "quiz.open": "Snel starten", "f.reset": "Filters wissen", "f.profile": "Mijn profiel gebruiken",
@@ -156,7 +165,7 @@
       "mk.roles": "Vakgebied", "mk.hiring": "Wie neemt aan", "mk.salary": "Salarissen (indien vermeld)", "mk.salary.hint": "per jaar",
       "mk.lang": "Taal van de vacature", "mk.remote": "Remote werken",
       "p.looking": "Voorkeuren", "p.g.role": "Functie", "p.g.exp": "Ervaring en opleiding", "p.g.employer": "Werkgever", "p.g.where": "Locatie", "p.g.lang": "Taal en visum",
-      "p.roles": "Rollen", "p.levels": "Ervaringsniveau", "p.exclude": "Werkgevers verbergen", "p.language": "Taal",
+      "p.roles": "Rollen", "p.levels": "Ervaringsniveau", "p.exclude": "Werkgevers verbergen", "p.language": "Talen die je spreekt",
       "p.visa": "Alleen vacatures die visumsponsoring noemen", "p.agencies": "Wervingsbureaus verbergen", "p.save": "Profiel opslaan", "p.export": "Exporteren",
       "p.import": "Importeren", "p.clear": "Wissen", "p.skills": "Skills",
       "p.extract": "Skills uit je cv halen", "p.cv.ph": "Plak je cv-tekst", "p.extract.btn": "Herkennen",
@@ -776,7 +785,7 @@
   }
   // how many choices each filter pill holds (the pill is highlighted and shows the number)
   const PILL_COUNTS = {
-    lang: (f) => (f.language ? 1 : 0), exp: (f) => f.exp.length + f.levels.length,
+    lang: (f) => langList(f.language).length, exp: (f) => f.exp.length + f.levels.length,
     role: (f) => f.roles.length + (f.positions || []).length, degree: (f) => f.degrees.length, distance: (f) => (f.distanceFrom ? 1 : 0), remote: (f) => f.remote.length,
     company: (f) => f.emps.length + f.sectors.length + (f.agencies ? 1 : 0),
     posted: (f) => (f.days ? 1 : 0) + (f.confirmed ? 1 : 0), more: (f) => (f.noenrol ? 1 : 0) + (f.savedOnly ? 1 : 0) + (f.hideSeen ? 1 : 0) + (f.hideApplied ? 1 : 0),
@@ -825,7 +834,7 @@
     toggles($("#f-emp"), EMPS, f.emps, empLabel, () => refreshJobs(true));
     toggles($("#f-remote"), REMOTE, f.remote, remoteLabel, () => refreshJobs(true));
     chipInput($("#f-cities"), f.cities, [...state.options.cities, "Remote"], () => refreshJobs(true), t("ph.city"), null, cityLabel);
-    $("#f-language").value = f.language || ""; $("#f-visa").checked = f.visa; $("#f-agencies").checked = f.agencies; $("#f-noenrol").checked = !!f.noenrol; $("#f-confirmed").checked = !!f.confirmed;
+    langToggles($("#f-language"), f, () => refreshJobs(true)); $("#f-visa").checked = f.visa; $("#f-agencies").checked = f.agencies; $("#f-noenrol").checked = !!f.noenrol; $("#f-confirmed").checked = !!f.confirmed;
     $("#f-saved").checked = f.savedOnly; $("#f-q").value = f.q; $("#f-days").value = f.days;
     $("#f-hideseen").checked = !!f.hideSeen; $("#f-hideapplied").checked = !!f.hideApplied;
     fillDistance(f);
@@ -837,7 +846,6 @@
       [["#f-visa", "visa"], ["#f-agencies", "agencies"], ["#f-noenrol", "noenrol"], ["#f-confirmed", "confirmed"], ["#f-saved", "savedOnly"],
        ["#f-hideseen", "hideSeen"], ["#f-hideapplied", "hideApplied"]]
         .forEach(([id, key]) => $(id).addEventListener("change", (e) => { currentJobFilters()[key] = e.target.checked; refreshJobs(true); }));
-      $("#f-language").addEventListener("change", (e) => { currentJobFilters().language = e.target.value; refreshJobs(true); });
       $("#f-distance-from").addEventListener("change", (e) => { currentJobFilters().distanceFrom = e.target.value; loadDistances().then(() => refreshJobs(true)); });
       $("#f-distance-km").addEventListener("change", (e) => { currentJobFilters().distanceKm = e.target.value; refreshJobs(true); });
       $("#f-distance-remote").addEventListener("change", (e) => { currentJobFilters().distanceRemote = e.target.checked; refreshJobs(true); });
@@ -1140,7 +1148,7 @@
     chipInput($("#p-cities"), p.cities, [...state.options.cities, "Remote"], null, t("ph.city"), null, cityLabel);
     chipInput($("#p-exclude"), p.exclude, [], null, t("ph.employer"));
     chipInput($("#p-skills"), p.skills, state.options.skills, null, t("ph.skill"), skillTransform);
-    $("#p-language").value = p.language || ""; $("#p-visa").checked = p.visa; $("#p-agencies").checked = p.agencies; $("#p-noenrol").checked = !!p.noenrol;
+    langToggles($("#p-language"), p); $("#p-visa").checked = p.visa; $("#p-agencies").checked = p.agencies; $("#p-noenrol").checked = !!p.noenrol;
     if (profileBuilt) return;
     profileBuilt = true;
     canonicalSkills(p.skills).then((m) => {
@@ -1149,7 +1157,7 @@
     });
     // one save for the whole profile, from the button under the preferences or the one under the skills
     const saveProfile = (status) => {
-      p.language = $("#p-language").value; p.visa = $("#p-visa").checked; p.agencies = $("#p-agencies").checked; p.noenrol = $("#p-noenrol").checked;
+      p.visa = $("#p-visa").checked; p.agencies = $("#p-agencies").checked; p.noenrol = $("#p-noenrol").checked;
       delete p.english;
       store.set("profile", p); store.set("jobsUseProfile", true); jobFilters = null; beacon("profile_save");
       status.textContent = t("p.saved.status"); setTimeout(() => status.textContent = "", 3000);
@@ -1527,6 +1535,7 @@
     if (f.remote.includes("remote")) parts.push(t("remote.label"));
     if (f.distanceFrom) parts.push(t("ss.distance", { k: f.distanceKm || 25, c: cityLabel(f.distanceFrom) }));
     if (f.language === "en") parts.push(t("fact.nodutch"));
+    else if (f.language === "nl") parts.push(t("f.language.nl"));
     if (f.visa) parts.push(t("fact.visa"));
     if (f.q) parts.push(`"${f.q}"`);
     return (parts.join(" · ") || t("ss.default")).slice(0, 80);

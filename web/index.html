@@ -94,7 +94,7 @@
   </div>
  </div>
   <div class="pops" id="pops">
-    <div class="pop" data-pop="lang" hidden><div class="field"><label data-i18n="f.language">Language</label><select id="f-language" data-i18n-title="f.language.hint" title="&quot;No Dutch required&quot; hides jobs that ask for Dutch."><option value="" data-i18n="f.language.any" selected>All jobs</option><option value="nl" data-i18n="f.language.nl">Dutch-speaking jobs</option><option value="en" data-i18n="f.language.en">No Dutch required</option></select></div></div>
+    <div class="pop" data-pop="lang" hidden><div class="field"><label data-i18n="f.language">Languages you speak</label><div class="chips toggles" id="f-language"></div><p class="muted small m-0" data-i18n="f.language.hint">Jobs that need only the languages you tick.</p></div></div>
     <div class="pop" data-pop="exp" hidden><div class="field"><label data-i18n="f.level">Experience level</label><div class="chips toggles" id="f-levels"></div></div><div class="field"><label data-i18n="f.exp">Years of experience</label><div class="chips toggles" id="f-exp"></div></div></div>
     <div class="pop" data-pop="role" hidden><div class="field"><label data-i18n="f.role">Field</label><div class="chips toggles" id="f-roles"></div></div><div class="field"><label data-i18n="f.position">Job title</label><div class="chipinput" id="f-position"></div></div></div>
     <div class="pop" data-pop="degree" hidden><div class="field"><label data-i18n="f.degree">Education</label><div class="chips toggles" id="f-degree"></div></div></div>
@@ -200,7 +200,7 @@
         <div class="field"><label data-i18n="f.cities">Cities</label><div class="chipinput" id="p-cities"></div></div>
       </fieldset>
       <fieldset class="group"><legend data-i18n="p.g.lang">Language and visa</legend>
-        <div class="field"><label data-i18n="p.language">Language</label><select id="p-language" data-i18n-title="f.language.hint" title="&quot;No Dutch required&quot; hides jobs that ask for Dutch."><option value="" data-i18n="f.language.any" selected>All jobs</option><option value="nl" data-i18n="f.language.nl">Dutch-speaking jobs</option><option value="en" data-i18n="f.language.en">No Dutch required</option></select></div>
+        <div class="field"><label data-i18n="p.language">Languages you speak</label><div class="chips toggles" id="p-language"></div></div>
         <label class="check"><input type="checkbox" id="p-visa"> <span data-i18n="p.visa">Only jobs that mention visa sponsorship</span></label>
       </fieldset>
       <div class="row mt">
@@ -317,6 +317,6 @@
   <p class="foot-bottom"><a href="{{PRIVACY_PATH}}" data-i18n="privacy">Privacy</a> · <a href="{{FEEDBACK_PATH}}" data-i18n="feedback">Feedback</a>{{SOURCE_LINK}}</p>
  </div>
 </footer>
-<script src="/static/app.js?v=143"></script>
+<script src="/static/app.js?v=144"></script>
 </body>
 </html>

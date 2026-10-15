@@ -152,6 +152,18 @@ def experience_bands(ex: dict[str, Any], title: str = "") -> set[str]:
     return {name for name, start, end in _BAND_EDGES if low < end and high >= start}
 
 
+def fits_languages(ex: dict[str, Any], speaks: set[str]) -> bool:
+    """Whether someone who speaks these languages ("en", "nl") can do the job: it needs no language they do not
+    speak. Dutch is needed when the posting asks for it; English when it is posted in English or asks for it. Ticking
+    more languages only adds jobs: English alone is "no Dutch required", Dutch alone the jobs that work in Dutch, both
+    every job whose language is known (a posting in German, say, is in none)."""
+    if not (ex.get("english_only") or ex.get("dutch_required")):
+        return False  # the language the job needs is not known
+    if ex.get("dutch_required") and "nl" not in speaks:
+        return False
+    return not (ex.get("english_required") and "en" not in speaks)
+
+
 def _csv(value: str | None) -> set[str]:
     return {v.strip().lower() for v in value.split(",") if v.strip()} if value else set()
 
@@ -266,13 +278,9 @@ class Filters:
             out = [r for r in out if r.company.lower() not in excluded]
         if self.exclude_agencies:
             out = [r for r in out if r.kind != "agency"]
-        if self.english_only or self.language == "en":
-            out = [r for r in out if r.ex.get("english_only")]
-        elif self.language == "nl":
-            # jobs that ask for Dutch, also those that ask for English as well (a Dutch speaker qualifies for both);
-            # a posting written in Dutch that says Dutch is not needed is a "No Dutch required" job, not this one
-            out = [r for r in out if (r.ex.get("dutch_required") or r.ex.get("posting_language") == "nl")
-                   and not r.ex.get("english_only")]
+        speaks = _csv(self.language) & {"en", "nl"} | ({"en"} if self.english_only else set())
+        if speaks:
+            out = [r for r in out if fits_languages(r.ex, speaks)]
         if self.sponsorship:
             # only listings that say so themselves: in the Netherlands an employer that sponsors says it, and silence
             # means no sponsorship (being on the IND register alone does not mean this job is open to it)

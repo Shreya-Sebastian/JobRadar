@@ -280,7 +280,7 @@ def test_changed_id_for_the_same_page_keeps_the_posting(fresh_db):
         assert p.id == first_id and p.external_id == url and p.first_seen == first_seen and p.closed_at is None
 
 
-def test_dutch_speaking_option_includes_postings_that_also_need_english(fresh_db):
+def test_languages_you_speak(fresh_db):
     with session_scope() as s:
         src = _source(s)
         ingest(s, src, [
@@ -292,8 +292,9 @@ def test_dutch_speaking_option_includes_postings_that_also_need_english(fresh_db
 
     client = TestClient(app)
     titles = lambda **kw: sorted(i["title"] for i in client.get("/api/postings", params=kw).json()["items"])  # noqa: E731
-    assert titles(language="nl") == ["Cloud Engineer", "Data Engineer"]  # Dutch, and Dutch plus English
-    assert titles(language="en") == ["Backend Engineer"]
+    assert titles(language="nl") == ["Data Engineer"]  # Dutch only: the jobs that work in Dutch
+    assert titles(language="en") == ["Backend Engineer"]  # English only: no Dutch required
+    assert titles(language="en,nl") == ["Backend Engineer", "Cloud Engineer", "Data Engineer"]  # both: all of them
     assert titles() == ["Backend Engineer", "Cloud Engineer", "Data Engineer"]
 
 
@@ -504,7 +505,7 @@ def test_experience_filter_follows_the_whole_range_asked():
     assert [r.id for r in stats.Filters(experience="2-3").apply(rows)] == [1, 2]
 
 
-def test_dutch_speaking_filter_leaves_out_jobs_that_need_no_dutch():
+def test_language_filter_shows_the_jobs_whose_languages_you_speak():
     from datetime import datetime
 
     from radar import stats
@@ -517,6 +518,9 @@ def test_dutch_speaking_filter_leaves_out_jobs_that_need_no_dutch():
 
     rows = [row(1, dutch_required=True, english_required=False),
             row(2, posting_language="nl", english_required=False, english_only=True),  # in Dutch, Dutch not needed
-            row(3, dutch_required=True, english_required=True)]  # both: a Dutch speaker qualifies
-    assert [r.id for r in stats.Filters(language="nl").apply(rows)] == [1, 3]
-    assert [r.id for r in stats.Filters(language="en").apply(rows)] == [2]  # it is a "No Dutch required" job
+            row(3, dutch_required=True, english_required=True),  # needs both
+            row(4)]  # language not known
+    assert [r.id for r in stats.Filters(language="nl").apply(rows)] == [1, 2]
+    assert [r.id for r in stats.Filters(language="en").apply(rows)] == [2]
+    assert [r.id for r in stats.Filters(language="en,nl").apply(rows)] == [1, 2, 3]
+    assert [r.id for r in stats.Filters().apply(rows)] == [1, 2, 3, 4]  # nothing ticked: every job

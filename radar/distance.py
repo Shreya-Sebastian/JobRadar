@@ -26,6 +26,25 @@ CENTRES: dict[str, tuple[float, float]] = {
 }
 
 
+# the province of each job city, for the region in a job page's structured data (schema.org addressRegion)
+PROVINCES: dict[str, str] = {
+    "Amsterdam": "Noord-Holland", "Haarlem": "Noord-Holland", "Alkmaar": "Noord-Holland", "Hilversum": "Noord-Holland",
+    "Bussum": "Noord-Holland", "Naarden": "Noord-Holland", "Nieuw-Vennep": "Noord-Holland",
+    "Rotterdam": "Zuid-Holland", "The Hague": "Zuid-Holland", "Leiden": "Zuid-Holland", "Delft": "Zuid-Holland",
+    "Dordrecht": "Zuid-Holland", "Gouda": "Zuid-Holland",
+    "Utrecht": "Utrecht", "Amersfoort": "Utrecht", "Veenendaal": "Utrecht", "Woerden": "Utrecht",
+    "Eindhoven": "Noord-Brabant", "Tilburg": "Noord-Brabant", "Breda": "Noord-Brabant",
+    "'s-Hertogenbosch": "Noord-Brabant", "Oss": "Noord-Brabant",
+    "Nijmegen": "Gelderland", "Apeldoorn": "Gelderland", "Arnhem": "Gelderland", "Ede": "Gelderland",
+    "Wageningen": "Gelderland", "Barneveld": "Gelderland", "Culemborg": "Gelderland",
+    "Enschede": "Overijssel", "Zwolle": "Overijssel", "Deventer": "Overijssel",
+    "Maastricht": "Limburg", "Venlo": "Limburg", "Heerlen": "Limburg", "Sittard": "Limburg", "Roermond": "Limburg",
+    "Weert": "Limburg",
+    "Groningen": "Groningen", "Leeuwarden": "Friesland", "Assen": "Drenthe", "Emmen": "Drenthe",
+    "Almere": "Flevoland", "Lelystad": "Flevoland", "Middelburg": "Zeeland",
+}
+
+
 def km(origin: str | None, city: str | None) -> int | None:
     """Kilometres in a straight line from `origin` to `city`, or None when either is unknown."""
     a, b = CENTRES.get(origin or ""), CENTRES.get(city or "")

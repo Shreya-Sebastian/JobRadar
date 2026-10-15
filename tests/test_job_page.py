@@ -46,6 +46,7 @@ def test_job_page_shows_the_employers_text_with_credit_and_links_back(fresh_db):
                     .replace("<\\/", "</"))
     assert ld["@type"] == "JobPosting" and ld["hiringOrganization"]["name"] == "Adyen"
     assert ld["datePosted"] == "2026-09-28" and ld["directApply"] is False
+    assert ld["jobLocation"]["address"]["addressRegion"] == "Noord-Holland"  # the province, from the city
     nl = c.get(f"/nl/vacature/{pid}/senior-backend-engineer", headers=BROWSER)
     assert nl.status_code == 200 and "Vacaturetekst" in nl.text and 'lang="nl"' in nl.text
 

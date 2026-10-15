@@ -16,6 +16,7 @@ from html import escape
 from pathlib import Path
 
 from radar.config import settings
+from radar.distance import PROVINCES
 from radar.stats import Row
 
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
@@ -377,7 +378,9 @@ def render_job(p, lang: str = "en", sector: str | None = None, related: list[tup
             "description": _body(p), "datePosted": when.date().isoformat() if when else None,
             "hiringOrganization": {"@type": "Organization", "name": p.company},
             "jobLocation": {"@type": "Place", "address": {"@type": "PostalAddress", "addressCountry": "NL",
-                                                          **({"addressLocality": p.city} if p.city else {})}},
+                                                          **({"addressLocality": p.city} if p.city else {}),
+                                                          **({"addressRegion": PROVINCES[p.city]}
+                                                             if p.city in PROVINCES else {})}},
             "url": base + self_path, "identifier": {"@type": "PropertyValue", "name": p.company,
                                                      "value": str(p.external_id)},
             "directApply": False,

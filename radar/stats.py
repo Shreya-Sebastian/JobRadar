@@ -269,10 +269,10 @@ class Filters:
         if self.english_only or self.language == "en":
             out = [r for r in out if r.ex.get("english_only")]
         elif self.language == "nl":
-            # Dutch only: Dutch is required and English is not, for people who work in Dutch; a posting written in
-            # Dutch that says Dutch is not needed is a "No Dutch required" job, not this one
+            # jobs that ask for Dutch, also those that ask for English as well (a Dutch speaker qualifies for both);
+            # a posting written in Dutch that says Dutch is not needed is a "No Dutch required" job, not this one
             out = [r for r in out if (r.ex.get("dutch_required") or r.ex.get("posting_language") == "nl")
-                   and r.ex.get("english_required") is False and not r.ex.get("english_only")]
+                   and not r.ex.get("english_only")]
         if self.sponsorship:
             # only listings that say so themselves: in the Netherlands an employer that sponsors says it, and silence
             # means no sponsorship (being on the IND register alone does not mean this job is open to it)

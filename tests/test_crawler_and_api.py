@@ -280,7 +280,7 @@ def test_changed_id_for_the_same_page_keeps_the_posting(fresh_db):
         assert p.id == first_id and p.external_id == url and p.first_seen == first_seen and p.closed_at is None
 
 
-def test_dutch_only_option_excludes_postings_that_also_need_english(fresh_db):
+def test_dutch_speaking_option_includes_postings_that_also_need_english(fresh_db):
     with session_scope() as s:
         src = _source(s)
         ingest(s, src, [
@@ -292,7 +292,7 @@ def test_dutch_only_option_excludes_postings_that_also_need_english(fresh_db):
 
     client = TestClient(app)
     titles = lambda **kw: sorted(i["title"] for i in client.get("/api/postings", params=kw).json()["items"])  # noqa: E731
-    assert titles(language="nl") == ["Data Engineer"]
+    assert titles(language="nl") == ["Cloud Engineer", "Data Engineer"]  # Dutch, and Dutch plus English
     assert titles(language="en") == ["Backend Engineer"]
     assert titles() == ["Backend Engineer", "Cloud Engineer", "Data Engineer"]
 
@@ -516,6 +516,7 @@ def test_dutch_speaking_filter_leaves_out_jobs_that_need_no_dutch():
                          posted_at=now, first_seen=now, closed_at=None, ats="lever", ex=ex)
 
     rows = [row(1, dutch_required=True, english_required=False),
-            row(2, posting_language="nl", english_required=False, english_only=True)]  # in Dutch, Dutch not needed
-    assert [r.id for r in stats.Filters(language="nl").apply(rows)] == [1]
+            row(2, posting_language="nl", english_required=False, english_only=True),  # in Dutch, Dutch not needed
+            row(3, dutch_required=True, english_required=True)]  # both: a Dutch speaker qualifies
+    assert [r.id for r in stats.Filters(language="nl").apply(rows)] == [1, 3]
     assert [r.id for r in stats.Filters(language="en").apply(rows)] == [2]  # it is a "No Dutch required" job

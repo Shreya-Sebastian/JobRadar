@@ -75,6 +75,10 @@ class Row:
         return experience_band(self.ex, self.title)
 
     @property
+    def experience_bands(self) -> set[str]:
+        return experience_bands(self.ex, self.title)
+
+    @property
     def position(self) -> str:
         """The position type the title names (radar/positions.py): "data_engineer", "product_owner", ..."""
         from radar.positions import position
@@ -125,6 +129,27 @@ def experience_band(ex: dict[str, Any], title: str = "") -> str:
     if years <= 5:
         return "4-5"
     return "6+"
+
+
+# the years bands as [from, to): a posting's range of years overlaps one or more of them
+_BAND_EDGES = (("1", 0.0, 2.0), ("2-3", 2.0, 4.0), ("4-5", 4.0, 6.0), ("6+", 6.0, float("inf")))
+_YEARS_RANGE = re.compile(r"(\d+(?:[.,]\d+)?)\s*[-–]\s*(\d+(?:[.,]\d+)?)")
+
+
+def experience_bands(ex: dict[str, Any], title: str = "") -> set[str]:
+    """Every years band the posting's range falls in, for the filter: "3-7 years" is in 2-3, 4-5 and 6+, so someone
+    who picks "4-5 years" finds it and every card under a band shows years inside it. An open "3+" counts from its
+    minimum only (it would otherwise be in every band above). Entry-level and not-stated postings keep their one
+    band, as in experience_band()."""
+    band = experience_band(ex, title)
+    if band in ("none", "unspecified"):
+        return {band}
+    low = float(ex["years_experience"])
+    high = low
+    m = _YEARS_RANGE.search(ex.get("years_experience_text") or "")
+    if m:
+        high = max(low, float(m.group(2).replace(",", ".")))
+    return {name for name, start, end in _BAND_EDGES if low < end and high >= start}
 
 
 def _csv(value: str | None) -> set[str]:
@@ -205,7 +230,7 @@ class Filters:
             out = [r for r in out if (r.ex.get("seniority") or "") in levels]
         bands = _csv(self.experience)
         if bands:
-            out = [r for r in out if r.experience in bands]
+            out = [r for r in out if r.experience_bands & bands]
         degrees = _csv(self.degree)
         if degrees:
             out = [r for r in out if r.degree in degrees]
@@ -244,9 +269,10 @@ class Filters:
         if self.english_only or self.language == "en":
             out = [r for r in out if r.ex.get("english_only")]
         elif self.language == "nl":
-            # Dutch only: Dutch is required and English is not, for people who work in Dutch
+            # Dutch only: Dutch is required and English is not, for people who work in Dutch; a posting written in
+            # Dutch that says Dutch is not needed is a "No Dutch required" job, not this one
             out = [r for r in out if (r.ex.get("dutch_required") or r.ex.get("posting_language") == "nl")
-                   and r.ex.get("english_required") is False]
+                   and r.ex.get("english_required") is False and not r.ex.get("english_only")]
         if self.sponsorship:
             # only listings that say so themselves: in the Netherlands an employer that sponsors says it, and silence
             # means no sponsorship (being on the IND register alone does not mean this job is open to it)

@@ -479,3 +479,43 @@ def test_source_link_only_when_the_repository_is_public(fresh_db, monkeypatch):
     monkeypatch.setattr(settings, "source_url", "https://github.com/example/repo")
     assert 'href="https://github.com/example/repo"' in client.get("/privacy").text
     assert "Broncode op GitHub" in __import__("radar.api", fromlist=["_render_index"])._render_index(None, "nl")
+
+
+def test_experience_filter_follows_the_whole_range_asked():
+    from datetime import datetime
+
+    from radar import stats
+    from radar.stats import experience_bands
+
+    assert experience_bands({"years_experience": 3, "years_experience_text": "3-7"}) == {"2-3", "4-5", "6+"}
+    assert experience_bands({"years_experience": 3, "years_experience_text": "3+"}) == {"2-3"}  # from its minimum
+    assert experience_bands({"years_experience": 1, "years_experience_text": "1–2"}) == {"1", "2-3"}
+    assert experience_bands({"years_experience": 5, "years_experience_text": "5"}) == {"4-5"}
+    assert experience_bands({"years_experience": None, "seniority": "senior"}, "Senior Engineer") == {"unspecified"}
+    now = datetime(2026, 10, 15)
+
+    def row(n, years, text):
+        return stats.Row(id=n, title="Engineer", company="Co", city="Utrecht", remote=False, url=f"https://x/{n}",
+                         posted_at=now, first_seen=now, closed_at=None, ats="lever",
+                         ex={"years_experience": years, "years_experience_text": text})
+
+    rows = [row(1, 3, "3-7"), row(2, 2, "2"), row(3, 6, "6+")]
+    assert [r.id for r in stats.Filters(experience="4-5").apply(rows)] == [1]
+    assert [r.id for r in stats.Filters(experience="2-3").apply(rows)] == [1, 2]
+
+
+def test_dutch_speaking_filter_leaves_out_jobs_that_need_no_dutch():
+    from datetime import datetime
+
+    from radar import stats
+
+    now = datetime(2026, 10, 15)
+
+    def row(n, **ex):
+        return stats.Row(id=n, title="Engineer", company="Co", city="Utrecht", remote=False, url=f"https://x/{n}",
+                         posted_at=now, first_seen=now, closed_at=None, ats="lever", ex=ex)
+
+    rows = [row(1, dutch_required=True, english_required=False),
+            row(2, posting_language="nl", english_required=False, english_only=True)]  # in Dutch, Dutch not needed
+    assert [r.id for r in stats.Filters(language="nl").apply(rows)] == [1]
+    assert [r.id for r in stats.Filters(language="en").apply(rows)] == [2]  # it is a "No Dutch required" job

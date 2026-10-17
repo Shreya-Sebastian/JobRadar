@@ -197,6 +197,35 @@ def sectors() -> dict:
     return out
 
 
+def reextract() -> dict:
+    """Nightly: open tech postings extracted under older rules (RULES_VERSION) are read again with the current ones.
+    The crawler re-extracts only pages that changed, so a rule fix (a new field, a corrected level) would otherwise
+    never reach postings it already has."""
+    from sqlalchemy import select
+
+    from radar.cache import bump_data_version
+    from radar.extract import get_extractor
+    from radar.models import Posting
+
+    init_db()
+    extract, version = get_extractor(settings.extractor)
+    with session_scope() as s:
+        ids = list(s.scalars(select(Posting.id).where(
+            Posting.is_tech.is_(True), Posting.closed_at.is_(None),
+            (Posting.extractor_version != version) | Posting.extractor_version.is_(None)).order_by(Posting.id)))
+    for i in range(0, len(ids), 200):  # in batches, each committed on its own: it fits on a small server
+        with session_scope() as s:
+            for p in s.scalars(select(Posting).where(Posting.id.in_(ids[i:i + 200]))):
+                p.extraction = extract(p.title, p.description).model_dump()
+                p.extractor_version = version
+                p.extracted_hash = p.content_hash
+    if ids:
+        bump_data_version()
+    out = {"reextracted": len(ids), "version": version}
+    log.info("reextract: %s", out)
+    return out
+
+
 def recheck_countries() -> dict:
     """Nightly: the current country and place rules applied to stored open postings. The crawler re-reads only new or
     changed pages, so a rule fix would otherwise never reach postings it already has. Postings now outside the

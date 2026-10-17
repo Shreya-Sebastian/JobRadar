@@ -651,3 +651,14 @@ def test_years_text_keeps_the_wording():
     assert years_text("1,5 jaar ervaring") == "1.5"
     assert years_text("3 years of relevant experience") == "3"
     assert years_text("€3k after 2 years and a 30% bonus") is None
+
+
+
+def test_solutions_and_pre_sales_engineers_are_a_field_of_their_own():
+    from radar.extract.rules import detect_role
+
+    for title in ("Solutions Engineer", "Senior Solution Engineer", "Sales Engineer", "Pre-Sales Engineer",
+                  "AI Solutions Engineer", "Field Application Engineer", "Presales Consultant", "Solutions Consultant"):
+        assert detect_role(title) == "solutions", title
+    assert detect_role("Forward Deployed Engineer") == "backend"  # builds software at the client
+    assert detect_role("Account Executive") == "other" and detect_role("Business Developer") == "other"

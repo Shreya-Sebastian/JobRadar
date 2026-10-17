@@ -20,7 +20,7 @@ def test_role_fixes():
     assert detect_role("Technisch Consultant Networking") == "platform"
     assert detect_role("Software Engineer (Networking)") == "backend"
     assert detect_role("Managed Services Engineer") == "it_support"
-    assert detect_role("Senior Field Application Engineer") == "other"
+    assert detect_role("Senior Field Application Engineer") == "solutions"  # technical pre-sales
     assert detect_role("Inkoopadviseur ICT") == "other"
     assert detect_role("Outsystems Developer (Business Team Inkoopdossier)") == "backend"
     assert detect_role("Databricks Senior Solutions Architect") == "data"

@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 RoleFamily = Literal[
     "backend", "frontend", "fullstack", "mobile", "data", "ml", "platform", "embedded", "simulation", "security", "qa",
-    "product", "design", "it_support", "other",
+    "product", "design", "it_support", "solutions", "other",
 ]
 # "trainee" = paid entry programme (traineeship, graduate programme, young-professional / talent programme);
 # "intern" = internship, graduation project or working-student job.

@@ -34,3 +34,27 @@ def test_tick_enqueues_each_slot_once_across_workers(monkeypatch):
     assert maint.count == 2 and q.get_queue(q.CRAWL_QUEUE).count == 0
     assert {j.func_name for j in maint.jobs} == {"radar.tasks.schedule", "radar.tasks.linkcheck"}
     assert timetable.tick(fake, datetime(2026, 9, 29, 3, 16)) == []
+
+
+
+def test_reextract_reads_postings_from_older_rules_again(fresh_db):
+    from radar import tasks
+    from radar.adapters.base import RawPosting
+    from radar.crawler import ingest
+    from radar.db import session_scope
+    from radar.models import Posting, Source
+
+    with session_scope() as s:
+        src = Source(company="Acme", ats="lever", slug="acme")
+        s.add(src)
+        s.flush()
+        ingest(s, src, [RawPosting(external_id="1", title="Solutions Engineer", url="https://x/1",
+                                   location="Amsterdam, Netherlands",
+                                   description_text="Demo our cloud software to clients. Python, APIs, SQL and AWS.")])
+        p = s.query(Posting).one()
+        p.extraction = {**p.extraction, "role_family": "backend"}  # as stored under an older rules version
+        p.extractor_version = "rules-v19"
+    assert tasks.reextract()["reextracted"] == 1
+    with session_scope() as s:
+        assert s.query(Posting).one().extraction["role_family"] == "solutions"
+    assert tasks.reextract()["reextracted"] == 0  # nothing left from older rules

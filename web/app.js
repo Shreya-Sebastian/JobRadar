@@ -88,7 +88,7 @@
      
      
       "role.ml": "ML / AI", "role.data": "Data", "role.backend": "Backend", "role.frontend": "Frontend", "role.fullstack": "Full-stack", "role.platform": "Platform / DevOps",
-      "role.mobile": "Mobile", "role.embedded": "Embedded / hardware", "role.simulation": "Simulation / computational", "role.security": "Security", "role.qa": "QA / Test", "role.product": "Product", "role.design": "Design", "role.it_support": "IT support", "role.other": "Other",
+      "role.mobile": "Mobile", "role.embedded": "Embedded / hardware", "role.simulation": "Simulation / computational", "role.security": "Security", "role.qa": "QA / Test", "role.product": "Product", "role.design": "Design", "role.it_support": "IT support", "role.solutions": "Solutions / pre-sales", "role.other": "Other",
       "level.intern": "Internship", "level.trainee": "Traineeship / graduate programme", "level.junior": "Junior", "level.medior": "Medior", "level.senior": "Senior", "level.lead": "Lead", "level.staff": "Staff / principal", "level.manager": "Manager", "level.unknown": "Not stated",
       "fail": "Failed to load: {e}",
       "f.confirmed": "Verified on the employer's site in the past week",
@@ -200,7 +200,7 @@
      
      
       "role.ml": "ML / AI", "role.data": "Data", "role.backend": "Backend", "role.frontend": "Frontend", "role.fullstack": "Full-stack", "role.platform": "Platform / DevOps",
-      "role.mobile": "Mobiel", "role.embedded": "Embedded / hardware", "role.simulation": "Simulatie / modellering", "role.security": "Security", "role.qa": "QA / Test", "role.product": "Product", "role.design": "Design", "role.it_support": "IT-support", "role.other": "Overig",
+      "role.mobile": "Mobiel", "role.embedded": "Embedded / hardware", "role.simulation": "Simulatie / modellering", "role.security": "Security", "role.qa": "QA / Test", "role.product": "Product", "role.design": "Design", "role.it_support": "IT-support", "role.solutions": "Solutions / pre-sales", "role.other": "Overig",
       "level.intern": "Stage", "level.trainee": "Traineeship", "level.junior": "Junior", "level.medior": "Medior", "level.senior": "Senior", "level.lead": "Lead", "level.staff": "Staff / principal", "level.manager": "Manager", "level.unknown": "Niet vermeld",
       "fail": "Laden mislukt: {e}",
       "f.confirmed": "Afgelopen week gecontroleerd op de site van de werkgever",
@@ -1420,7 +1420,7 @@
   // experience as seniority levels: almost every posting has one, while most leave the years unstated
   const QUIZ_LEVELS = { student: ["intern"], grad: ["trainee", "junior"], y23: ["junior", "medior"], y45: ["medior", "senior"],
                         y6: ["senior", "lead", "staff", "manager"] };
-  const QUIZ_ROLES = ["backend", "frontend", "fullstack", "data", "ml", "platform", "security", "mobile", "embedded", "qa", "it_support", "product"];
+  const QUIZ_ROLES = ["backend", "frontend", "fullstack", "data", "ml", "platform", "security", "mobile", "embedded", "qa", "it_support", "solutions", "product"];
   const QUIZ_CITIES = ["Amsterdam", "Rotterdam", "Utrecht", "Eindhoven", "The Hague", "Delft", "Groningen"];
   let quiz = null;  // {step, dutch, visa, exp, roles, places, remember, total}
   function quizSteps() {

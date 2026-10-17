@@ -9,7 +9,7 @@ from radar.extract.schema import Extraction
 from radar.extract.sections import job_text
 from radar.taxonomy import find_skills
 
-RULES_VERSION = "rules-v19"  # bump whenever the taxonomy or the rules change, so `radar extract` re-runs
+RULES_VERSION = "rules-v20"  # bump whenever the taxonomy or the rules change, so `radar extract` re-runs
 
 # words only one of the languages uses: "in", "is", "we", "team", "over" and "of" are both Dutch and English,
 # "die" and "er" are also German
@@ -543,11 +543,13 @@ _ROLE = [
     ("backend", r"\b(?:cloud|azure|aws) (?:developer|ontwikkelaar)|uipath|\brpa\b"),
     ("it_support", r"devices? (?:and|&) peripherals|end[- ]user|eindgebruiker|device management|"
                    r"\bit[- ](?:diensten|afdeling|dienstverlening|servicedesk)"),
-    # sales and pre-sales engineering is a sales job whatever the product: "Sales Engineer", "Solutions Engineer"
-    ("other", r"\bsales\b(?! data| analy)|pre-?sales|business ?develop\w*|product develop\w*|"
-          r"(?<!deployed )\bsolutions? engineer\w*|"
-              r"\bvalue engineer|\bmarketing (?:manager|lead|director|specialist|executive|intern\w*)|marketeer|"
-              r"account executive|\bfield applications? engineer|"
+    # solutions and pre-sales engineering: the technical side of selling a product, a field of its own whatever the
+    # product ("AI Solutions Engineer" too); a forward-deployed engineer builds software at the client (backend)
+    ("solutions", r"pre-?sales|\bsales engineer\w*|(?<!deployed )\bsolutions? engineer\w*|\bvalue engineer|"
+                  r"\bfield applications? engineer|\bsolutions? consultant"),
+    ("other", r"\bsales\b(?! data| analy)|business ?develop\w*|product develop\w*|"
+              r"\bmarketing (?:manager|lead|director|specialist|executive|intern\w*)|marketeer|"
+              r"account executive|"
               # machine programmers (CNC, CAM, welding robots, laser cutters) and procurement are not software jobs
               r"\bcnc\b|\bcam[- ]?programm|cad/cam|lasrobot|lasersnij|meetprogramm|operator ?/ ?programm|"
               r"\bav[- ]technicus|audio ?visual|\binkoop(?:adviseur|professional|er|specialist|manager|"

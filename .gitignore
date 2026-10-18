@@ -40,3 +40,6 @@ data/company_sizes.tsv.checked
 # front-end build output and tools (python scripts/build_css.py)
 web/app.css
 .tools/
+
+# agentic review runs (scripts/review_week.py): kept locally
+review_runs/

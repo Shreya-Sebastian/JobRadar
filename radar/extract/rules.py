@@ -9,7 +9,7 @@ from radar.extract.schema import Extraction
 from radar.extract.sections import job_text
 from radar.taxonomy import find_skills
 
-RULES_VERSION = "rules-v20"  # bump whenever the taxonomy or the rules change, so `radar extract` re-runs
+RULES_VERSION = "rules-v21"  # bump whenever the taxonomy or the rules change, so `radar extract` re-runs
 
 # words only one of the languages uses: "in", "is", "we", "team", "over" and "of" are both Dutch and English,
 # "die" and "er" are also German
@@ -213,7 +213,9 @@ _YEARS_CONTEXT = re.compile(
     r"experience|ervaring|track record|professional|working|relevant|hands[- ]on|in a similar|"
     r"background|expertise|werkervaring|"
     # "5+ years in AML", "3+ years as a Sales Engineer", "4+ years leading teams"
-    r"^\s*(?:of|in|as|with|leading|building|developing|managing|designing|delivering|running|als|met|in de)\b",
+    r"^\s*(?:of|in|as|with|leading|building|developing|managing|designing|delivering|running|als|met|in de|"
+    r"operating|using|working|maintaining|administering|supporting|deploying|automating|testing|programming|coding|"
+    r"writing|engineering|shipping|owning|scaling|architecting|implementing)\b",
     re.I,
 )
 # experience wording: a "not experience" word only counts when no experience wording sits between it and the number,
@@ -225,7 +227,9 @@ _YEARS_NOT_AFTER = re.compile(
     r"garantie|guarantee|old(?:er)?|oud(?:er)?|leeftijd|of age|ago|geleden|history|bonus|salary|salaris|vacation|"
     r"verlof|lease|pension|pensioen)\b|"
     # right after the number: "4-year bachelor's degree", "2-year traineeship", "a 4-year position"
-    r"^[\s'’-]*(?:\w+[\s'’-]+)?(?:degree|bachelor|master|phd|study|studie|opleiding|programme|program(?!\s*manag)|"
+    # ("5 years of program or project management experience" is a programme manager's years)
+    r"^[\s'’-]*(?:\w+[\s'’-]+)?(?:degree|bachelor|master|phd|study|studie|opleiding|"
+    r"programme(?!\s*(?:or|and|/|&)\s*project)|program(?!\s*manag|\s*(?:or|and|/|&)\s*project)|"
     r"traineeship|trainee|traject|position|positie|aanstelling|appointment|in dienst|in service)\b",
     re.I,
 )

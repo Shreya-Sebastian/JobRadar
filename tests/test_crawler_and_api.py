@@ -492,7 +492,6 @@ def test_experience_filter_follows_the_whole_range_asked():
     assert experience_bands({"years_experience": 3, "years_experience_text": "3+"}) == {"2-3"}  # from its minimum
     assert experience_bands({"years_experience": 1, "years_experience_text": "1–2"}) == {"1", "2-3"}
     assert experience_bands({"years_experience": 5, "years_experience_text": "5"}) == {"4-5"}
-    assert experience_bands({"years_experience": None, "seniority": "senior"}, "Senior Engineer") == {"unspecified"}
     now = datetime(2026, 10, 15)
 
     def row(n, years, text):
@@ -524,3 +523,18 @@ def test_language_filter_shows_the_jobs_whose_languages_you_speak():
     assert [r.id for r in stats.Filters(language="en").apply(rows)] == [2]
     assert [r.id for r in stats.Filters(language="en,nl").apply(rows)] == [1, 2, 3]
     assert [r.id for r in stats.Filters().apply(rows)] == [1, 2, 3, 4]  # nothing ticked: every job
+
+
+
+def test_jobs_without_years_count_by_their_level():
+    from radar.stats import experience_bands
+
+    assert experience_bands({"years_experience": None, "seniority": "senior"}, "Senior Engineer") == {
+        "unspecified", "4-5", "6+"}
+    assert experience_bands({"years_experience": None, "seniority": "medior"}, "Developer") == {
+        "unspecified", "2-3", "4-5"}
+    assert experience_bands({"years_experience": None, "seniority": "staff"}, "Staff Engineer") == {"unspecified", "6+"}
+    assert experience_bands({"years_experience": None, "seniority": "unknown"}, "Engineer") == {"unspecified"}
+    assert experience_bands({"years_experience": None, "seniority": "junior"}, "Junior Developer") == {"none"}
+    # a stated number wins over the level
+    assert experience_bands({"years_experience": 2, "years_experience_text": "2", "seniority": "senior"}) == {"2-3"}

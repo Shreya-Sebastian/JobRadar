@@ -662,3 +662,15 @@ def test_solutions_and_pre_sales_engineers_are_a_field_of_their_own():
         assert detect_role(title) == "solutions", title
     assert detect_role("Forward Deployed Engineer") == "backend"  # builds software at the client
     assert detect_role("Account Executive") == "other" and detect_role("Business Developer") == "other"
+
+
+
+def test_years_phrases_found_in_postings_marked_not_stated():
+    from radar.extract.rules import find_years, years_text
+
+    assert find_years("At least 5 years of program or project management experience in the tech industry") == 5
+    assert years_text("Required: - 5+ years operating Kubernetes in production") == "5+"
+    assert find_years("3 years using Terraform and AWS") == 3
+    # still not requirements
+    assert find_years("A possibility to have a sabbatical after 3 years") is None
+    assert find_years("1 jaar contract") is None and find_years("a 4-year bachelor programme") is None

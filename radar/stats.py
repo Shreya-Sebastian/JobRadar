@@ -136,14 +136,25 @@ _BAND_EDGES = (("1", 0.0, 2.0), ("2-3", 2.0, 4.0), ("4-5", 4.0, 6.0), ("6+", 6.0
 _YEARS_RANGE = re.compile(r"(\d+(?:[.,]\d+)?)\s*[-–]\s*(\d+(?:[.,]\d+)?)")
 
 
+# years a level usually means in the Dutch market, for postings that state no number (medior 2-5, senior 5-8, ...)
+_LEVEL_YEARS = {"medior": (2.0, 5.0), "senior": (5.0, 8.0), "lead": (5.0, 10.0), "manager": (5.0, 10.0),
+                "staff": (8.0, 12.0)}
+
+
 def experience_bands(ex: dict[str, Any], title: str = "") -> set[str]:
     """Every years band the posting's range falls in, for the filter: "3-7 years" is in 2-3, 4-5 and 6+, so someone
     who picks "4-5 years" finds it and every card under a band shows years inside it. An open "3+" counts from its
     minimum only (it would otherwise be in every band above). Entry-level and not-stated postings keep their one
     band, as in experience_band()."""
     band = experience_band(ex, title)
-    if band in ("none", "unspecified"):
+    if band == "none":
         return {band}
+    if band == "unspecified":
+        # no number: the level places it ("Senior Engineer" under 4-5 and 6+), and it is still "not stated"
+        low, high = _LEVEL_YEARS.get(ex.get("seniority") or "", (None, None))
+        if low is None:
+            return {band}
+        return {band} | {name for name, start, end in _BAND_EDGES if low < end and high >= start}
     low = float(ex["years_experience"])
     high = low
     m = _YEARS_RANGE.search(ex.get("years_experience_text") or "")

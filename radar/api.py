@@ -7,6 +7,7 @@ import time
 from collections.abc import Iterator
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Any
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -511,6 +512,77 @@ def admin_status(request: Request):
     return admin.status()
 
 
+@app.get("/api/admin/review/candidates", include_in_schema=False)
+def admin_review_candidates(request: Request, since: str | None = None, limit: int = Query(100, ge=1, le=1000),
+                            after_id: int = Query(0, ge=0), include_reviewed: bool = False,
+                            session: Session = Depends(db)):
+    """The open postings the rules are unsure about, for the review script on the owner's laptop (radar/review.py)."""
+    from datetime import datetime
+
+    from radar import review
+
+    _admin(request)
+    try:
+        cutoff = datetime.fromisoformat(since.replace("Z", "")) if since else None
+    except ValueError as e:
+        raise HTTPException(422, "since must be an ISO date or time") from e
+    return review.candidates(session, cutoff, limit, after_id, include_reviewed)
+
+
+class ReviewDecisionIn(BaseModel):
+    posting_id: int
+    field: str = Field(max_length=30)
+    # checked per decision in review.record, so one bad answer does not refuse the rest of the batch
+    value: Any = None
+    confidence: Any = None
+    reason: str = Field(default="", max_length=2000)
+    model: str = Field(default="", max_length=60)
+
+
+class ReviewDecisionsIn(BaseModel):
+    run_id: str = Field(min_length=1, max_length=60)
+    decisions: list[ReviewDecisionIn] = Field(max_length=5000)
+
+
+@app.post("/api/admin/review/decisions", include_in_schema=False)
+def admin_review_decide(body: ReviewDecisionsIn, request: Request, session: Session = Depends(db)):
+    """Store the review's decisions; invalid ones come back by index. Applied only per RADAR_REVIEW_FIELDS and
+    RADAR_REVIEW_THRESHOLD."""
+    from radar import review
+    from radar.cache import bump_data_version
+
+    _admin(request)
+    out = review.record(session, body.run_id, [d.model_dump() for d in body.decisions])
+    session.commit()
+    if out["applied_changed"]:
+        bump_data_version()
+    return out
+
+
+@app.get("/api/admin/review/decisions", include_in_schema=False)
+def admin_review_list(request: Request, limit: int = Query(200, ge=1, le=2000), field: str | None = None,
+                      run_id: str | None = None, status: str | None = None, session: Session = Depends(db)):
+    from radar import review
+
+    _admin(request)
+    return review.latest(session, limit, field, run_id, status)
+
+
+@app.post("/api/admin/review/decisions/{decision_id}/reject", include_in_schema=False)
+def admin_review_reject(decision_id: int, request: Request, undo: bool = False, session: Session = Depends(db)):
+    from radar import review
+    from radar.cache import bump_data_version
+
+    _admin(request)
+    d, changed = review.reject(session, decision_id, undo)
+    if d is None:
+        raise HTTPException(404, "no such decision")
+    session.commit()
+    if changed:
+        bump_data_version()
+    return {"id": d.id, "rejected": d.rejected_at is not None, "applied": d.applied}
+
+
 @app.get("/healthz")
 def healthz():
     """Liveness: the process is up, and which build it runs (the commit, set at image build)."""
@@ -714,9 +786,12 @@ def job_page(posting_id: int, slug: str = "", session: Session = Depends(db), la
     sector = emp.sector if emp else None
 
     def render():
+        from radar import review
+
         similar = pages.similar_jobs(stats.CACHE.rows(session), p) if p.closed_at is None else []
+        ov = review.overrides(session, p.id).get(p.id)
         return pages.render_job(p, lang, sector, _related_pages(session, p.id, lang), pages.job_history(session, p),
-                                similar)
+                                similar, ex=review.merge(p.extraction or {}, ov) if ov else None)
 
     html = cached(f"page:job:{lang}:{p.id}:{p.content_hash}:{p.closed_at is None}:{sector}:{stats.CACHE.loads}",
                   render, ttl=3600)
@@ -873,6 +948,12 @@ if WEB_DIR.exists():
     @app.get("/admin/analytics", include_in_schema=False)
     def analytics_page():
         return Response((WEB_DIR / "analytics.html").read_text(encoding="utf-8")
+                        .replace("{{SITE_NAME}}", settings.site_name), media_type="text/html",
+                        headers={"X-Robots-Tag": "noindex", "Cache-Control": "no-store"})
+
+    @app.get("/admin/review", include_in_schema=False)
+    def review_page():
+        return Response((WEB_DIR / "review.html").read_text(encoding="utf-8")
                         .replace("{{SITE_NAME}}", settings.site_name), media_type="text/html",
                         headers={"X-Robots-Tag": "noindex", "Cache-Control": "no-store"})
 

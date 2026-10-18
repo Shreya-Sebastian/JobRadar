@@ -5,6 +5,7 @@ from sqlalchemy import (
     Boolean,
     Date,
     DateTime,
+    Float,
     ForeignKey,
     Index,
     Integer,
@@ -90,6 +91,29 @@ class Posting(Base):
     also_in: Mapped[list | None] = mapped_column(JSON, nullable=True)
 
     source: Mapped[Source] = relationship(back_populates="postings")
+
+
+class ReviewDecision(Base):
+    """One field of one posting as read by the agentic review (radar/review.py), kept apart from
+    Posting.extraction so the nightly re-extraction never wipes it, and merged in when the rows load. `applied`:
+    in effect on the site (the newest decision for its posting and field, not rejected, its field switched on and its
+    confidence at or above the threshold); recomputed by review.reapply()."""
+
+    __tablename__ = "review_decisions"
+    __table_args__ = (Index("ix_review_posting_field", "posting_id", "field"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    posting_id: Mapped[int] = mapped_column(ForeignKey("postings.id", ondelete="CASCADE"))
+    field: Mapped[str] = mapped_column(String(30))
+    old_value: Mapped[object | None] = mapped_column(JSON, nullable=True)  # the rules' value when decided
+    new_value: Mapped[object | None] = mapped_column(JSON, nullable=True)  # None: "not stated"
+    confidence: Mapped[float] = mapped_column(Float)
+    reason: Mapped[str] = mapped_column(Text, default="")
+    model: Mapped[str] = mapped_column(String(60))
+    run_id: Mapped[str] = mapped_column(String(60), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    applied: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    rejected_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)  # rejected in a spot check
 
 
 class IndexNotice(Base):

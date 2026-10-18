@@ -276,10 +276,11 @@ def employment_type(ex: dict, text: str) -> list[str] | None:
 
 
 def render_job(p, lang: str = "en", sector: str | None = None, related: list[tuple[str, str]] | None = None,
-               history: dict | None = None, similar: list | None = None) -> str:
+               history: dict | None = None, similar: list | None = None, ex: dict | None = None) -> str:
     """`related`: (path, title) of the landing pages this job appears on, most specific first. `history`: how long
     it has been open and whether the employer listed the same title before (job_history); `similar`: open jobs of
-    the same kind elsewhere (similar_jobs)."""
+    the same kind elsewhere (similar_jobs); `ex`: the extraction with the review's decisions merged in
+    (radar/review.py), when there are any."""
     """The listing page: what the radar read from the posting, then the employer's own text with credit and links
     back to the original. `p` is a radar.models.Posting."""
     from urllib.parse import urlparse
@@ -289,7 +290,7 @@ def render_job(p, lang: str = "en", sector: str | None = None, related: list[tup
 
     lang = "nl" if lang == "nl" else "en"
     t = _JOB_TEXT[lang]
-    ex = p.extraction or {}
+    ex = ex if ex is not None else p.extraction or {}
     base = settings.site_url.rstrip("/")
     host = urlparse(p.url).netloc.removeprefix("www.") or p.url
     sep = "." if lang == "nl" else ","

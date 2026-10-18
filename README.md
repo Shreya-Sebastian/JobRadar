@@ -17,6 +17,10 @@ Live at [techjobsradar.nl](https://techjobsradar.nl), in Dutch and English.
   robots.txt respected.
 - **Processing.** A Netherlands-only filter, duplicate merging, lifecycle tracking and periodic link checks, followed
   by a rule-based classifier and extractor that fill a typed schema.
+- **Review.** The postings the rules are unsure about (about one in eight) can be read by a language model from the
+  owner's machine through admin-only endpoints. Its decisions are stored apart from the rules' reading, listed on
+  `/admin/review` for spot checks, and applied only for the fields and confidence set in `RADAR_REVIEW_FIELDS` and
+  `RADAR_REVIEW_THRESHOLD`; by default none are.
 - **Serving.** A FastAPI JSON API with a response cache, and a plain JavaScript front end (Chart.js, D3, Tailwind
   CSS). Optional accounts keep a profile and saved jobs across devices.
 

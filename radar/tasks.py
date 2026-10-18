@@ -219,9 +219,15 @@ def reextract() -> dict:
                 p.extraction = extract(p.title, p.description).model_dump()
                 p.extractor_version = version
                 p.extracted_hash = p.content_hash
-    if ids:
+    from radar import review
+
+    with session_scope() as s:
+        # the review's decisions live in their own table and outlast this; a changed RADAR_REVIEW_THRESHOLD or
+        # RADAR_REVIEW_FIELDS takes effect here at the latest
+        reviewed = review.reapply(s)
+    if ids or reviewed:
         bump_data_version()
-    out = {"reextracted": len(ids), "version": version}
+    out = {"reextracted": len(ids), "version": version, "review_changed": reviewed}
     log.info("reextract: %s", out)
     return out
 

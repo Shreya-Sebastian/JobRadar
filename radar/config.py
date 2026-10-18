@@ -59,6 +59,10 @@ class Settings(BaseSettings):
     warm_caches: bool = True  # keep the overview, filter options and sitemap built (radar/api.py; off in tests)
     # secret for the admin-only "crawl now" endpoints; unset = the endpoints do not exist
     admin_token: str | None = None
+    # agentic review (radar/review.py): decisions for these fields (comma-separated) at or above this confidence are
+    # applied on the site; unset = none are
+    review_threshold: float | None = None
+    review_fields: str = ""
     # Adzuna API (free at https://developer.adzuna.com) for the independent recall check, see radar/recall.py
     adzuna_app_id: str | None = None
     adzuna_app_key: str | None = None

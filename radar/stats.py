@@ -400,9 +400,11 @@ def load_rows(session: Session, include_closed_days: int = 90) -> list[Row]:
         .where(Posting.is_tech.is_(True), Posting.duplicate_of.is_(None))
         .where((Posting.closed_at.is_(None)) | (Posting.closed_at >= cutoff))
     )
+    from radar.review import merge, overrides
     from radar.sectors import load_map
     from radar.sizes import employees
 
+    reviewed = overrides(session)  # the agentic review's decisions in effect, laid over the rules' extraction
     sector_of = load_map(session)
     open_roles = dict(session.execute(
         select(Posting.company, func.count())
@@ -424,7 +426,7 @@ def load_rows(session: Session, include_closed_days: int = 90) -> list[Row]:
                 p.first_seen,
                 p.closed_at,
                 ats,
-                p.extraction or {},
+                merge(p.extraction or {}, reviewed.get(p.id)),
                 # recruiters and staffing firms count as agencies wherever they were found (sector list or source)
                 "agency" if sector_of.get(p.company) == "staffing" else (kind or "employer"),
                 open_roles.get(p.company, 0),

@@ -48,7 +48,8 @@ def test_batches_of_twenty(rw):
 
 
 def test_the_instructions_are_fixed_and_the_postings_follow(rw):
-    batch = [_posting(1), _posting(2, text="x " * 5000)]
+    long = {"id": 2, "title": "Backend Engineer", "company": "Acme", "description": "x " * 5000}  # a labelled one
+    batch = [_posting(1), long]
     prompt = rw.build_prompt(batch, [_item(9, "Java Developer")])
     assert "### Posting id=1" in prompt and "### Posting id=2" in prompt
     assert prompt.index("Example title: Java Developer") < prompt.index("### Posting id=1")
@@ -185,3 +186,8 @@ def test_the_script_names_itself_so_the_site_does_not_refuse_it(rw):
 
     assert not BLOCKED_AGENTS.search(rw.USER_AGENT)
     assert check("/api/admin/review/candidates", "203.0.113.9", rw.USER_AGENT) is None
+
+
+def test_server_texts_are_sent_as_they_come(rw):
+    text = "y " * 4000  # already cut and completed by the server (radar/review.py review_text)
+    assert "Text:\n" + text + "\n" in rw.build_prompt([_posting(3, text=text)], [])

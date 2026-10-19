@@ -36,7 +36,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from radar.extract.schema import RoleFamily, Seniority  # noqa: E402
-from radar.review import TEXT_LIMIT, check_value  # noqa: E402
+from radar.review import check_value, review_text  # noqa: E402
 
 # what Claude answers; english_only is derived from dutch_required (a job needing no Dutch is "English, no Dutch")
 FIELDS = ("is_tech", "role_family", "seniority", "years_experience", "dutch_required", "english_required",
@@ -220,11 +220,10 @@ def _labels(item: dict) -> dict:
     return out
 
 
-def trim(text: str, limit: int = TEXT_LIMIT) -> str:
-    if len(text or "") <= limit:
-        return text or ""
-    cut = text.rfind(" ", int(limit * 0.9), limit)
-    return text[:cut if cut > 0 else limit].rstrip() + " [...]"
+def posting_text(p: dict) -> str:
+    """The server sends the text ready for review (radar/review.py review_text); a labelled posting is cut the same
+    way here."""
+    return p["text"] if "text" in p else review_text(p.get("description") or "")[0]
 
 
 def build_prompt(batch: list[dict], examples: list[dict]) -> str:
@@ -235,7 +234,7 @@ def build_prompt(batch: list[dict], examples: list[dict]) -> str:
     parts.append(f"\nPostings to read ({len(batch)}; answer every one):\n")
     for p in batch:
         parts.append(f"\n### Posting id={p['id']}\nTitle: {p['title']}\nCompany: {p['company']}\nText:\n"
-                     f"{trim(p.get('text') or p.get('description') or '')}\n")
+                     f"{posting_text(p)}\n")
     return "".join(parts)
 
 

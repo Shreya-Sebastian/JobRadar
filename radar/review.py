@@ -76,6 +76,35 @@ def _trim(text: str, limit: int = TEXT_LIMIT) -> tuple[str, bool]:
     return text[:cut if cut > 0 else limit].rstrip(), True
 
 
+# sentences after the cut that can decide a field: universities and large employers put relocation, the 30% ruling,
+# permits and language requirements in the closing sections of long postings
+_DECIDING = re.compile(r"visa|vis(?:um|a)|sponsor|relocat|verhuis|kennismigrant|highly skilled|30\s?%|permit|"
+                       r"vergunning|nationalit|citizen|passport|right to work|immigration|your move|welcome cent|"
+                       r"\bdutch\b|nederlands|english|engels|experien|ervaring", re.I)
+TAIL_LIMIT = 1500
+
+
+def review_text(text: str, limit: int = TEXT_LIMIT) -> tuple[str, bool]:
+    """The text sent for review: the first `limit` characters and, when it is longer, the sentences after the cut
+    that can decide a field, each with the sentence that follows it ("Will you need to relocate? We make your move
+    smooth"), up to TAIL_LIMIT characters. Returns (text, truncated)."""
+    head, truncated = _trim(text or "", limit)
+    if not truncated:
+        return head, False
+    sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+|\n+", text[len(head):]) if s.strip()]
+    keep = sorted({j for i, s in enumerate(sentences) if _DECIDING.search(s) for j in (i, i + 1)
+                   if j < len(sentences)})
+    picked, size = [], 0
+    for i in keep:
+        if size + len(sentences[i]) > TAIL_LIMIT:
+            break
+        picked.append(sentences[i])
+        size += len(sentences[i]) + 1
+    if not picked:
+        return head + " [...]", True
+    return head + " [...]\n\nLater in the posting: " + " ".join(picked), True
+
+
 def candidates(session: Session, since: datetime | None = None, limit: int = 100, after_id: int = 0,
                include_reviewed: bool = False) -> dict[str, Any]:
     """Uncertain open postings in id order, `limit` at most; `next_after_id` continues the scan (None at the end).
@@ -101,7 +130,7 @@ def candidates(session: Session, since: datetime | None = None, limit: int = 100
         if len(items) >= limit:
             more = True
             break
-        text, truncated = _trim(p.description or "")
+        text, truncated = review_text(p.description or "")
         items.append({"id": p.id, "title": p.title, "company": p.company, "url": p.url,
                       "first_seen": p.first_seen.isoformat(), "text": text, "truncated": truncated,
                       "rules": rules_values(p.is_tech, p.tech_score, p.extraction), "uncertain": points})

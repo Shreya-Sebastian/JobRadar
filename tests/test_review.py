@@ -113,7 +113,7 @@ def test_candidates_are_the_uncertain_open_postings_with_the_rules_values(admin)
     assert items[near_line]["rules"]["is_tech"] is False and items[near_line]["rules"]["tech_score"] == 0.4
     assert items[other_field]["rules"]["role_family"] == "other"
     assert items[visa]["uncertain"] == ["visa"]
-    assert items[visa]["truncated"] and 5000 < len(items[visa]["text"]) <= 6000
+    assert items[visa]["truncated"] and 5000 < len(items[visa]["text"]) <= 6010
     assert "is_tech" in out["fields"] and "visa_sponsorship" in out["fields"]
 
 
@@ -315,3 +315,18 @@ def test_filter_eval_scores_overrides_laid_over_the_rules():
                                                         "is_tech": False}})
     assert fixed.get("visa").k == base.get("visa").k + 1 and fixed.get("visa").n == base.get("visa").n
     assert fixed.get("tech: recall").k == base.get("tech: recall").k - 1  # is_tech is overridden too
+
+
+def test_long_texts_keep_the_deciding_sentences_after_the_cut():
+    from radar.review import TAIL_LIMIT, TEXT_LIMIT, review_text
+
+    body = "We build trading systems in Rust and Python. " * 200  # about 9,000 characters
+    closing = ("The office has a gym. Our Welcome Centre arranges your visa and relocation. Non-Dutch candidates may "
+               "qualify for the 30% ruling.")
+    text, truncated = review_text(body + closing)
+    assert truncated and text.startswith(body[:1000])
+    tail = text.split("Later in the posting: ")[1]
+    assert "visa and relocation" in tail and "30% ruling" in tail and "gym" not in tail
+    assert len(text) <= TEXT_LIMIT + TAIL_LIMIT + 40
+    assert review_text(body)[0].endswith(" [...]")  # nothing deciding after the cut
+    assert review_text("short text") == ("short text", False)

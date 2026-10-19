@@ -1,6 +1,6 @@
-"""Draw the site's logo and icons: web/favicon.svg, web/favicon.ico (16, 32, 48 px), web/favicon-16.png,
-web/favicon-32.png, web/icon-512.png, web/apple-touch-icon.png (180 px) and web/og-card.png (1200 x 630, for link
-previews). `--header` prints the logo's markup for the page headers in web/*.html.
+"""Draw the site's logo (three narrowing layers) and icons: web/favicon.svg, web/favicon.ico (16, 32, 48 px),
+web/favicon-16.png, web/favicon-32.png, web/icon-512.png, web/apple-touch-icon.png (180 px) and web/og-card.png
+(1200 x 630, for link previews). `--header` prints the logo's markup for the page headers in web/*.html.
 
 A development tool, not a runtime dependency: `pip install pillow`, then `python scripts/brand_assets.py` from the
 repository root after changing the logo or the colours. Fonts: Segoe UI on Windows, DejaVu Sans elsewhere."""
@@ -19,40 +19,45 @@ MUTED = (100, 116, 139)
 BG = (248, 250, 252)
 WHITE = (255, 255, 255)
 
-# the logo: a pyramid of diamonds (4, 3, 2 and 1) in a near-black tile. The jobs are rows of teal, one path of paler,
-# brighter diamonds climbs through them to the match: an orange diamond lifted off the top
-TILE = "#020617"  # near black: the diamonds stand out most
-DIM = ("#1aa3bc", "#22a596", "#28a676")  # the rows, from the bottom: cyan, teal, green
-PATH = ("#a5f3fc", "#99f6e4", "#a7f3d0")  # the path: pale bright tints of the rows
-MATCH = "#fb923c"
-ON_PATH = (2, 1, 1)  # which diamond in each row lies on the path
-HALF = 1.95  # half the diagonal of a diamond, before its corners are rounded by ROUND
-ROUND = 0.65
+# the logo: three layers seen from above, each narrower than the one below, in a near-black tile. The jobs are the
+# wide teal layers at the bottom; filtering narrows them to the small orange layer on top, the jobs that fit
+TILE = "#020617"  # near black
+LAYERS = (  # half width (the half height is half of it) and centre height, in the logo's 32-unit square
+    (9.7, "#0f766e"),  # all jobs: deep teal
+    (7.0, "#14b8a6"),  # filtered: teal
+    (4.3, "#fb923c"),  # the jobs that fit: orange
+)
+STEP = 4.6  # centre to centre, upwards
+ROUND = 0.55  # corner rounding (half the stroke drawn in each layer's own colour)
+GAP = 0.75  # the dark line that separates a layer from the one beneath it
 
 
-def diamonds() -> list[tuple[float, float, str]]:
-    """(x, y, colour) of each diamond's centre, in the logo's 32-unit square."""
-    a = HALF + ROUND
-    step = 2 * a + 0.9 * 2 ** 0.5  # centre to centre in a row; rows sit half a step apart
-    rise, lift = step / 2, 1.8
+def layers() -> list[tuple[list[tuple[float, float]], str]]:
+    """(corners, colour) of each layer, bottom first, centred in the 32-unit square."""
+    centres = [i * -STEP for i in range(len(LAYERS))]
+    top = centres[-1] - LAYERS[-1][0] / 2
+    bottom = centres[0] + LAYERS[0][0] / 2
+    shift = 16 - (top + bottom) / 2
     out = []
-    for row in range(4):
-        n = 4 - row
-        y = 32 - (16 - 1.5 * rise + row * rise - lift / 2 + (lift if row == 3 else 0) + 0.6)
-        for i in range(n):
-            x = 16 - (n - 1) * step / 2 + i * step
-            colour = MATCH if row == 3 else PATH[row] if ON_PATH[row] == i else DIM[row]
-            out.append((round(x, 2), round(y, 2), colour))
+    for (hw, colour), cy in zip(LAYERS, centres, strict=True):
+        y = cy + shift
+        out.append(([(16 - hw, y), (16, y - hw / 2), (16 + hw, y), (16, y + hw / 2)], colour))
     return out
 
 
+def _d(corners: list[tuple[float, float]]) -> str:
+    return "M" + "L".join(f"{x:.2f} {y:.2f}" for x, y in corners) + "Z"
+
+
 def svg(tile: str = f'fill="{TILE}"') -> str:
-    """The logo as SVG (web/favicon.svg and the header of every page, which passes its own tile attributes)."""
+    """The logo as SVG (web/favicon.svg and the header of every page, which passes its own tile attributes). Each
+    layer is drawn twice: a wider tile-coloured outline that cuts the gap, then the layer with rounded corners."""
     shapes = "".join(
-        f'<path d="M{x} {y - HALF:.2f}L{x + HALF:.2f} {y}L{x} {y + HALF:.2f}L{x - HALF:.2f} {y}Z" fill="{c}" '
-        f'stroke="{c}"/>' for x, y, c in diamonds())
+        f'<path d="{_d(c)}" fill="{TILE}" stroke="{TILE}" stroke-width="{2 * (ROUND + GAP):.2f}"/>'
+        f'<path d="{_d(c)}" fill="{colour}" stroke="{colour}" stroke-width="{2 * ROUND:.2f}"/>'
+        for c, colour in layers())
     return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect x=".5" y=".5" width="31" height="31" '
-            f'rx="8" {tile}/><g stroke-width="{2 * ROUND}" stroke-linejoin="round">{shapes}</g></svg>')
+            f'rx="8" {tile}/><g stroke-linejoin="round">{shapes}</g></svg>')
 
 
 def logo(size: int, square: bool = False) -> Image.Image:
@@ -65,12 +70,17 @@ def logo(size: int, square: bool = False) -> Image.Image:
         d.rectangle((0, 0, s, s), fill=TILE)
     else:
         d.rounded_rectangle((0, 0, s - 1, s - 1), radius=8 * u, fill=TILE)
-    for x, y, c in diamonds():
-        corners = [((x + dx) * u, (y + dy) * u) for dx, dy in ((0, -HALF), (HALF, 0), (0, HALF), (-HALF, 0))]
-        d.polygon(corners, fill=c)
-        d.line(corners + corners[:1], fill=c, width=round(2 * ROUND * u), joint="curve")
-        for cx, cy in corners:  # round corners: the stroke's joins, drawn as discs
-            d.ellipse((cx - ROUND * u, cy - ROUND * u, cx + ROUND * u, cy + ROUND * u), fill=c)
+
+    def shape(corners, colour, half):  # a polygon whose outline is `half` wide on each side, with round corners
+        pts = [(x * u, y * u) for x, y in corners]
+        d.polygon(pts, fill=colour)
+        d.line(pts + pts[:1], fill=colour, width=round(2 * half * u), joint="curve")
+        for cx, cy in pts:
+            d.ellipse((cx - half * u, cy - half * u, cx + half * u, cy + half * u), fill=colour)
+
+    for corners, colour in layers():
+        shape(corners, TILE, ROUND + GAP)
+        shape(corners, colour, ROUND)
     return img.resize((size, size), Image.LANCZOS)
 
 

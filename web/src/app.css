@@ -45,13 +45,13 @@
     --bg: #f4f4f5; --card: #ffffff; --ink: #0a0a0a; --muted: #52525b; --line: #e4e4e7;
     --shadow-card: 0 1px 2px rgb(0 0 0 / .04), 0 4px 14px rgb(0 0 0 / .04);
     --hero-bg: #cdeee3;
-    --accent: #0f766e; --accent-2: #d9520b; --on-accent: #ffffff; --chip: #f4f4f5; --chip-ink: #3f3f46;
+    --accent: #0f766e; --accent-2: #c2410c; --on-accent: #ffffff; --chip: #f4f4f5; --chip-ink: #3f3f46;
     --ok: #0f766e; --bad: #dc2626; --warn: #d97706;
     --tag-lang-fg: #115e59; --tag-lang-bg: #ccfbf1; --tag-visa-fg: #9a3412; --tag-visa-bg: #ffedd5;
     --badge-bg: #c2410c; --badge-fg: #ffffff;
     --faint: #71717a; --logo-edge: #020617;
     --logo-glow: 0 1px 2px rgb(15 23 42 / .22);
-    --head-bg: rgb(13 22 38 / .94); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #f0842a;
+    --head-bg: rgb(13 22 38 / .94); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #e0701c;
     --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
     --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #0d1626;
   }
@@ -59,15 +59,15 @@
     :root:not([data-theme="light"]) {
       color-scheme: dark;
       --bg: #0b1019; --card: #111826; --ink: #eef1f5; --muted: #a6b1bf; --line: #2a3547;
-      --accent: #73b5ac; --accent-2: #f0842a; --on-accent: #042f2e; --chip: #1b2433; --chip-ink: #dfe5ee;
+      --accent: #73b5ac; --accent-2: #e0701c; --on-accent: #042f2e; --chip: #1b2433; --chip-ink: #dfe5ee;
       --ok: #73b5ac; --bad: #f87171; --warn: #fbbf24;
       --tag-lang-fg: #b9d9d4; --tag-lang-bg: #173634; --tag-visa-fg: #fdba74; --tag-visa-bg: #3b2416;
-      --badge-bg: #f0842a; --badge-fg: #1c0a00;
+      --badge-bg: #e0701c; --badge-fg: #1c0a00;
       --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
       --hero-bg: #0f1a22;  /* the search band: navy with a hint of teal */
       --faint: #939eae; --logo-edge: #475569;
       --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
-      --head-bg: rgb(13 22 38 / .94); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #f0842a;
+      --head-bg: rgb(13 22 38 / .94); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #e0701c;
       --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
       --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #0d1626;
       --fill-accent: var(--card); --line-accent: #1e293a;  /* plain navy strips and soft outlines, no teal tint */
@@ -76,15 +76,15 @@
   :root[data-theme="dark"] {
     color-scheme: dark;
     --bg: #0b1019; --card: #111826; --ink: #eef1f5; --muted: #a6b1bf; --line: #2a3547;
-    --accent: #73b5ac; --accent-2: #f0842a; --on-accent: #042f2e; --chip: #1b2433; --chip-ink: #dfe5ee;
+    --accent: #73b5ac; --accent-2: #e0701c; --on-accent: #042f2e; --chip: #1b2433; --chip-ink: #dfe5ee;
     --ok: #73b5ac; --bad: #f87171; --warn: #fbbf24;
     --tag-lang-fg: #b9d9d4; --tag-lang-bg: #173634; --tag-visa-fg: #fdba74; --tag-visa-bg: #3b2416;
-    --badge-bg: #f0842a; --badge-fg: #1c0a00;
+    --badge-bg: #e0701c; --badge-fg: #1c0a00;
     --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
     --hero-bg: #0f1a22;  /* the search band: navy with a hint of teal */
     --faint: #939eae; --logo-edge: #475569;
     --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
-    --head-bg: rgb(13 22 38 / .94); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #f0842a;
+    --head-bg: rgb(13 22 38 / .94); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #e0701c;
     --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
     --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #0d1626;
     --fill-accent: var(--card); --line-accent: #1e293a;  /* plain navy strips and soft outlines, no teal tint */
@@ -186,7 +186,7 @@
   .top .langswitch > * { color: var(--head-muted); }
   .top .langswitch > :hover { color: var(--head-ink); }
   .top .langswitch > .on { background: var(--head-switch-on); color: var(--head-switch-on-ink); }
-  .top :is(.acct-btn, .avatar) { background: #f0842a; border-color: #f0842a; color: #1c0a00; }
+  .top :is(.acct-btn, .avatar) { background: #e0701c; border-color: #e0701c; color: #1c0a00; }
   .top :is(.acct-btn, .avatar):hover { background: #fdba74; }
 
   /* ---------- key figures ---------- */
@@ -333,7 +333,7 @@
     background: var(--hero-bg); }
   /* the search band in light mode's colours (dark mode overrides them below) */
   .hero { color-scheme: light; --ink: #0a0a0a; --muted: #52525b; --card: #ffffff; --line: #e4e4e7; --accent: #0f766e;
-          --accent-2: #d9520b; --on-accent: #ffffff; --chip: #f4f4f5; --chip-ink: #3f3f46; --faint: #71717a;
+          --accent-2: #c2410c; --on-accent: #ffffff; --chip: #f4f4f5; --chip-ink: #3f3f46; --faint: #71717a;
           --tag-lang-fg: #115e59; --tag-lang-bg: #ccfbf1; --tag-visa-fg: #9a3412; --tag-visa-bg: #ffedd5;
           --badge-bg: #c2410c; --badge-fg: #ffffff; --bad: #dc2626; --ok: #0f766e; color: var(--ink); }
   /* dark mode: the search band dark too, its search field one step lighter */

@@ -70,7 +70,7 @@
       --head-bg: rgb(7 19 42 / .92); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #fb923c;
       --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
       --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #071227;
-      --fill-accent: var(--card); --line-accent: var(--line);  /* boxes one navy, like the header */
+      --fill-accent: var(--card); --line-accent: #0e1d39;  /* boxes one navy, like the header; faint outlines */
     }
   }
   :root[data-theme="dark"] {
@@ -87,7 +87,7 @@
     --head-bg: rgb(7 19 42 / .92); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #fb923c;
     --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
     --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #071227;
-    --fill-accent: var(--card); --line-accent: var(--line);  /* boxes one navy, like the header */
+    --fill-accent: var(--card); --line-accent: #0e1d39;  /* boxes one navy, like the header; faint outlines */
   }
   /* outlines and rules in a tint of the teal, and a faint teal fill for section headings (both themes) */
   :root { --line-accent: color-mix(in oklab, var(--accent) 30%, var(--line));
@@ -352,6 +352,13 @@
   :root[data-theme="dark"] .side { --card: #071227; --chip: #0f2043; --chip-ink: #e0e7f2; --muted: #b3c1d6; --faint: #9eadc4; --line: #1b2c4f; background-color: #071227; }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) .side { --card: #071227; --chip: #0f2043; --chip-ink: #e0e7f2; --muted: #b3c1d6; --faint: #9eadc4; --line: #1b2c4f; background-color: #071227; }
+  }
+  /* dark mode: the quick start's outline and the filter list's scrollbar in the same faint navy */
+  :root[data-theme="dark"] :is(.quiz, .side) { border-color: var(--line-accent); }
+  :root[data-theme="dark"] .side-body { scrollbar-color: #1b2c4f transparent; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) :is(.quiz, .side) { border-color: var(--line-accent); }
+    :root:not([data-theme="light"]) .side-body { scrollbar-color: #1b2c4f transparent; }
   }
   /* dark mode: job listings in a dark grey (light mode keeps them white) */
   :root[data-theme="dark"] .job { --card: #1f2023; --chip: #2c2d31; --chip-ink: #e4e4e7; --muted: #b4b6bd; --faint: #9d9fa7; --line: #34363b; }

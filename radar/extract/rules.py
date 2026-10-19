@@ -9,7 +9,7 @@ from radar.extract.schema import Extraction
 from radar.extract.sections import job_text
 from radar.taxonomy import find_skills
 
-RULES_VERSION = "rules-v21"  # bump whenever the taxonomy or the rules change, so `radar extract` re-runs
+RULES_VERSION = "rules-v22"  # bump whenever the taxonomy or the rules change, so `radar extract` re-runs
 
 # words only one of the languages uses: "in", "is", "we", "team", "over" and "of" are both Dutch and English,
 # "die" and "er" are also German
@@ -726,20 +726,23 @@ _NO_VISA = re.compile(
     r"supported|"
     r"included|mogelijk|bieden|aangeboden|aanbieden)|"
     r"\bno (?:visa |relocation |immigration |work permit )?(?:sponsorship|relocation)\b|"
-    r"sponsorship\W{0,3}[:?]\s*(?:no|nee)\b|"
+    r"sponsorship\W{0,3}[:?]\s*(?:no|nee|none|not (?:provided|available|offered|possible))\b|"
     # must already be allowed to work here
     r"(?:must|need to|needs to|have to|has to|required to|should|will need to)\s+(?:already\s+|currently\s+|also\s+)?"
     r"(?:have|hold|possess|be|obtain)\s+(?:the\s+|a\s+)?(?:full\s+|legal\s+|permanent\s+|valid\s+|existing\s+)*"
     r"(?:right|eligib\w*|authori[sz]\w*|permitted|allowed|entitled|legally)\s+(?:\w+\s+)?to\s+(?:live\s+and\s+)?work|"
     r"(?:right|eligib\w*|authori[sz]\w*|legally allowed|permitted) to (?:live and )?work (?:permanently )?in (?:the )?"
     r"(?:netherlands|nl|eu|european union|europe|eea|uk or eu|country|job location)|"
+    r"(?:authori[sz]ed|permitted|allowed|entitled) to work here\b|"
+    # "If you are not a EU-citizen (...) please do not apply", "obliged to recruit within the EU"
+    r"not an? (?:eu|eea)[- ]citizen[^.\n]{0,60}\b(?:do not|don't|not) apply|obliged to recruit within the eu\b|"
     r"\bvalid (?:eu[- ]|dutch |nl |netherlands )?(?:work(?:ing)? (?:permit|visa|authori[sz]ation)|residen(?:ce|cy)"
     r"(?:[/ ]?(?:and )?work)? permit)|"
     r"(?:\beu\b|\beea\b|european|dutch)(?:[/ ](?:eea|eu)|[- ]?member state)?[ -](?:citizen\w*|passport\w*|nationals?|"
     r"nationality|residen\w*)(?: holders?)?\s*(?:is |are )?(?:required|only|mandatory|needed)|"
     r"(?:\beu\b|european|dutch)[- ](?:work(?:ing)? )?(?:permit|rights|authori[sz]ation|work visa) (?:is )?"
     r"(?:required|needed|mandatory)|"
-    r"(?:have|need|hold) (?:to have )?an eu[- ]passport|(?:have|hold|possess) an? (?:eu|dutch|valid) work permit|"
+    r"(?:have|need|hold) (?:to have )?an? eu[- ]passport|(?:have|hold|possess) an? (?:eu|dutch|valid) work permit|"
     r"(?:already )?hold (?:a |an )?(?:permanent |valid )(?:eu |dutch )?work (?:and residence )?permit|"
     r"\bvalid [\w/ -]{0,16}work (?:authori[sz]ation|permit)|"
     r"already (?:based|living|located|residing|reside|live) in (?:the netherlands|nl|europe|the eu)|"
@@ -753,7 +756,13 @@ _NO_VISA = re.compile(
     r"(?:vis(?:a|um)\w*|sponsor\w*|relocat\w*)[^.\n]{0,40}\b(?:niet|geen)\b\W{0,3}(?:mogelijk|bieden|aan)|"
     r"geldige [\w -]{0,20}?(?:werk|verblijfs)[- ]?(?:vergunning|visum)|(?:nederlandse |eu-?)?"
     r"werkvergunning (?:is )?(?:vereist|noodzakelijk|verplicht)|in nederland mag werken|gerechtigd (?:zijn )?(?:om )?"
-    r"in nederland te (?:wonen en te )?werken|zonder werkvergunning",
+    r"in nederland te (?:wonen en te )?werken|zonder werkvergunning|"
+    # "hier bevoegd zijn om te werken", "Je hebt het recht om in Nederland te werken", "De Nederlandse nationaliteit is
+    # vereist", "niet mogelijk een verblijfs-/werkvergunning aan te vragen"
+    r"bevoegd (?:zijn |bent )?(?:om )?(?:hier |in nederland )?te werken|"
+    r"(?:het )?recht (?:hebt |heeft )?om in nederland te (?:wonen en te )?werken|"
+    r"(?:nederlandse|eu-?) ?nationaliteit (?:is )?(?:vereist|verplicht|noodzakelijk)|"
+    r"niet mogelijk (?:om )?een [\w/ -]{0,25}vergunning aan te vragen",
     re.I,
 )
 
@@ -817,7 +826,7 @@ def _windows(text: str, anchor: re.Pattern, pad: int = 250) -> str:
 _VISA_ANCHOR = re.compile(
     r"vis[au]m?|sponsor|relocat|permit|vergunning|migrant|30\s?%|referent|immigration|verhuis|expat|right|eligib|"
     r"authori[sz]|citizen|passport|national|residen|already|gerechtigd|mag werken|\bhsm\b|moving|\bmove\b|"
-    r"permitted to|allowed to|entitled to|legally", re.I)
+    r"permitted to|allowed to|entitled to|legally|bevoegd|recht om", re.I)
 
 
 def detect_visa(text: str) -> bool | None:

@@ -552,6 +552,18 @@ def test_visa_sponsorship_statements():
         ('We are a recognised sponsor with the IND and can apply for your highly skilled migrant permit.', True),
         ('Visa Sponsorship (if applicable)', True),
         ('Did you know that we sponsor the local football club.', None),
+        # phrasings the review found the rules missing (week of 12 October 2026)
+        ('Setup: Freelance (Daily Rate / BV or ZZP) Sponsorship: Not Provided Location: Veldhoven', False),
+        ('We only consider applications from candidates who live in the Netherlands and are legally authorised to '
+         'work here.', False),
+        ('kandidaten die in Nederland wonen en hier bevoegd zijn om te werken.', False),
+        ('Je hebt het recht om in Nederland te werken. Het is over het algemeen niet mogelijk een '
+         'verblijfs-/werkvergunning aan te vragen.', False),
+        ('Heb je het recht om in Nederland te werken?', None),
+        ('If you are not a EU-citizen (including Norway and Switzerland) please do not apply for this vacancy.',
+         False),
+        ('currently we select people that reside in the Netherlands and have a EU passport', False),
+        ('De Nederlandse nationaliteit is vereist.', False),
     ]
     for text, want in cases:
         assert detect_visa(text) is want, text

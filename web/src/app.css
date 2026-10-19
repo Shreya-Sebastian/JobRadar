@@ -341,20 +341,16 @@
     :root:not([data-theme="light"]) .hero { color-scheme: dark; --ink: #fafafa; --muted: #b3c4c0; --card: #10302b; --line: #244640; --accent: #5cc6b8;
     --on-accent: #042f2e; --chip: #15332e; --chip-ink: #e2ece9; }
   }
-  /* the filters box in the search band's green; in dark mode the listings' dark green */
-  .side { background-color: #e3f0ec; }
-  :root[data-theme="dark"] .side { --card: #0c221f; --chip: #15332e; --chip-ink: #e2ece9; --muted: #b3c4c0; --line: #1c3a34;
-    background-color: #0c221f; }
+  /* the filters box: the search band's green in light mode, the header's navy in dark mode */
+  :root .side { background-color: #e3f0ec; }
+  :root[data-theme="dark"] .side { --card: #0a1a36; --chip: #152a4f; --chip-ink: #e0e7f2; --muted: #b3c1d6; --faint: #9eadc4; --line: #22345a; background-color: #0a1a36; }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .side { --card: #0c221f; --chip: #15332e; --chip-ink: #e2ece9; --muted: #b3c4c0;
-      --line: #1c3a34; background-color: #0c221f; }
+    :root:not([data-theme="light"]) .side { --card: #0a1a36; --chip: #152a4f; --chip-ink: #e0e7f2; --muted: #b3c1d6; --faint: #9eadc4; --line: #22345a; background-color: #0a1a36; }
   }
-  /* dark mode: job listings in a dark green (light mode keeps them white) */
-  :root[data-theme="dark"] .job { --card: #0c221f; --chip: #15332e; --chip-ink: #e2ece9; --muted: #b3c4c0; --faint: #9fb3ae;
-    --line: #1c3a34; --tag-lang-bg: #0d4a43; }
+  /* dark mode: job listings in a lighter navy (light mode keeps them white) */
+  :root[data-theme="dark"] .job { --card: #16284a; --chip: #213760; --chip-ink: #e0e7f2; --muted: #b3c1d6; --faint: #9eadc4; --line: #2a3f68; --tag-lang-bg: #123f45; }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .job { --card: #0c221f; --chip: #15332e; --chip-ink: #e2ece9; --muted: #b3c4c0;
-      --faint: #9fb3ae; --line: #1c3a34; --tag-lang-bg: #0d4a43; }
+    :root:not([data-theme="light"]) .job { --card: #16284a; --chip: #213760; --chip-ink: #e0e7f2; --muted: #b3c1d6; --faint: #9eadc4; --line: #2a3f68; --tag-lang-bg: #123f45; }
   }
   .hero-title { @apply m-0 max-w-3xl font-display text-[1.5rem] leading-tight font-bold tracking-tight text-ink sm:text-[1.9rem]; }
   .hero-sub { @apply mt-2 mb-4 text-sm text-muted sm:mb-5; }

@@ -686,3 +686,20 @@ def test_years_phrases_found_in_postings_marked_not_stated():
     # still not requirements
     assert find_years("A possibility to have a sabbatical after 3 years") is None
     assert find_years("1 jaar contract") is None and find_years("a 4-year bachelor programme") is None
+
+
+def test_dutch_postings_that_ask_for_english():
+    from radar.extract.rules import language_fields
+
+    intro = ("Wij zoeken een collega voor ons team in Utrecht. Je werkt aan de systemen van onze klanten en je bent "
+             "verantwoordelijk voor het beheer en de doorontwikkeling. Wat wij vragen: een afgeronde hbo-opleiding. ")
+    asks = ["Engels op B2-niveau.",
+            "Je drukt je uitstekend uit in het Nederlands (C2-niveau) en Engels (C1-niveau).",
+            "Uitstekende communicatieve vaardigheden in zowel Nederlands als Engels.",
+            "Beheersing van de Nederlandse taal en voldoende beheersing van het Engels voor internationale samenwerking.",
+            "Goede communicatieve vaardigheden in het Engels."]
+    for line in asks:
+        lang, dutch, _english_only, english = language_fields("Test Engineer", intro + line)
+        assert (lang, dutch, english) == ("nl", True, True), line
+    for line in ("Je spreekt vloeiend Nederlands.", "Kennis van Engels is een pré."):
+        assert language_fields("Test Engineer", intro + line)[3] is False, line

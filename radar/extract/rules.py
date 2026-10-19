@@ -9,7 +9,7 @@ from radar.extract.schema import Extraction
 from radar.extract.sections import job_text
 from radar.taxonomy import find_skills
 
-RULES_VERSION = "rules-v22"  # bump whenever the taxonomy or the rules change, so `radar extract` re-runs
+RULES_VERSION = "rules-v23"  # bump whenever the taxonomy or the rules change, so `radar extract` re-runs
 
 # words only one of the languages uses: "in", "is", "we", "team", "over" and "of" are both Dutch and English,
 # "die" and "er" are also German
@@ -155,9 +155,13 @@ _ENGLISH_REQ = re.compile(
     r"(english|engels)\W{0,25}(is\s+)?(required|mandatory|a must|must|essential|necessary|needed|vereist|"
     r"verplicht|noodzakelijk)|"
     r"(speak|spreek|beheers\w*)\W{0,30}(english|engels)|"
-    r"(dutch|nederlands)\s+(and|en)\s+(english|engels)|(english|engels)\s+(and|en)\s+(dutch|nederlands)|"
+    r"(dutch|nederlands)\s+(and|en|als)\s+(english|engels)|(english|engels)\s+(and|en)\s+(dutch|nederlands)|"
     r"engelse taal|english[- ]speaking|working language is english|voertaal is engels|"
-    r"(communicat\w*|communiceren|schrijven|writing)\W{0,30}(in\s+)?(het\s+)?(english|engels)",
+    r"(communicat\w*|communiceren|schrijven|writing)\W{0,30}(in\s+)?(het\s+)?(english|engels)|"
+    # Dutch postings: "Engels op B2-niveau", "Engels (C1-niveau)", "voldoende beheersing van het Engels",
+    # "communicatieve vaardigheden in het Engels"
+    r"(english|engels)\W{0,3}(op\s+)?[abc][12]\b|beheersing van (de\s+|het\s+)?(engels|english)|"
+    r"vaardigheden in (zowel\s+)?(het\s+)?(nederlands\s+(als|en)\s+)?(engels|english)",
     re.I,
 )
 _ENGLISH_NOT_REQ = re.compile(

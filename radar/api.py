@@ -114,7 +114,7 @@ async def _http_error(request: Request, exc: StarletteHTTPException):
     page = (f'<!doctype html><html lang="{lang}"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">'
             f'<title>{escape(title)} · {escape(settings.site_name)}</title>'
-            '<link rel="stylesheet" href="/static/app.css?v=52"></head><body>'
+            '<link rel="stylesheet" href="/static/app.css?v=53"></head><body>'
             f'<main class="wrap" style="padding-top:4rem;padding-bottom:4rem"><h1>{escape(title)}</h1>'
             f'<p class="muted">{escape(text)}</p>'
             f'<p><a class="btn primary" href="{home}">{escape(back)}</a></p></main></body></html>')

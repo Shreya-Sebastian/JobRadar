@@ -51,7 +51,7 @@
     --badge-bg: #9a3412; --badge-fg: #ffffff;
     --faint: #71717a; --logo-edge: #020617;
     --logo-glow: 0 1px 2px rgb(15 23 42 / .22);
-    --head-bg: rgb(13 22 38 / .94); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #cc6216;
+    --head-bg: rgb(13 22 38 / .94); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #b8693f;
     --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
     --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #0d1626;
   }
@@ -59,15 +59,15 @@
     :root:not([data-theme="light"]) {
       color-scheme: dark;
       --bg: #0b1019; --card: #111826; --ink: #eef1f5; --muted: #a6b1bf; --line: #2a3547;
-      --accent: #73b5ac; --accent-2: #cc6216; --on-accent: #042f2e; --chip: #1b2433; --chip-ink: #dfe5ee;
+      --accent: #73b5ac; --accent-2: #b8693f; --on-accent: #042f2e; --chip: #1b2433; --chip-ink: #dfe5ee;
       --ok: #73b5ac; --bad: #f87171; --warn: #fbbf24;
-      --tag-lang-fg: #b9d9d4; --tag-lang-bg: #173634; --tag-visa-fg: #fdba74; --tag-visa-bg: #3b2416;
-      --badge-bg: #cc6216; --badge-fg: #1c0a00;
+      --tag-lang-fg: #b9d9d4; --tag-lang-bg: #173634; --tag-visa-fg: #e3ae86; --tag-visa-bg: #3b2416;
+      --badge-bg: #b8693f; --badge-fg: #1c0a00;
       --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
       --hero-bg: #0f1a22;  /* the search band: navy with a hint of teal */
       --faint: #939eae; --logo-edge: #475569;
       --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
-      --head-bg: rgb(13 22 38 / .94); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #cc6216;
+      --head-bg: rgb(13 22 38 / .94); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #b8693f;
       --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
       --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #0d1626;
       --fill-accent: var(--card); --line-accent: #1e293a;  /* plain navy strips and soft outlines, no teal tint */
@@ -76,15 +76,15 @@
   :root[data-theme="dark"] {
     color-scheme: dark;
     --bg: #0b1019; --card: #111826; --ink: #eef1f5; --muted: #a6b1bf; --line: #2a3547;
-    --accent: #73b5ac; --accent-2: #cc6216; --on-accent: #042f2e; --chip: #1b2433; --chip-ink: #dfe5ee;
+    --accent: #73b5ac; --accent-2: #b8693f; --on-accent: #042f2e; --chip: #1b2433; --chip-ink: #dfe5ee;
     --ok: #73b5ac; --bad: #f87171; --warn: #fbbf24;
-    --tag-lang-fg: #b9d9d4; --tag-lang-bg: #173634; --tag-visa-fg: #fdba74; --tag-visa-bg: #3b2416;
-    --badge-bg: #cc6216; --badge-fg: #1c0a00;
+    --tag-lang-fg: #b9d9d4; --tag-lang-bg: #173634; --tag-visa-fg: #e3ae86; --tag-visa-bg: #3b2416;
+    --badge-bg: #b8693f; --badge-fg: #1c0a00;
     --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
     --hero-bg: #0f1a22;  /* the search band: navy with a hint of teal */
     --faint: #939eae; --logo-edge: #475569;
     --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
-    --head-bg: rgb(13 22 38 / .94); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #cc6216;
+    --head-bg: rgb(13 22 38 / .94); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #b8693f;
     --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
     --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #0d1626;
     --fill-accent: var(--card); --line-accent: #1e293a;  /* plain navy strips and soft outlines, no teal tint */
@@ -186,7 +186,7 @@
   .top .langswitch > * { color: var(--head-muted); }
   .top .langswitch > :hover { color: var(--head-ink); }
   .top .langswitch > .on { background: var(--head-switch-on); color: var(--head-switch-on-ink); }
-  .top :is(.acct-btn, .avatar) { background: #cc6216; border-color: #cc6216; color: #1c0a00; }
+  .top :is(.acct-btn, .avatar) { background: #b8693f; border-color: #b8693f; color: #1c0a00; }
   .top :is(.acct-btn, .avatar):hover { background: #fdba74; }
 
   /* ---------- key figures ---------- */
@@ -288,8 +288,8 @@
   .chip.more { @apply bg-transparent text-muted ring-1 ring-line ring-inset; }
   .chip.have { @apply bg-accent-2/15 text-accent-2 ring-1 ring-accent-2/30 ring-inset; }
   /* dark mode: the deep orange is too dim as small text on navy, so these chips' text is a lighter orange */
-  :root[data-theme="dark"] .chip.have { color: #f2a463; }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .chip.have { color: #f2a463; } }
+  :root[data-theme="dark"] .chip.have { color: #e0a882; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .chip.have { color: #e0a882; } }
   .toggles .chip { @apply cursor-pointer bg-card px-3 py-1 text-[13px] ring-1 ring-line ring-inset transition-colors select-none
     hover:ring-accent/60; }
   .toggles .chip.on { @apply bg-accent text-on-accent ring-accent; }

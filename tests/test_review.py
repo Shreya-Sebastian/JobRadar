@@ -295,3 +295,23 @@ def test_admin_page_is_served_unindexed_and_uncached(admin):
     assert r.status_code == 200 and "/api/admin/review/decisions" in r.text
     assert r.headers["x-robots-tag"] == "noindex" and r.headers["cache-control"] == "no-store"
     assert "{{" not in r.text and "—" not in r.text
+
+
+# scoring rules and review together
+
+def test_filter_eval_scores_overrides_laid_over_the_rules():
+    import json
+    from pathlib import Path
+
+    from radar.extract.rules import extract_rules
+    from radar.filter_eval import run_filter_eval
+
+    path = Path(__file__).resolve().parent.parent / "data" / "golden" / "filters.jsonl"
+    items = [json.loads(x) for x in path.read_text(encoding="utf-8").splitlines() if x.strip()]
+    miss = next(it for it in items if it["split"] == "dev" and it["labels"]["is_tech"]
+                and extract_rules(it["title"], it["description"]).visa_sponsorship != it["labels"]["visa_sponsorship"])
+    base = run_filter_eval(path, "dev")
+    fixed = run_filter_eval(path, "dev", {miss["id"]: {"visa_sponsorship": miss["labels"]["visa_sponsorship"],
+                                                        "is_tech": False}})
+    assert fixed.get("visa").k == base.get("visa").k + 1 and fixed.get("visa").n == base.get("visa").n
+    assert fixed.get("tech: recall").k == base.get("tech: recall").k - 1  # is_tech is overridden too

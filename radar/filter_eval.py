@@ -70,10 +70,14 @@ def _band(years, ex: dict, title: str) -> str:
 _DEGREE_GROUP = {"phd": "phd", "msc": "master", "bsc": "bachelor", "hbo": "bachelor", "mbo": "mbo"}
 
 
-def run_filter_eval(path: str | Path = "data/golden/filters.jsonl", split: str = "all") -> Report:
-    """`split`: "dev" (300 postings rules are tuned on), "test" (200 held back to score honestly) or "all"."""
+def run_filter_eval(path: str | Path = "data/golden/filters.jsonl", split: str = "all",
+                    overrides: dict[int, dict] | None = None) -> Report:
+    """`split`: "dev" (300 postings rules are tuned on), "test" (200 held back to score honestly) or "all".
+    `overrides`: {posting id: {field: value}} laid over the rules' reading, as the agentic review's decisions are
+    on the site (radar/review.py), to score rules and review together."""
     from radar.classify import is_tech
     from radar.extract.rules import extract_rules
+    from radar.review import merge
 
     items = [json.loads(line) for line in Path(path).read_text(encoding="utf-8").splitlines() if line.strip()]
     if split != "all":
@@ -88,8 +92,9 @@ def run_filter_eval(path: str | Path = "data/golden/filters.jsonl", split: str =
     tp = fp = fn = agree = 0
     tech_items = []
     for it in items:
+        ov = (overrides or {}).get(it["id"], {})
         want = it["labels"]["is_tech"]
-        got = is_tech(it["title"], it["description"])
+        got = ov["is_tech"] if "is_tech" in ov else is_tech(it["title"], it["description"])
         agree += want == got
         tp += want and got
         fp += got and not want
@@ -97,7 +102,8 @@ def run_filter_eval(path: str | Path = "data/golden/filters.jsonl", split: str =
         if want != got:
             miss("is_tech", it, want, got)
         if want:
-            tech_items.append((it, extract_rules(it["title"], it["description"]).model_dump()))
+            ex = extract_rules(it["title"], it["description"]).model_dump()
+            tech_items.append((it, merge(ex, {k: v for k, v in ov.items() if k != "is_tech"})))
     rep.add("tech: accuracy", agree, len(items), "tech or not, all postings")
     rep.add("tech: precision", tp, tp + fp, "of the jobs shown, share that is tech")
     rep.add("tech: recall", tp, tp + fn, "of the tech jobs, share that is shown")

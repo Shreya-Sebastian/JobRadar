@@ -186,8 +186,9 @@
   .top .langswitch > * { color: var(--head-muted); }
   .top .langswitch > :hover { color: var(--head-ink); }
   .top .langswitch > .on { background: var(--head-switch-on); color: var(--head-switch-on-ink); }
-  .top :is(.acct-btn, .avatar) { background: #b8693f; border-color: #b8693f; color: #1c0a00; }
-  .top :is(.acct-btn, .avatar):hover { background: #fdba74; }
+  /* Log in: a deep, muted orange with white type (a solid block reads brighter than a thin accent line) */
+  .top :is(.acct-btn, .avatar) { background: #9c5733; border-color: #9c5733; color: #ffffff; }
+  .top :is(.acct-btn, .avatar):hover { background: #ad6340; border-color: #ad6340; }
 
   /* ---------- key figures ---------- */
   .kpis { @apply grid gap-3; grid-template-columns: repeat(auto-fill, minmax(min(9.5rem, 100%), 1fr)); }

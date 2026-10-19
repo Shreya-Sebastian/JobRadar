@@ -397,7 +397,8 @@ def mark_duplicates(session: Session) -> int:
         for i in range(0, len(ids), 200):
             for pid, text, ex in session.execute(select(Posting.id, Posting.description, Posting.extraction)
                                                  .where(Posting.id.in_(ids[i:i + 200]))):
-                detail[pid] = (text or "", ex or {})
+                ex = ex or {}
+                detail[pid] = ((text or "")[:_TEXT_KEPT], {k: ex.get(k) for k in _FACTS_KEPT})
 
         def keep_first(r):
             text, ex = detail[r.id]
@@ -429,6 +430,8 @@ def mark_duplicates(session: Session) -> int:
 
 
 _STUB = 300  # a description shorter than this is a stub (a link, a title line)
+_TEXT_KEPT = 30000  # same_job reads at most 1,500 words, well within this many characters
+_FACTS_KEPT = ("posting_language", "skills_required", "seniority", "years_experience", "role_family")
 _NEAR_IDENTICAL = 0.9
 _SAME_FACTS_TEXT = 0.6
 
@@ -502,17 +505,24 @@ def _per_city_groups(session: Session, rows: list) -> list[list]:
         key = (r.source_id, norm_company(r.company or "").lower(), _title_without_city(r.title or "", r.city))
         candidates.setdefault(key, []).append(r)
     candidates = {k: v for k, v in candidates.items() if len(v) > 1}
-    ids = [r.id for v in candidates.values() for r in v]
-    text: dict[int, str] = {}
-    for i in range(0, len(ids), 500):  # only the candidates' descriptions, never the whole table
-        chunk = ids[i:i + 500]
-        text.update(session.execute(select(Posting.id, Posting.description).where(Posting.id.in_(chunk))).all())
-    groups = []
+    cities_of: dict[int, set[str]] = {}
     for members in candidates.values():
         cities = {c.lower() for r in members for c in (r.city, *(r.also_in or [])) if c}
+        for r in members:
+            cities_of[r.id] = cities
+    # each description is read in batches and reduced to its signature straight away: holding all the candidates'
+    # texts at once took more memory than the worker has (it was OOM-killed from early October 2026)
+    ids = list(cities_of)
+    sig: dict[int, str] = {}
+    for i in range(0, len(ids), 500):
+        chunk = ids[i:i + 500]
+        for pid, text in session.execute(select(Posting.id, Posting.description).where(Posting.id.in_(chunk))):
+            sig[pid] = _text_signature(text or "", cities_of[pid])
+    groups = []
+    for members in candidates.values():
         by_sig: dict[str, list] = {}
         for r in members:
-            by_sig.setdefault(_text_signature(text.get(r.id) or "", cities), []).append(r)
+            by_sig.setdefault(sig.get(r.id, ""), []).append(r)
         # one board, one title, one text: one vacancy to a job seeker, whether it was posted twice, under two
         # paths or once per city
         groups.extend(same for sig, same in by_sig.items() if sig and len(same) > 1)
@@ -546,7 +556,7 @@ def _text_signature(description: str, cities: set[str]) -> str:
 
 def _bilingual_pairs(session: Session) -> list[tuple[int, int]]:
     """Pairs only from sources whose postings live under both /nl/ and /en/ paths, so the cost stays small."""
-    from radar.bilingual import pair, path_language
+    from radar.bilingual import numbers, pair, path_language
 
     rows = session.execute(
         select(Posting.id, Posting.source_id, Posting.url, Posting.title, Posting.company, Posting.city,
@@ -559,10 +569,11 @@ def _bilingual_pairs(session: Session) -> list[tuple[int, int]]:
         langs.setdefault(r.source_id, set()).add(path_language(r.url) or "none")
     bilingual = {sid for sid, seen in langs.items() if {"nl", "en"} <= seen or {"nl", "none"} <= seen}
     ids = [r.id for r in rows if r.source_id in bilingual]
-    text: dict[int, str] = {}
+    nums: dict[int, set[str]] = {}  # the numbers in each text, the only part of it the pairing compares
     for i in range(0, len(ids), 500):
         chunk = ids[i:i + 500]
-        text.update(session.execute(select(Posting.id, Posting.description).where(Posting.id.in_(chunk))).all())
+        for pid, text in session.execute(select(Posting.id, Posting.description).where(Posting.id.in_(chunk))):
+            nums[pid] = numbers(text or "")
     per_source: dict[int, list[dict]] = {}
     for r in rows:
         if r.source_id not in bilingual:
@@ -571,7 +582,7 @@ def _bilingual_pairs(session: Session) -> list[tuple[int, int]]:
         day = (r.posted_at or r.first_seen)
         per_source.setdefault(r.source_id, []).append(
             {"id": r.id, "url": r.url, "title": r.title, "company": r.company, "city": r.city, "lang": lang,
-             "day": day.date().isoformat() if day else None, "description": text.get(r.id) or ""})
+             "day": day.date().isoformat() if day else None, "numbers": nums.get(r.id, set())})
     out: list[tuple[int, int]] = []
     for sid, posts in per_source.items():
         seen = langs[sid]

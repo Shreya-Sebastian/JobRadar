@@ -38,14 +38,16 @@ def _norm_title(title: str) -> str:
     return " ".join(_COGNATES.get(w, w) for w in words)
 
 
-def _numbers(text: str) -> set[str]:
+def numbers(text: str) -> set[str]:
     return set(_NUM.findall(text or ""))
 
 
 def score(nl: dict, en: dict) -> float:
-    """0..1 similarity of two postings already known to share source, date and city."""
+    """0..1 similarity of two postings already known to share source, date and city. Each posting has its
+    `numbers` (from numbers(), so a caller need not keep the texts) or its `description`."""
     title = SequenceMatcher(None, _norm_title(nl["title"]), _norm_title(en["title"])).ratio()
-    a, b = _numbers(nl["description"]), _numbers(en["description"])
+    a = nl["numbers"] if "numbers" in nl else numbers(nl["description"])
+    b = en["numbers"] if "numbers" in en else numbers(en["description"])
     nums = len(a & b) / len(a | b) if (a or b) else 0.0
     if title < 0.45 and nums < 0.9:
         return 0.0
@@ -54,7 +56,8 @@ def score(nl: dict, en: dict) -> float:
 
 def pair(postings: list[dict], threshold: float = 0.55, lone_threshold: float = 0.45) -> list[tuple[int, int]]:
     """(dutch_id, english_id) pairs among one source's postings. Each posting dict needs id, url, title,
-    description, day (date string), city and company (a board such as AcademicTransfer hosts many employers)."""
+    description or numbers, day (date string), city and company (a board such as AcademicTransfer hosts many
+    employers)."""
     nl = [p for p in postings if path_language(p["url"]) == "nl"]
     en = [p for p in postings if (path_language(p["url"]) or p.get("lang_hint")) == "en"]
     if not nl or not en:

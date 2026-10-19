@@ -399,6 +399,26 @@ def test_language_copies_of_one_page_are_one_listing(fresh_db):
         assert len(shown) == 1 and shown[0].url.endswith("/en-gb/job/339")  # the English copy is kept
 
 
+
+def test_dutch_and_english_page_of_one_vacancy_are_one_listing(fresh_db):
+    # rabobank.jobs: /nl/vacature/<slug>/<id>/ and /en/job/<slug>/<id>/, the same title, translated texts
+    title = "Junior Data Scientist | Data & Analytics Early Career Program | Utrecht"
+    nl = ("Als Junior Data Scientist bouw je in ons Early Career Program modellen in Python en Databricks. "
+          "Salaris tot 5.200 euro per maand, 36 uur per week. Reageer voor 1 november.")
+    en = ("As a Junior Data Scientist in our Early Career Program you build models in Python and Databricks. "
+          "Salary up to 5,200 euro a month, 36 hours a week. Apply before 1 November.")
+
+    def raw(url, text):
+        return RawPosting(external_id=url, title=title, location="Utrecht, Netherlands", url=url,
+                          posted_at=datetime(2026, 10, 15), description_html=text)
+    with session_scope() as s:
+        src = _source(s, company="Rabobank", ats="jsonld", slug="https://rabobank.example/api/sitemap/")
+        ingest(s, src, [raw("https://rabobank.example/nl/vacature/junior-data-scientist-en/JR_00146550/", nl),
+                        raw("https://rabobank.example/en/job/junior-data-scientist-and/JR_00146550/", en)])
+        mark_duplicates(s)
+        shown = s.query(Posting).filter(Posting.duplicate_of.is_(None)).all()
+        assert [p.url for p in shown] == ["https://rabobank.example/en/job/junior-data-scientist-and/JR_00146550/"]
+
 def test_security_guard_at_a_datacenter_is_not_a_tech_job():
     from radar.classify import is_tech
 

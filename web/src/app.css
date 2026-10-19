@@ -37,43 +37,44 @@
 }
 
 @layer base {
-  /* one base (warm neutrals) and one accent (teal, from the logo); the logo's orange stays in the logo */
+  /* a neutral base (white and light grey; near-black in dark mode) and the logo's two accents: teal for actions,
+     links and filters, orange for highlights (visa sponsorship, saved jobs, skills in a profile, new) */
   :root {
     color-scheme: light;
-    --bg: #f6f1ea; --card: #ffffff; --ink: #1c1917; --muted: #57534e; --line: #e7dfd3;
-    --shadow-card: 0 1px 2px rgb(68 52 30 / .05), 0 4px 14px rgb(68 52 30 / .05);
+    --bg: #f4f4f5; --card: #ffffff; --ink: #0a0a0a; --muted: #52525b; --line: #e4e4e7;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / .04), 0 4px 14px rgb(0 0 0 / .04);
     --hero-bg: #e3f0ec;
-    --accent: #0f766e; --accent-2: #042f2e; --on-accent: #ffffff; --chip: #f3ede4; --chip-ink: #44403c;
+    --accent: #0f766e; --accent-2: #ea580c; --on-accent: #ffffff; --chip: #f4f4f5; --chip-ink: #3f3f46;
     --ok: #0f766e; --bad: #dc2626; --warn: #d97706;
-    --tag-lang-fg: #115e59; --tag-lang-bg: #ccfbf1; --tag-visa-fg: #115e59; --tag-visa-bg: #ccfbf1;
-    --badge-bg: #0f766e; --badge-fg: #ffffff;
-    --faint: #78716c; --logo-edge: #020617;
+    --tag-lang-fg: #115e59; --tag-lang-bg: #ccfbf1; --tag-visa-fg: #9a3412; --tag-visa-bg: #ffedd5;
+    --badge-bg: #c2410c; --badge-fg: #ffffff;
+    --faint: #71717a; --logo-edge: #020617;
     --logo-glow: 0 1px 2px rgb(15 23 42 / .22);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       color-scheme: dark;
-      --bg: #171411; --card: #221e1a; --ink: #f5f0e8; --muted: #b8ad9f; --line: #37312a;
-      --accent: #2dd4bf; --accent-2: #ccfbf1; --on-accent: #042f2e; --chip: #2d2822; --chip-ink: #e7e0d5;
+      --bg: #0a0a0a; --card: #171717; --ink: #fafafa; --muted: #a3a3a3; --line: #2a2a2a;
+      --accent: #2dd4bf; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #262626; --chip-ink: #e5e5e5;
       --ok: #2dd4bf; --bad: #f87171; --warn: #fbbf24;
-      --tag-lang-fg: #99f6e4; --tag-lang-bg: #134e4a; --tag-visa-fg: #99f6e4; --tag-visa-bg: #134e4a;
-      --badge-bg: #2dd4bf; --badge-fg: #042f2e;
+      --tag-lang-fg: #99f6e4; --tag-lang-bg: #134e4a; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
+      --badge-bg: #fb923c; --badge-fg: #1c0a00;
       --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
-      --hero-bg: #1d2a26;
-      --faint: #a39888; --logo-edge: #475569;
+      --hero-bg: #0f1f1d;
+      --faint: #8a8a8a; --logo-edge: #475569;
       --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
     }
   }
   :root[data-theme="dark"] {
     color-scheme: dark;
-    --bg: #171411; --card: #221e1a; --ink: #f5f0e8; --muted: #b8ad9f; --line: #37312a;
-    --accent: #2dd4bf; --accent-2: #ccfbf1; --on-accent: #042f2e; --chip: #2d2822; --chip-ink: #e7e0d5;
+    --bg: #0a0a0a; --card: #171717; --ink: #fafafa; --muted: #a3a3a3; --line: #2a2a2a;
+    --accent: #2dd4bf; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #262626; --chip-ink: #e5e5e5;
     --ok: #2dd4bf; --bad: #f87171; --warn: #fbbf24;
-    --tag-lang-fg: #99f6e4; --tag-lang-bg: #134e4a; --tag-visa-fg: #99f6e4; --tag-visa-bg: #134e4a;
-    --badge-bg: #2dd4bf; --badge-fg: #042f2e;
+    --tag-lang-fg: #99f6e4; --tag-lang-bg: #134e4a; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
+    --badge-bg: #fb923c; --badge-fg: #1c0a00;
     --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
-    --hero-bg: #1d2a26;
-    --faint: #a39888; --logo-edge: #475569;
+    --hero-bg: #0f1f1d;
+    --faint: #8a8a8a; --logo-edge: #475569;
     --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
   }
   [hidden] { display: none !important; }
@@ -249,7 +250,7 @@
   .chips { @apply flex flex-wrap gap-1.5; }
   .chip { @apply inline-flex items-center gap-1 rounded-full bg-chip px-2 py-0.5 text-xs font-medium whitespace-nowrap text-chip-ink; }
   .chip.more { @apply bg-transparent text-muted ring-1 ring-line ring-inset; }
-  .chip.have { @apply bg-accent/15 text-accent ring-1 ring-accent/30 ring-inset; }
+  .chip.have { @apply bg-accent-2/15 text-accent-2 ring-1 ring-accent-2/30 ring-inset; }
   .toggles .chip { @apply cursor-pointer bg-card px-3 py-1 text-[13px] ring-1 ring-line ring-inset transition-colors select-none
     hover:ring-accent/60; }
   .toggles .chip.on { @apply bg-accent text-on-accent ring-accent; }
@@ -275,8 +276,8 @@
   .matches a { @apply font-medium no-underline hover:underline; }
   .matches .m { @apply mt-0.5 text-xs text-muted; }
   .matches li.muted { @apply -ml-5 list-none; }
-  .star { @apply cursor-pointer border-0 bg-transparent px-1 text-base leading-none text-muted transition-colors hover:text-accent; }
-  .star.on { @apply text-accent; }
+  .star { @apply cursor-pointer border-0 bg-transparent px-1 text-base leading-none text-muted transition-colors hover:text-accent-2; }
+  .star.on { @apply text-accent-2; }
   .badge { @apply ml-1.5 inline-flex rounded-full px-1.5 text-[10.5px] leading-4 font-semibold align-middle;
     background: var(--badge-bg); color: var(--badge-fg); }
   .badge.stale { @apply bg-chip text-muted; }
@@ -403,7 +404,7 @@
   .tag.lang { background: var(--tag-lang-bg); color: var(--tag-lang-fg); }
   .tag.visa { background: var(--tag-visa-bg); color: var(--tag-visa-fg); }
   .job-skills { @apply mt-2 flex flex-wrap gap-x-2.5 gap-y-0.5 text-[12.5px]; color: var(--faint); }
-  .job-skills .have { @apply font-semibold text-accent; }
+  .job-skills .have { @apply font-semibold text-accent-2; }
   .job-skills .more { @apply text-muted; }
   /* wide cards: what the job asks gets its own column on the right, ruled off from the title and skills */
   .job { container-type: inline-size; }

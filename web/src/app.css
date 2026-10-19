@@ -37,7 +37,7 @@
 }
 
 @layer base {
-  /* a neutral base (white cards on light grey; lighter grey cards on dark grey in dark mode), a navy header, and the logo's
+  /* a neutral base (white cards on light grey; dark mode is the same, dimmed: light grey cards on a mid grey), a navy header, and the logo's
      two accents: teal for actions,
      links and filters, orange for highlights (visa sponsorship, saved jobs, skills in a profile, new) */
   :root {
@@ -57,32 +57,32 @@
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      color-scheme: dark;
-      --bg: #18181b; --card: #2c2d32; --ink: #f4f4f5; --muted: #b8bac1; --line: #3d3f46;
-      --accent: #5cc6b8; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #3a3b41; --chip-ink: #e8e8eb;
-      --ok: #5cc6b8; --bad: #f87171; --warn: #fbbf24;
-      --tag-lang-fg: #a7ddd5; --tag-lang-bg: #1f4441; --tag-visa-fg: #fdba74; --tag-visa-bg: #4a2d1a;
-      --badge-bg: #fb923c; --badge-fg: #1c0a00;
-      --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
-      --hero-bg: #1e2928;
-      --faint: #a1a3ab; --logo-edge: #475569;
-      --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
+      color-scheme: light;  /* dimmed light mode: dark type on mid greys, light form controls */
+      --bg: #b4b9c1; --card: #d5d9de; --ink: #0a0a0a; --muted: #33383f; --line: #a9afb8;
+      --accent: #084b45; --accent-2: #8a2e0e; --on-accent: #ffffff; --chip: #c4c9cf; --chip-ink: #1f2328;
+      --ok: #084b45; --bad: #9b1c1c; --warn: #7a4f00;
+      --tag-lang-fg: #0b4f49; --tag-lang-bg: #a9dcd3; --tag-visa-fg: #7c2d12; --tag-visa-bg: #efcfb3;
+      --badge-bg: #9a3412; --badge-fg: #ffffff;
+      --shadow-card: 0 1px 2px rgb(0 0 0 / .06), 0 4px 14px rgb(0 0 0 / .06);
+      --hero-bg: #b3c9c4;
+      --faint: #464b52; --logo-edge: #020617;
+      --logo-glow: 0 1px 2px rgb(15 23 42 / .22);
       --head-bg: rgb(10 26 54 / .92); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #fb923c;
       --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
       --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #0a1a36;
     }
   }
   :root[data-theme="dark"] {
-    color-scheme: dark;
-    --bg: #18181b; --card: #2c2d32; --ink: #f4f4f5; --muted: #b8bac1; --line: #3d3f46;
-    --accent: #5cc6b8; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #3a3b41; --chip-ink: #e8e8eb;
-    --ok: #5cc6b8; --bad: #f87171; --warn: #fbbf24;
-    --tag-lang-fg: #a7ddd5; --tag-lang-bg: #1f4441; --tag-visa-fg: #fdba74; --tag-visa-bg: #4a2d1a;
-    --badge-bg: #fb923c; --badge-fg: #1c0a00;
-    --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
-    --hero-bg: #1e2928;
-    --faint: #a1a3ab; --logo-edge: #475569;
-    --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
+    color-scheme: light;  /* dimmed light mode: dark type on mid greys, light form controls */
+    --bg: #b4b9c1; --card: #d5d9de; --ink: #0a0a0a; --muted: #33383f; --line: #a9afb8;
+    --accent: #084b45; --accent-2: #8a2e0e; --on-accent: #ffffff; --chip: #c4c9cf; --chip-ink: #1f2328;
+    --ok: #084b45; --bad: #9b1c1c; --warn: #7a4f00;
+    --tag-lang-fg: #0b4f49; --tag-lang-bg: #a9dcd3; --tag-visa-fg: #7c2d12; --tag-visa-bg: #efcfb3;
+    --badge-bg: #9a3412; --badge-fg: #ffffff;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / .06), 0 4px 14px rgb(0 0 0 / .06);
+    --hero-bg: #b3c9c4;
+    --faint: #464b52; --logo-edge: #020617;
+    --logo-glow: 0 1px 2px rgb(15 23 42 / .22);
     --head-bg: rgb(10 26 54 / .92); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #fb923c;
     --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
     --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #0a1a36;

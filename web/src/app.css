@@ -37,7 +37,8 @@
 }
 
 @layer base {
-  /* a neutral base (white and light grey; dark blue in dark mode) and the logo's two accents: teal for actions,
+  /* a neutral base (white cards on light grey; light navy cards on black in dark mode), a navy header, and the logo's
+     two accents: teal for actions,
      links and filters, orange for highlights (visa sponsorship, saved jobs, skills in a profile, new) */
   :root {
     color-scheme: light;
@@ -50,15 +51,15 @@
     --badge-bg: #c2410c; --badge-fg: #ffffff;
     --faint: #67676f; --logo-edge: #020617;
     --logo-glow: 0 1px 2px rgb(15 23 42 / .22);
-    --head-bg: #cfe3f0; --head-line: #b9d3e4; --head-ink: #0c2d40; --head-muted: #2f5468; --head-orange: #c2410c;
-    --head-btn: rgb(255 255 255 / .55); --head-btn-hover: rgb(255 255 255 / .85); --head-btn-line: #b0cadb;
-    --head-switch: rgb(255 255 255 / .45); --head-switch-on: #0c4760; --head-switch-on-ink: #ffffff;
+    --head-bg: rgb(16 42 82 / .9); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #fb923c;
+    --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
+    --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #102a52;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       color-scheme: dark;
-      --bg: #0b1222; --card: #131c33; --ink: #f1f5f9; --muted: #a3b1c6; --line: #24304f;
-      --accent: #4fb3a6; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #1b2643; --chip-ink: #dbe3ef;
+      --bg: #0a0a0c; --card: #141e33; --ink: #f1f5f9; --muted: #a3b1c6; --line: #27344f;
+      --accent: #4fb3a6; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #1d2945; --chip-ink: #dbe3ef;
       --ok: #4fb3a6; --bad: #f87171; --warn: #fbbf24;
       --tag-lang-fg: #a7ddd5; --tag-lang-bg: #173540; --tag-visa-fg: #fdba74; --tag-visa-bg: #36200f;
       --badge-bg: #fb923c; --badge-fg: #1c0a00;
@@ -66,15 +67,15 @@
       --hero-bg: #0f2030;
       --faint: #8b99b0; --logo-edge: #475569;
       --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
-      --head-bg: #0f3348; --head-line: transparent; --head-ink: #ffffff; --head-muted: #cfe2ea; --head-orange: #fb923c;
+      --head-bg: rgb(16 42 82 / .9); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #fb923c;
       --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
-      --head-switch: rgb(0 0 0 / .18); --head-switch-on: #ffffff; --head-switch-on-ink: #0c4760;
+      --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #102a52;
     }
   }
   :root[data-theme="dark"] {
     color-scheme: dark;
-    --bg: #0b1222; --card: #131c33; --ink: #f1f5f9; --muted: #a3b1c6; --line: #24304f;
-    --accent: #4fb3a6; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #1b2643; --chip-ink: #dbe3ef;
+    --bg: #0a0a0c; --card: #141e33; --ink: #f1f5f9; --muted: #a3b1c6; --line: #27344f;
+    --accent: #4fb3a6; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #1d2945; --chip-ink: #dbe3ef;
     --ok: #4fb3a6; --bad: #f87171; --warn: #fbbf24;
     --tag-lang-fg: #a7ddd5; --tag-lang-bg: #173540; --tag-visa-fg: #fdba74; --tag-visa-bg: #36200f;
     --badge-bg: #fb923c; --badge-fg: #1c0a00;
@@ -82,9 +83,9 @@
     --hero-bg: #0f2030;
     --faint: #8b99b0; --logo-edge: #475569;
     --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
-    --head-bg: #0f3348; --head-line: transparent; --head-ink: #ffffff; --head-muted: #cfe2ea; --head-orange: #fb923c;
+    --head-bg: rgb(16 42 82 / .9); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #fb923c;
     --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
-    --head-switch: rgb(0 0 0 / .18); --head-switch-on: #ffffff; --head-switch-on-ink: #0c4760;
+    --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #102a52;
   }
   /* outlines and rules in a tint of the teal, and a faint teal fill for section headings (both themes) */
   :root { --line-accent: color-mix(in oklab, var(--accent) 30%, var(--line));
@@ -166,9 +167,8 @@
   .tab-controls { @apply ml-auto flex items-center gap-2; }
   .tag { @apply max-w-2xl text-sm text-muted; }
 
-  /* ---------- the header: light blue with dark type in light mode, petrol blue with white type in dark mode; the name's
-     last word, the open tab and Log in in orange. Type 10:1 or more; the orange name is large bold type at 3.9:1 and
-     5.9:1 */
+  /* ---------- the header: navy in both themes, slightly see-through over the page like the search band; white type,
+     the name's last word, the open tab and Log in in orange. White 10.9:1 (14.9:1 dark), orange 4.8:1 (6.6:1) ---------- */
   .top { background: var(--head-bg); border-color: var(--head-line); color: var(--head-ink); }
   .top .brand, .top .brand:hover h1, .top .brand:hover b { color: var(--head-ink); }
   .brand-last { color: var(--accent-2); }

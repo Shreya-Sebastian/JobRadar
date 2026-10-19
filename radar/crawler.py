@@ -102,6 +102,8 @@ def is_expired(valid_through: datetime | None, now: datetime) -> bool:
     if valid_through is None:
         return False
     if (valid_through.hour, valid_through.minute, valid_through.second) == (0, 0, 0):
+        if valid_through >= datetime.max - timedelta(days=1):
+            return False  # "9999-12-31": no end date
         valid_through += timedelta(days=1)
     return valid_through < now
 
@@ -117,30 +119,35 @@ def close_expired(session: Session) -> int:
     and an incremental sitemap crawl does not re-read pages it already knows, so a government vacancy that closed
     at midnight stayed listed until much later."""
     now = datetime.utcnow()
-    by_source: dict[int, list[Posting]] = {}
-    for p in session.scalars(select(Posting).where(Posting.closed_at.is_(None), Posting.valid_through.is_not(None))):
-        by_source.setdefault(p.source_id, []).append(p)
-    closed = 0
-    for postings in by_source.values():
-        if not expiry_trusted([p.valid_through for p in postings], now):
-            continue
-        for p in postings:
-            if is_expired(p.valid_through, now):
-                p.closed_at = now
-                closed += 1
+    # three columns, not whole postings: some 20,000 live postings carry a date, and loading them with their texts
+    # took more memory than the worker has (finalize was OOM-killed from early October 2026)
+    by_source: dict[int, list[tuple[int, datetime]]] = {}
+    for pid, sid, valid_through in session.execute(
+            select(Posting.id, Posting.source_id, Posting.valid_through)
+            .where(Posting.closed_at.is_(None), Posting.valid_through.is_not(None))):
+        by_source.setdefault(sid, []).append((pid, valid_through))
+    ids: list[int] = []
+    for dated in by_source.values():
+        if expiry_trusted([v for _, v in dated], now):
+            ids.extend(pid for pid, v in dated if is_expired(v, now))
+    _close(session, ids, now)
+    return len(ids)
+
+
+def _close(session: Session, ids: list[int], now: datetime) -> None:
+    from sqlalchemy import update
+
+    for i in range(0, len(ids), 1000):
+        session.execute(update(Posting).where(Posting.id.in_(ids[i:i + 1000])).values(closed_at=now))
     session.flush()
-    return closed
 
 
 def close_inactive(session: Session) -> int:
     """Close live postings of sources that are switched off (deactivated before `deactivate` closed them)."""
-    now = datetime.utcnow()
     inactive = select(Source.id).where(Source.active.is_(False))
-    closed = 0
-    for p in session.scalars(select(Posting).where(Posting.closed_at.is_(None), Posting.source_id.in_(inactive))):
-        p.closed_at = now
-        closed += 1
-    return closed
+    ids = list(session.scalars(select(Posting.id).where(Posting.closed_at.is_(None), Posting.source_id.in_(inactive))))
+    _close(session, ids, datetime.utcnow())
+    return len(ids)
 
 
 def deactivate(session: Session, source: Source) -> int:

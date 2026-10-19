@@ -73,6 +73,7 @@ def test_a_date_without_time_is_open_all_that_day():
     assert is_expired(datetime(2026, 10, 4), now)
     assert is_expired(datetime(2026, 10, 5, 9, 0), now)
     assert not is_expired(None, now)
+    assert not is_expired(datetime(9999, 12, 31), now)  # no end date, and no overflow adding a day
 
 
 def test_pages_not_reread_are_still_checked_for_country_and_expiry(fresh_db):

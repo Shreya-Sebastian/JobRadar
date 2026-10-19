@@ -151,6 +151,10 @@
   .topbar { @apply flex h-16 items-center justify-between gap-3; }
   .brand { @apply flex min-w-0 items-center gap-3 text-ink no-underline; }
   .brand h1, .brand b { @apply truncate font-display text-[1.45rem] font-semibold; }
+  /* on a phone the three-word name wraps onto two lines instead of being cut off */
+  @media (max-width: 480px) {
+    .brand h1, .brand b { @apply text-[1.05rem] leading-[1.1]; white-space: normal; overflow: visible; text-overflow: clip; max-width: 6.5em; }
+  }
   .brand:hover h1, .brand:hover b { @apply text-accent; }
   .logo { @apply size-10 shrink-0; border-radius: 25%; box-shadow: var(--logo-glow); }  /* a crisp edge against the header */
   .topbar-right { @apply flex items-center gap-2.5; }

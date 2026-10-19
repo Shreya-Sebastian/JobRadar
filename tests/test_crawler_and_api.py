@@ -114,7 +114,7 @@ def test_api_endpoints(fresh_db):
     client = TestClient(app)
     assert client.get("/healthz").json() == {"ok": True, "build": "dev"}
     home = client.get("/").text
-    assert "{{" not in home and '<h1>TechJar<span class="sr-only">: tech jobs in the Netherlands</span></h1>' in home and "TechJobsNL" in home
+    assert "{{" not in home and '<h1>Tech Jobs Radar<span class="sr-only">: tech jobs in the Netherlands</span></h1>' in home and "TechJobsNL" in home
     assert '"@type": "WebSite"' in home
     assert "Sitemap:" in client.get("/robots.txt").text and "<urlset" in client.get("/sitemap.xml").text
     ov = client.get("/api/overview").json()
@@ -326,7 +326,7 @@ def test_search_landing_pages_bilingual_and_in_sitemap(fresh_db):
     en = client.get("/jobs/tech-amsterdam")
     assert nl.status_code == 200 and en.status_code == 200
     assert "<title>ICT vacatures Amsterdam | " in nl.text and 'lang="nl"' in nl.text
-    assert "<title>Tech jobs in Amsterdam | TechJar</title>" in en.text and 'hreflang="nl" href="https://techjobsradar.nl/vacatures/ict-amsterdam"' in en.text
+    assert "<title>Tech jobs in Amsterdam | Tech Jobs Radar</title>" in en.text and 'hreflang="nl" href="https://techjobsradar.nl/vacatures/ict-amsterdam"' in en.text
     assert "Data Engineer 0" in en.text and "{{" not in en.text
     assert client.get("/jobs/english-speaking").status_code == 200
     assert client.get("/jobs/tech-groningen").status_code == 404  # no postings there: no thin page

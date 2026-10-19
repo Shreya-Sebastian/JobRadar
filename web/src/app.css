@@ -50,6 +50,7 @@
     --badge-bg: #c2410c; --badge-fg: #ffffff;
     --faint: #67676f; --logo-edge: #020617;
     --logo-glow: 0 1px 2px rgb(15 23 42 / .22);
+    --head-bg: #0b4f4a;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -63,6 +64,7 @@
       --hero-bg: #0f2030;
       --faint: #8b99b0; --logo-edge: #475569;
       --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
+      --head-bg: #0e3b3d;
     }
   }
   :root[data-theme="dark"] {
@@ -76,7 +78,11 @@
     --hero-bg: #0f2030;
     --faint: #8b99b0; --logo-edge: #475569;
     --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
+    --head-bg: #0e3b3d;
   }
+  /* outlines and rules in a tint of the teal, and a faint teal fill for section headings (both themes) */
+  :root { --line-accent: color-mix(in oklab, var(--accent) 30%, var(--line));
+          --fill-accent: color-mix(in oklab, var(--accent) 7%, var(--card)); }
   [hidden] { display: none !important; }
   body { @apply bg-bg text-[15px]/relaxed text-ink antialiased; }
   h1 { @apply font-display text-2xl font-bold tracking-tight; }
@@ -84,6 +90,7 @@
   h3 { @apply mt-4 mb-2 text-sm font-semibold; }
   p { @apply my-2; }
   a { @apply text-accent; }
+  a:hover { text-decoration-color: var(--accent-2); }
   ::selection { @apply bg-accent/25; }
   :focus-visible { @apply outline-2 outline-offset-2 outline-accent; }
 
@@ -153,9 +160,29 @@
   .tab-controls { @apply ml-auto flex items-center gap-2; }
   .tag { @apply max-w-2xl text-sm text-muted; }
 
+  /* ---------- the header in teal: white type; the name's last word, the open tab and Log in in orange ----------
+     white on #0b4f4a is 9.4:1 (12:1 on the dark theme's #0e3b3d); the orange name is large bold type at 4.2:1 */
+  .top { background: var(--head-bg); border-color: transparent; color: #ffffff; }
+  .top .brand, .top .brand:hover h1, .top .brand:hover b { color: #ffffff; }
+  .brand-last { color: var(--accent-2); }
+  .top .brand-last { color: #fb923c; }
+  .top .tabs a { color: #cfe5e1; }
+  .top .tabs a:hover { color: #ffffff; border-color: rgb(255 255 255 / .3); }
+  .top .tabs a.on { color: #ffffff; border-color: #fb923c; }
+  .top .tabs a.on svg, .top .tabs a:hover svg { color: #fb923c; }
+  .top :is(.refresh-btn, .theme-btn) { background: rgb(255 255 255 / .08); border-color: rgb(255 255 255 / .24); color: #ffffff; }
+  .top :is(.refresh-btn, .theme-btn):hover, .top .refresh-btn:disabled:hover { background: rgb(255 255 255 / .16); }
+  .top .refresh-btn:not(:disabled) { border-color: #fb923c; color: #fdba74; }
+  .top .langswitch { background: rgb(0 0 0 / .18); border-color: rgb(255 255 255 / .24); }
+  .top .langswitch > * { color: #cfe5e1; }
+  .top .langswitch > :hover { color: #ffffff; }
+  .top .langswitch > .on { background: #ffffff; color: #0b4f4a; }
+  .top :is(.acct-btn, .avatar) { background: #fb923c; border-color: #fb923c; color: #1c0a00; }
+  .top :is(.acct-btn, .avatar):hover { background: #fdba74; }
+
   /* ---------- key figures ---------- */
   .kpis { @apply grid gap-3; grid-template-columns: repeat(auto-fill, minmax(min(9.5rem, 100%), 1fr)); }
-  .kpi { @apply rounded-xl border border-line bg-card px-4 py-3 shadow-xs; }
+  .kpi { @apply rounded-xl border bg-card px-4 py-3 shadow-xs; border-color: var(--line-accent); }
   .card .kpi { @apply bg-bg shadow-none; }
   .kpi b { @apply block text-xl leading-tight font-semibold tracking-tight tabular-nums; }
   .kpi span { @apply mt-0.5 block text-xs text-muted; }
@@ -168,9 +195,9 @@
   /* ---------- cards and layout ---------- */
   .tab { display: none; }
   .tab.on { display: block; }
-  .card { @apply mt-4 min-w-0 rounded-[1.25rem] border border-line bg-card p-5; box-shadow: var(--shadow-card); }
+  .card { @apply mt-4 min-w-0 rounded-[1.25rem] border bg-card p-5; border-color: var(--line-accent); box-shadow: var(--shadow-card); }
   .tab .card > h2:first-child::before, .report .card > h2::before { content: ""; @apply mr-2 inline-block size-2.5 rounded-sm align-middle;
-    background: var(--accent); }
+    background: var(--accent-2); }
   .card:has(> .table) { @apply overflow-x-auto; }
   .grid.two, .grid.three { @apply mt-4 grid gap-4; }
   .grid.two { grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); }
@@ -196,8 +223,8 @@
   .quiz-foot { @apply mt-4 flex flex-wrap items-center justify-between gap-3; }
   /* structure: each card's title sits in a strip ruled off from its content */
   .tab .card > h2:first-child, .tab .card > .card-head:first-child, .report .card > h2:first-child {
-    @apply -mx-5 -mt-5 mb-4 rounded-t-[1.25rem] border-b border-line px-5 py-3.5;
-    background: color-mix(in oklab, var(--chip) 45%, transparent); }
+    @apply -mx-5 -mt-5 mb-4 rounded-t-[1.25rem] border-b px-5 py-3.5;
+    border-color: var(--line-accent); background: var(--fill-accent); }
   .tab .card > .card-head:first-child h2 { @apply m-0; }
   .tab .card > h3 { @apply mt-5 border-t border-line pt-4; }
   .card details { @apply rounded-xl border border-line px-3.5 py-2.5; }
@@ -271,7 +298,7 @@
   .table tbody tr { @apply transition-colors hover:bg-chip/50; }
   .table tbody tr:last-child td { @apply border-b-0; }
   .table a { @apply font-medium no-underline hover:underline; }
-  a.co { @apply border-b border-dotted border-muted font-normal text-inherit no-underline hover:text-accent hover:no-underline; }
+  a.co { @apply border-b border-dotted border-accent-2/70 font-normal text-inherit no-underline hover:text-accent hover:no-underline; }
   .matches { @apply m-0 list-decimal space-y-2.5 pl-5 text-sm marker:text-xs marker:text-muted; }
   .matches a { @apply font-medium no-underline hover:underline; }
   .matches .m { @apply mt-0.5 text-xs text-muted; }
@@ -324,13 +351,13 @@
   .browse { @apply mt-5 grid gap-6; }
   .results { @apply min-w-0; }
   .results > .results-head:first-child, .results > .quiz:first-child { @apply mt-0; }
-  .side { @apply flex flex-col overflow-hidden rounded-[1.25rem] border border-line bg-card; box-shadow: var(--shadow-card); }
-  .side-head { @apply flex items-center gap-3 border-b border-line px-4 py-3; }
+  .side { @apply flex flex-col overflow-hidden rounded-[1.25rem] border bg-card; border-color: var(--line-accent); box-shadow: var(--shadow-card); }
+  .side-head { @apply flex items-center gap-3 border-b px-4 py-3; border-color: var(--line-accent); background: var(--fill-accent); }
   .side-head h2 { @apply m-0 mr-auto text-base; }
   .side-close { @apply size-8 rounded-full border-0 bg-transparent p-0 text-xl leading-none text-muted shadow-none hover:bg-chip
     hover:text-ink; }
   .side-body { @apply min-h-0 flex-1 overflow-y-auto overscroll-contain; }
-  .fgroup + .fgroup { @apply border-t border-line; }
+  .fgroup + .fgroup { @apply border-t; border-color: var(--line-accent); }
   .fgroup > summary { @apply flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-semibold text-ink select-none
     hover:text-accent; }
   .fgroup > summary::-webkit-details-marker { display: none; }
@@ -412,9 +439,9 @@
   .sort select { @apply py-1.5; }
   .jobs { @apply m-0 flex list-none flex-col gap-2.5 p-0; }
   .jobs-empty { @apply rounded-2xl border border-dashed border-line p-8 text-center; }
-  .job { @apply flex gap-4 rounded-[1.25rem] border border-transparent bg-card p-4 transition hover:-translate-y-px
-    hover:shadow-md sm:p-5; box-shadow: var(--shadow-card); }
-  /* on hover the border takes a tint of the card's own colour */
+  .job { @apply flex gap-4 rounded-[1.25rem] border bg-card p-4 transition hover:-translate-y-px
+    hover:shadow-md sm:p-5; border-color: color-mix(in oklab, var(--accent) 18%, var(--line)); box-shadow: var(--shadow-card); }
+  /* on hover the border takes a stronger tint of the teal */
   .job:not(.skel):hover { border-color: color-mix(in oklab, var(--accent) 45%, var(--line)); }
   .job-logo { @apply relative grid size-12 shrink-0 place-items-center overflow-hidden rounded-2xl;
     background: var(--chip); color: var(--muted); }

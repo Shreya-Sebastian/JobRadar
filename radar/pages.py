@@ -69,8 +69,14 @@ def _template(name: str) -> str:
     return (WEB_DIR / name).read_text(encoding="utf-8")
 
 
+def brand_html() -> str:
+    """The site name for the header and footer, its last word in the accent colour: Tech Jobs <span>Radar</span>."""
+    head, _, last = settings.site_name.rpartition(" ")
+    return f'{escape(head)} <span class="brand-last">{escape(last)}</span>' if head else escape(settings.site_name)
+
+
 def _brand(html: str, lang: str = "en") -> str:
-    return (html.replace("{{SITE_NAME}}", escape(settings.site_name))
+    return (html.replace("{{BRAND}}", brand_html()).replace("{{SITE_NAME}}", escape(settings.site_name))
                 .replace("{{SITE_URL}}", settings.site_url.rstrip("/"))
                 .replace("{{SITE_TAGLINE}}", escape(settings.site_tagline))
                 .replace("{{FOOT_LINKS}}", foot_links(lang)))

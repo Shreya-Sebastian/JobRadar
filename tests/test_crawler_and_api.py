@@ -114,7 +114,7 @@ def test_api_endpoints(fresh_db):
     client = TestClient(app)
     assert client.get("/healthz").json() == {"ok": True, "build": "dev"}
     home = client.get("/").text
-    assert "{{" not in home and '<h1>Tech Jobs Radar<span class="sr-only">: tech jobs in the Netherlands</span></h1>' in home and "TechJobsNL" in home
+    assert "{{" not in home and '<h1>Tech Jobs <span class="brand-last">Radar</span><span class="sr-only">: tech jobs in the Netherlands</span></h1>' in home and "TechJobsNL" in home
     assert '"@type": "WebSite"' in home
     assert "Sitemap:" in client.get("/robots.txt").text and "<urlset" in client.get("/sitemap.xml").text
     ov = client.get("/api/overview").json()

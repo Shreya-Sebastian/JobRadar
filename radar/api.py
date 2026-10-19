@@ -24,6 +24,7 @@ from radar.config import settings
 from radar.db import get_engine, init_db, new_session
 from radar.metrics import API_REQUESTS, API_SECONDS, QUEUE_DEPTH
 from radar.models import CrawlRun, Source
+from radar.pages import brand_html
 
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 log = logging.getLogger(__name__)
@@ -113,7 +114,7 @@ async def _http_error(request: Request, exc: StarletteHTTPException):
     page = (f'<!doctype html><html lang="{lang}"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">'
             f'<title>{escape(title)} · {escape(settings.site_name)}</title>'
-            '<link rel="stylesheet" href="/static/app.css?v=14"></head><body>'
+            '<link rel="stylesheet" href="/static/app.css?v=15"></head><body>'
             f'<main class="wrap" style="padding-top:4rem;padding-bottom:4rem"><h1>{escape(title)}</h1>'
             f'<p class="muted">{escape(text)}</p>'
             f'<p><a class="btn primary" href="{home}">{escape(back)}</a></p></main></body></html>')
@@ -885,7 +886,7 @@ def _render_index(session: Session | None = None, lang: str = "en") -> str:
          "logo": {"@type": "ImageObject", "url": f"{base}/static/icon-512.png", "width": 512, "height": 512},
          "email": "contact@techjobsradar.nl"},
     ]}
-    return (html.replace("{{SITE_NAME}}", settings.site_name)
+    return (html.replace("{{BRAND}}", brand_html()).replace("{{SITE_NAME}}", settings.site_name)
                 .replace("{{SITE_URL}}", settings.site_url.rstrip("/"))
                 .replace("{{SITE_TAGLINE}}", settings.site_tagline)
                 .replace("{{SITE_ALIASES}}", ", ".join(aliases))
@@ -933,7 +934,7 @@ if WEB_DIR.exists():
     @app.get("/nl/inloggen", include_in_schema=False)
     def login_page(request: Request):
         lang = "nl" if request.url.path.startswith("/nl") else "en"
-        html = (WEB_DIR / "login.html").read_text(encoding="utf-8")
+        html = (WEB_DIR / "login.html").read_text(encoding="utf-8").replace("{{BRAND}}", brand_html())
         return Response(html.replace("{{HTML_LANG}}", lang).replace("{{SITE_NAME}}", settings.site_name),
                         media_type="text/html", headers={"X-Robots-Tag": "noindex"})
 
@@ -941,7 +942,7 @@ if WEB_DIR.exists():
     @app.get("/nl/feedback", include_in_schema=False)
     def feedback_page(request: Request):
         lang = "nl" if request.url.path.startswith("/nl") else "en"
-        html = (WEB_DIR / "feedback.html").read_text(encoding="utf-8")
+        html = (WEB_DIR / "feedback.html").read_text(encoding="utf-8").replace("{{BRAND}}", brand_html())
         return Response(html.replace("{{HTML_LANG}}", lang).replace("{{SITE_NAME}}", settings.site_name),
                         media_type="text/html", headers={"X-Robots-Tag": "noindex"})
 
@@ -961,7 +962,7 @@ if WEB_DIR.exists():
     @app.get("/nl/privacy", include_in_schema=False)
     def privacy(request: Request):
         lang = "nl" if request.url.path.startswith("/nl") else "en"
-        html = (WEB_DIR / "privacy.html").read_text(encoding="utf-8")
+        html = (WEB_DIR / "privacy.html").read_text(encoding="utf-8").replace("{{BRAND}}", brand_html())
         return Response(html.replace("{{HTML_LANG}}", lang).replace("{{SITE_NAME}}", settings.site_name)
                         .replace("{{SOURCE_EN}}", _source_link("en", sentence=True))
                         .replace("{{SOURCE_NL}}", _source_link("nl", sentence=True)), media_type="text/html")
@@ -985,7 +986,7 @@ if WEB_DIR.exists():
                                                            else f"About {settings.site_name}")))
                 .replace("{{DESCRIPTION}}", escape(desc)).replace("{{SELF_PATH}}", "/nl/over-ons" if nl else "/about")
                 .replace("{{SITE_URL}}", settings.site_url.rstrip("/"))
-                .replace("{{SITE_NAME}}", escape(settings.site_name)))
+                .replace("{{BRAND}}", brand_html()).replace("{{SITE_NAME}}", escape(settings.site_name)))
         return Response(html, media_type="text/html")
 
     @app.get("/vacatures/{slug}", include_in_schema=False)

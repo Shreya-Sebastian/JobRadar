@@ -51,43 +51,43 @@
     --badge-bg: #c2410c; --badge-fg: #ffffff;
     --faint: #71717a; --logo-edge: #020617;
     --logo-glow: 0 1px 2px rgb(15 23 42 / .22);
-    --head-bg: rgb(7 19 42 / .92); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #f0842a;
+    --head-bg: rgb(13 22 38 / .94); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #f0842a;
     --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
-    --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #071227;
+    --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #0d1626;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       color-scheme: dark;
-      --bg: #0a0a0a; --card: #071227; --ink: #fafafa; --muted: #b3c1d6; --line: #1b2c4f;
-      --accent: #73b5ac; --accent-2: #f0842a; --on-accent: #042f2e; --chip: #0f2043; --chip-ink: #e0e7f2;
+      --bg: #0b1019; --card: #111826; --ink: #eef1f5; --muted: #a6b1bf; --line: #2a3547;
+      --accent: #73b5ac; --accent-2: #f0842a; --on-accent: #042f2e; --chip: #1b2433; --chip-ink: #dfe5ee;
       --ok: #73b5ac; --bad: #f87171; --warn: #fbbf24;
-      --tag-lang-fg: #b9d9d4; --tag-lang-bg: #1f3633; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
+      --tag-lang-fg: #b9d9d4; --tag-lang-bg: #173634; --tag-visa-fg: #fdba74; --tag-visa-bg: #3b2416;
       --badge-bg: #f0842a; --badge-fg: #1c0a00;
       --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
-      --hero-bg: #111a18;  /* the search band: a deep green in dark mode */
-      --faint: #9eadc4; --logo-edge: #475569;
+      --hero-bg: #0f1a22;  /* the search band: navy with a hint of teal */
+      --faint: #939eae; --logo-edge: #475569;
       --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
-      --head-bg: rgb(7 19 42 / .92); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #f0842a;
+      --head-bg: rgb(13 22 38 / .94); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #f0842a;
       --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
-      --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #071227;
-      --fill-accent: var(--card); --line-accent: #0e1d39;  /* boxes one navy, like the header; faint outlines */
+      --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #0d1626;
+      --fill-accent: var(--card); --line-accent: #1e293a;  /* plain navy strips and soft outlines, no teal tint */
     }
   }
   :root[data-theme="dark"] {
     color-scheme: dark;
-    --bg: #0a0a0a; --card: #071227; --ink: #fafafa; --muted: #b3c1d6; --line: #1b2c4f;
-    --accent: #73b5ac; --accent-2: #f0842a; --on-accent: #042f2e; --chip: #0f2043; --chip-ink: #e0e7f2;
+    --bg: #0b1019; --card: #111826; --ink: #eef1f5; --muted: #a6b1bf; --line: #2a3547;
+    --accent: #73b5ac; --accent-2: #f0842a; --on-accent: #042f2e; --chip: #1b2433; --chip-ink: #dfe5ee;
     --ok: #73b5ac; --bad: #f87171; --warn: #fbbf24;
-    --tag-lang-fg: #b9d9d4; --tag-lang-bg: #1f3633; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
+    --tag-lang-fg: #b9d9d4; --tag-lang-bg: #173634; --tag-visa-fg: #fdba74; --tag-visa-bg: #3b2416;
     --badge-bg: #f0842a; --badge-fg: #1c0a00;
     --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
-    --hero-bg: #111a18;  /* the search band: a deep green in dark mode */
-    --faint: #9eadc4; --logo-edge: #475569;
+    --hero-bg: #0f1a22;  /* the search band: navy with a hint of teal */
+    --faint: #939eae; --logo-edge: #475569;
     --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
-    --head-bg: rgb(7 19 42 / .92); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #f0842a;
+    --head-bg: rgb(13 22 38 / .94); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #f0842a;
     --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
-    --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #071227;
-    --fill-accent: var(--card); --line-accent: #0e1d39;  /* boxes one navy, like the header; faint outlines */
+    --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #0d1626;
+    --fill-accent: var(--card); --line-accent: #1e293a;  /* plain navy strips and soft outlines, no teal tint */
   }
   /* outlines and rules in a tint of the teal, and a faint teal fill for section headings (both themes) */
   :root { --line-accent: color-mix(in oklab, var(--accent) 30%, var(--line));
@@ -337,10 +337,10 @@
           --tag-lang-fg: #115e59; --tag-lang-bg: #ccfbf1; --tag-visa-fg: #9a3412; --tag-visa-bg: #ffedd5;
           --badge-bg: #c2410c; --badge-fg: #ffffff; --bad: #dc2626; --ok: #0f766e; color: var(--ink); }
   /* dark mode: the search band dark too, its search field one step lighter */
-  :root[data-theme="dark"] .hero { color-scheme: dark; --ink: #fafafa; --muted: #b3c4c0; --card: #1a2826; --line: #2c3b38; --accent: #73b5ac;
+  :root[data-theme="dark"] .hero { color-scheme: dark; --ink: #eef1f5; --muted: #a6b1bf; --card: #17222e; --line: #25313f; --accent: #73b5ac;
     --on-accent: #042f2e; --chip: #22302e; --chip-ink: #e2ece9; }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .hero { color-scheme: dark; --ink: #fafafa; --muted: #b3c4c0; --card: #1a2826; --line: #2c3b38; --accent: #73b5ac;
+    :root:not([data-theme="light"]) .hero { color-scheme: dark; --ink: #eef1f5; --muted: #a6b1bf; --card: #17222e; --line: #25313f; --accent: #73b5ac;
     --on-accent: #042f2e; --chip: #22302e; --chip-ink: #e2ece9; }
   }
   /* the filters box: a light navy tint in light mode, the header's navy in dark mode */
@@ -349,9 +349,9 @@
   :root .side .side-head { background: #dfe6f2; }
   :root[data-theme="dark"] .side .side-head { background: var(--fill-accent); }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .side .side-head { background: var(--fill-accent); } }
-  :root[data-theme="dark"] .side { --card: #071227; --chip: #0f2043; --chip-ink: #e0e7f2; --muted: #b3c1d6; --faint: #9eadc4; --line: #1b2c4f; background-color: #071227; --line-accent: #0e1d39; }
+  :root[data-theme="dark"] .side { --card: #111826; --chip: #1b2433; --chip-ink: #dfe5ee; --muted: #a6b1bf; --faint: #939eae; --line: #2a3547; background-color: #111826; --line-accent: #1e293a; }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .side { --card: #071227; --chip: #0f2043; --chip-ink: #e0e7f2; --muted: #b3c1d6; --faint: #9eadc4; --line: #1b2c4f; background-color: #071227; --line-accent: #0e1d39; }
+    :root:not([data-theme="light"]) .side { --card: #111826; --chip: #1b2433; --chip-ink: #dfe5ee; --muted: #a6b1bf; --faint: #939eae; --line: #2a3547; background-color: #111826; --line-accent: #1e293a; }
   }
   /* light mode: the quick start in a light navy tint, its answer buttons and progress steps in white */
   :root .quiz { background: #e9eef7; border-color: #c8d3e6; }
@@ -364,15 +364,15 @@
   }
   /* dark mode: the quick start's outline and the filter list's scrollbar in the same faint navy */
   :root[data-theme="dark"] :is(.quiz, .side) { border-color: var(--line-accent); }
-  :root[data-theme="dark"] .side-body { scrollbar-color: #1b2c4f transparent; }
+  :root[data-theme="dark"] .side-body { scrollbar-color: #2a3547 transparent; }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) :is(.quiz, .side) { border-color: var(--line-accent); }
-    :root:not([data-theme="light"]) .side-body { scrollbar-color: #1b2c4f transparent; }
+    :root:not([data-theme="light"]) .side-body { scrollbar-color: #2a3547 transparent; }
   }
-  /* dark mode: job listings in a darker, see-through grey (light mode keeps them white) */
-  :root[data-theme="dark"] .job { --card: rgb(30 31 35 / .55); --chip: #26272b; --chip-ink: #e4e4e7; --muted: #b4b6bd; --faint: #9d9fa7; --line: #34363b; }
+  /* dark mode: job listings the lightest navy step (light mode keeps them white) */
+  :root[data-theme="dark"] .job { --card: #161f2f; --chip: #212b3d; --chip-ink: #e2e7ef; --muted: #aeb8c6; --faint: #97a2b2; --line: #253145; }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .job { --card: rgb(30 31 35 / .55); --chip: #26272b; --chip-ink: #e4e4e7; --muted: #b4b6bd; --faint: #9d9fa7; --line: #34363b; }
+    :root:not([data-theme="light"]) .job { --card: #161f2f; --chip: #212b3d; --chip-ink: #e2e7ef; --muted: #aeb8c6; --faint: #97a2b2; --line: #253145; }
   }
   .hero-title { @apply m-0 max-w-3xl font-display text-[1.5rem] leading-tight font-bold tracking-tight text-ink sm:text-[1.9rem]; }
   .hero-sub { @apply mt-2 mb-4 text-sm text-muted sm:mb-5; }

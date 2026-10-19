@@ -54,27 +54,27 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       color-scheme: dark;
-      --bg: #0a0a0a; --card: #171717; --ink: #fafafa; --muted: #a3a3a3; --line: #2a2a2a;
-      --accent: #2dd4bf; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #262626; --chip-ink: #e5e5e5;
-      --ok: #2dd4bf; --bad: #f87171; --warn: #fbbf24;
-      --tag-lang-fg: #99f6e4; --tag-lang-bg: #134e4a; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
+      --bg: #18181b; --card: #222226; --ink: #f4f4f5; --muted: #a1a1aa; --line: #34343a;
+      --accent: #4fb3a6; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #2c2c31; --chip-ink: #e4e4e7;
+      --ok: #4fb3a6; --bad: #f87171; --warn: #fbbf24;
+      --tag-lang-fg: #a7ddd5; --tag-lang-bg: #1f3b38; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
       --badge-bg: #fb923c; --badge-fg: #1c0a00;
       --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
-      --hero-bg: #0f1f1d;
-      --faint: #8a8a8a; --logo-edge: #475569;
+      --hero-bg: #1e2a28;
+      --faint: #8e8e96; --logo-edge: #475569;
       --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
     }
   }
   :root[data-theme="dark"] {
     color-scheme: dark;
-    --bg: #0a0a0a; --card: #171717; --ink: #fafafa; --muted: #a3a3a3; --line: #2a2a2a;
-    --accent: #2dd4bf; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #262626; --chip-ink: #e5e5e5;
-    --ok: #2dd4bf; --bad: #f87171; --warn: #fbbf24;
-    --tag-lang-fg: #99f6e4; --tag-lang-bg: #134e4a; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
+    --bg: #18181b; --card: #222226; --ink: #f4f4f5; --muted: #a1a1aa; --line: #34343a;
+    --accent: #4fb3a6; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #2c2c31; --chip-ink: #e4e4e7;
+    --ok: #4fb3a6; --bad: #f87171; --warn: #fbbf24;
+    --tag-lang-fg: #a7ddd5; --tag-lang-bg: #1f3b38; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
     --badge-bg: #fb923c; --badge-fg: #1c0a00;
     --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
-    --hero-bg: #0f1f1d;
-    --faint: #8a8a8a; --logo-edge: #475569;
+    --hero-bg: #1e2a28;
+    --faint: #8e8e96; --logo-edge: #475569;
     --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
   }
   [hidden] { display: none !important; }
@@ -297,7 +297,7 @@
     background: var(--hero-bg); }
   .hero-title { @apply m-0 max-w-3xl font-display text-[1.5rem] leading-tight font-bold tracking-tight text-ink sm:text-[1.9rem]; }
   .hero-sub { @apply mt-2 mb-4 text-sm text-muted sm:mb-5; }
-  .hero .search { @apply mt-0 border-transparent shadow-sm; }
+  .hero .search { @apply mt-0 border-line shadow-sm; }
   .search { @apply mt-1 flex flex-col rounded-3xl border border-line bg-card shadow-sm sm:flex-row sm:rounded-full; }
   .search svg { @apply size-5 shrink-0 text-accent; }
   .search-q { @apply flex flex-1 items-center gap-2.5 px-5; }

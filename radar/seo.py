@@ -437,6 +437,8 @@ def render(page: Page, lang: str, rows: list[stats.Row], pages: list[Page]) -> s
             },
         ],
     }
+    from radar.pages import foot_links
+
     html = (WEB_DIR / "landing.html").read_text(encoding="utf-8")
     reps = {
         "{{LANG}}": lang,
@@ -444,6 +446,7 @@ def render(page: Page, lang: str, rows: list[stats.Row], pages: list[Page]) -> s
         "{{DOC_TITLE}}": escape(doc_title(title)),
         "{{COUNT}}": str(n),
         "{{SITE_NAME}}": escape(settings.site_name),
+        "{{FOOT_LINKS}}": foot_links(lang),
         "{{SITE_URL}}": base,
         "{{PATH}}": path,
         "{{NL_PATH}}": page.nl_path,

@@ -14,6 +14,7 @@ from collections import Counter
 from datetime import datetime
 from html import escape
 from pathlib import Path
+from urllib.parse import quote
 
 from radar.config import settings
 from radar.distance import PROVINCES
@@ -68,10 +69,19 @@ def _template(name: str) -> str:
     return (WEB_DIR / name).read_text(encoding="utf-8")
 
 
-def _brand(html: str) -> str:
+def _brand(html: str, lang: str = "en") -> str:
     return (html.replace("{{SITE_NAME}}", escape(settings.site_name))
                 .replace("{{SITE_URL}}", settings.site_url.rstrip("/"))
-                .replace("{{SITE_TAGLINE}}", escape(settings.site_tagline)))
+                .replace("{{SITE_TAGLINE}}", escape(settings.site_tagline))
+                .replace("{{FOOT_LINKS}}", foot_links(lang)))
+
+
+def foot_links(lang: str = "en") -> str:
+    """About, privacy and feedback, at the bottom of every page."""
+    nl = lang == "nl"
+    links = [("/nl/over-ons", "Over ons") if nl else ("/about", "About"),
+             ("/nl/privacy" if nl else "/privacy", "Privacy"), ("/nl/feedback" if nl else "/feedback", "Feedback")]
+    return '<p class="foot-bottom">' + " · ".join(f'<a href="{h}">{t}</a>' for h, t in links) + "</p>"
 
 
 _TEXT = {
@@ -168,7 +178,7 @@ def render_company(name: str, rows: list[Row], lang: str = "en") -> str:
     html = _template("company.html")
     for key, value in t.items():
         html = html.replace("{{L_" + key.upper() + "}}", escape(value.replace("{c}", name)))
-    return _brand(html).replace("{{LANG}}", "nl" if lang == "nl" else "en") \
+    return _brand(html, lang).replace("{{LANG}}", "nl" if lang == "nl" else "en") \
         .replace("{{TITLE}}", escape(t["title"].format(c=name))) \
         .replace("{{TAGLINE}}", escape(TAGLINE_NL if lang == "nl" else settings.site_tagline)) \
         .replace("{{HOME}}", "/nl/" if lang == "nl" else "/") \
@@ -202,6 +212,7 @@ _JOB_TEXT = {
     "en": {
         "overview": "Overview", "jobs": "Discover", "market": "Market", "employers": "Employers",
         "back": "← All jobs", "apply": "View and apply on", "more_at": "More jobs at",
+        "report": "Report a problem with this job",
         "description": "Job description",
         "credit": "From {c}'s job posting, as published on {h}. The text belongs to {c}; read the original at {u}.",
         "closed": "This vacancy is no longer open.", "open_days": "Open for {n} days", "open_new": "New",
@@ -228,6 +239,7 @@ _JOB_TEXT = {
     "nl": {
         "overview": "Overzicht", "jobs": "Ontdekken", "market": "Markt", "employers": "Werkgevers",
         "back": "← Alle vacatures", "apply": "Bekijk en solliciteer op", "more_at": "Meer vacatures bij",
+        "report": "Een probleem met deze vacature melden",
         "description": "Vacaturetekst",
         "credit": "Uit de vacature van {c}, zoals gepubliceerd op {h}. De tekst is van {c}; lees het origineel op {u}.",
         "closed": "Deze vacature is niet meer open.", "open_days": "{n} dagen open", "open_new": "Nieuw",
@@ -437,10 +449,12 @@ def render_job(p, lang: str = "en", sector: str | None = None, related: list[tup
     for key, value in t.items():
         if isinstance(value, str):
             html = html.replace("{{L_" + key.upper() + "}}", escape(value))
-    return _brand(html).replace("{{LANG}}", lang) \
+    return _brand(html, lang).replace("{{LANG}}", lang) \
         .replace("{{TITLE}}", escape(title)) \
         .replace("{{DESCRIPTION}}", escape(desc)) \
         .replace("{{SELF_PATH}}", self_path) \
+        .replace("{{REPORT_PATH}}", escape(("/nl" if lang == "nl" else "") + "/feedback?kind=listing&from="
+                                           + quote(self_path))) \
         .replace("{{EN_PATH}}", job_path(p.id, p.title, "en")).replace("{{NL_PATH}}", job_path(p.id, p.title, "nl")) \
         .replace("{{EN_ON}}", " on" if lang == "en" else "").replace("{{NL_ON}}", " on" if lang == "nl" else "") \
         .replace("{{ROBOTS}}", '<meta name="robots" content="noindex, follow">' if closed else "") \
@@ -620,7 +634,7 @@ def render_report(rep: dict, lang: str) -> str:
     ld = {"@context": "https://schema.org", "@type": "Report", "name": t["title"], "inLanguage": lang,
           "url": base + self_path, "datePublished": rep["to"], "description": t["desc"],
           "publisher": {"@type": "Organization", "name": settings.site_name, "url": base}}
-    return _brand(_template("report.html")) \
+    return _brand(_template("report.html"), lang) \
         .replace("{{LANG}}", lang).replace("{{DOC_TITLE}}", escape(t["doc"])).replace("{{TITLE}}", escape(t["title"])) \
         .replace("{{DESCRIPTION}}", escape(t["desc"])).replace("{{SELF_PATH}}", self_path) \
         .replace("{{EN_PATH}}", "/market-report").replace("{{NL_PATH}}", "/nl/marktrapport") \

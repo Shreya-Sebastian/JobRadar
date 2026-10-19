@@ -663,7 +663,8 @@ def _sitemap_xml(session: Session) -> str:
     live = [r for r in rows if r.closed_at is None]
     home = lastmod(tech)
     urls = [(f"{base}/", home), (f"{base}/nl/", home), (f"{base}/companies", home),
-            (f"{base}/market-report", home), (f"{base}/nl/marktrapport", home)]
+            (f"{base}/market-report", home), (f"{base}/nl/marktrapport", home),
+            (f"{base}/about", None), (f"{base}/nl/over-ons", None)]
     for lp in landing_pages:
         day = lastmod(seo._filtered(live, lp.filters, lp.city))
         urls += [(base + lp.nl_path, day), (base + lp.en_path, day)]
@@ -900,6 +901,7 @@ def _render_index(session: Session | None = None, lang: str = "en") -> str:
                 .replace("{{VERIFY}}", seo.verification_meta())
                 .replace("{{SOURCE_LINK}}", _source_link(lang))
                 .replace("{{PRIVACY_PATH}}", "/nl/privacy" if lang == "nl" else "/privacy")
+                .replace("{{ABOUT_PATH}}", "/nl/over-ons" if lang == "nl" else "/about")
                 .replace("{{FEEDBACK_PATH}}", "/nl/feedback" if lang == "nl" else "/feedback")
                 .replace("{{SEO_LINKS}}", links))
 
@@ -963,6 +965,28 @@ if WEB_DIR.exists():
         return Response(html.replace("{{HTML_LANG}}", lang).replace("{{SITE_NAME}}", settings.site_name)
                         .replace("{{SOURCE_EN}}", _source_link("en", sentence=True))
                         .replace("{{SOURCE_NL}}", _source_link("nl", sentence=True)), media_type="text/html")
+
+    @app.get("/about", include_in_schema=False)
+    @app.get("/nl/over-ons", include_in_schema=False)
+    def about(request: Request):
+        """Who runs the site, where the jobs come from, how the filters work, employers, terms and contact."""
+        from html import escape
+
+        from radar.seo import doc_title
+
+        nl = request.url.path.startswith("/nl")
+        html = (WEB_DIR / "about.html").read_text(encoding="utf-8")
+        desc = (f"Hoe {settings.site_name} werkt: vacatures van de eigen carrièresites van werkgevers, hoe de filters "
+                "werken, informatie voor werkgevers, voorwaarden en contact." if nl else
+                f"How {settings.site_name} works: jobs from employers' own career sites, how the filters work, "
+                "information for employers, terms of use and contact.")
+        html = (html.replace("{{HTML_LANG}}", "nl" if nl else "en")
+                .replace("{{DOC_TITLE}}", escape(doc_title(f"Over {settings.site_name}" if nl
+                                                           else f"About {settings.site_name}")))
+                .replace("{{DESCRIPTION}}", escape(desc)).replace("{{SELF_PATH}}", "/nl/over-ons" if nl else "/about")
+                .replace("{{SITE_URL}}", settings.site_url.rstrip("/"))
+                .replace("{{SITE_NAME}}", escape(settings.site_name)))
+        return Response(html, media_type="text/html")
 
     @app.get("/vacatures/{slug}", include_in_schema=False)
     @app.get("/jobs/{slug}", include_in_schema=False)

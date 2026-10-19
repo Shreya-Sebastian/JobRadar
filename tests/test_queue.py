@@ -38,3 +38,25 @@ def test_schedule_worker_finalize_round_trip(fresh_db, monkeypatch):
     result = finalize()
     assert result["live"] == 1 and result["tech"] == 1
     assert fake.get("radar:data_version") is not None
+
+
+ORDER: list[str] = []
+
+
+def _note(name):
+    ORDER.append(name)
+
+
+def test_the_worker_takes_turns_between_queues():
+    # with strict priority the quick ATS boards (crawl-light) waited for ever behind a crawl queue that never emptied
+    import fakeredis
+    from rq import Queue, SimpleWorker
+
+    conn = fakeredis.FakeStrictRedis()
+    crawl, light = Queue("crawl", connection=conn), Queue("crawl-light", connection=conn)
+    for i in range(3):
+        crawl.enqueue(_note, f"sitemap{i}")
+        light.enqueue(_note, f"board{i}")
+    ORDER.clear()
+    SimpleWorker([crawl, light], connection=conn).work(burst=True, dequeue_strategy="round_robin")
+    assert ORDER[:4] == ["sitemap0", "board0", "sitemap1", "board1"]

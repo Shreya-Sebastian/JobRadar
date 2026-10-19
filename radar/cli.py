@@ -658,14 +658,14 @@ def cmd_worker(args: argparse.Namespace) -> None:
         from radar import timetable
 
         timetable.start(get_redis())
-    # in order of priority; by default maintenance first (a dedup or link check waits for the running crawl job,
-    # not for the whole queue), then the sitemaps, then the quick ATS boards when no sitemap is waiting
+    # the queues take turns (round robin) by default: with strict priority a single worker never reached the quick ATS
+    # boards while sitemap crawls kept the crawl queue full, and most boards went unread for weeks (Oct 2026)
     queues = [get_queue(name.strip()) for name in args.queues.split(",") if name.strip()]
     cls = SimpleWorker if (args.simple or sys.platform == "win32") else Worker
     worker = cls(queues, connection=get_redis())
     # the scheduler moves retried jobs (Retry with an interval) back onto the queue; without it they stay
     # "scheduled" for ever, and every later crawl of that source is skipped as already queued
-    worker.work(burst=args.burst, with_scheduler=True)
+    worker.work(burst=args.burst, with_scheduler=True, dequeue_strategy=args.dequeue)
 
 
 def cmd_serve(args: argparse.Namespace) -> None:
@@ -826,7 +826,9 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--simple", action="store_true", help="no forking (Windows / tests)")
     p.add_argument("--metrics-port", type=int, default=settings.metrics_port)
     p.add_argument("--queues", default="maintenance,crawl,crawl-light",
-                   help="queues to serve, in priority order (a second worker can serve crawl-light alone)")
+                   help="queues to serve (a second worker can serve crawl-light alone)")
+    p.add_argument("--dequeue", default="round_robin", choices=("round_robin", "default", "random"),
+                   help="round_robin: the queues take turns; default: strict priority in --queues order")
     p.set_defaults(fn=cmd_worker)
 
 

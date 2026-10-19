@@ -12,9 +12,11 @@ _STRONG = re.compile(
     r"engineer(?!ing\s+manager)|\bdata\b(?! ?cent(?:er|re))|machine learning|(?<!\.)\bml\b(?!\.)|webdesign|"
     r"\bai\b|artificial intelligence|devops|\bsre\b|site reliability|back[- ]?end|front[- ]?end|"
     r"full[- ]?stack|\bqa\b|test automation|tester|security|cloud|platform|architect|embedded|firmware|"
+    # software test roles that do not say "tester": "Test coördinator", "Test Manager", "Testprocesverbeteringsexpert"
+    r"\btest ?(?:co[oö]rdinat\w*|manag\w*|lead\b|analist|analyst)|\btestproces\w*|"
     r"\bfpga\b|\bios\b|android|mobile|web\b|python|java|\.net|c\+\+|golang|scala|kotlin|typescript|react|"
     r"analytics|analist|analyst|scientist|research|robotics|computer vision|\bnlp\b|database|\bdba\b|"
-    r"infrastructure|network|systems?\b|\bit\b|\bict\b|informatica|scrum master|product owner|technical|"
+    r"infrastructure|network|systems?\b|\bit\b|\bict\b|informatica|scrum ?master|product owner|technical|"
     r"solutions?\b|integration|sap\b|salesforce|mendix|low-code|blockchain|\bquant(?:itative)?\b|bi\b|"
     r"business intelligence|cyber|penetration|\bsoc\b|(?<!sales )support engineer|technolog|\bxr\b|\bvr\b|"
     r"augmented reality|virtual reality",

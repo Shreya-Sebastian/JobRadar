@@ -46,3 +46,11 @@ CASES = [
 def test_tech_classifier_cases():
     for title, text, want in CASES:
         assert is_tech(title, text) is want, title
+
+
+def test_scrum_masters_and_software_test_roles_are_tech():
+    # from the review's disagreements with the rules (week of 12 October 2026)
+    for title in ("Scrummaster", "scrummaster", "Scrum Master", "Test coördinator", "Senior Test Manager",
+                  "Testprocesverbeteringsexpert", "Test Lead", "Test Analist"):
+        assert is_tech(title, "") is True, title
+    assert is_tech("Testbank medewerker", "") is False  # not a test role

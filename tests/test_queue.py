@@ -60,3 +60,24 @@ def test_the_worker_takes_turns_between_queues():
     ORDER.clear()
     SimpleWorker([crawl, light], connection=conn).work(burst=True, dequeue_strategy="round_robin")
     assert ORDER[:4] == ["sitemap0", "board0", "sitemap1", "board1"]
+
+
+def test_the_light_lane_serves_the_quick_boards_on_its_own():
+    import time
+
+    import fakeredis
+    from rq import Queue
+
+    from radar.cli import start_light_lane
+
+    conn = fakeredis.FakeStrictRedis()
+    light = Queue("crawl-light", connection=conn)
+    ORDER.clear()
+    for i in range(3):
+        light.enqueue(_note, f"board{i}")
+    start_light_lane(light, conn)
+    for _ in range(100):
+        if len(ORDER) == 3:
+            break
+        time.sleep(0.05)
+    assert ORDER == ["board0", "board1", "board2"]

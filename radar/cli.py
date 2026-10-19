@@ -643,6 +643,24 @@ def cmd_finalize(_: argparse.Namespace) -> None:
     print(finalize())
 
 
+def start_light_lane(queue, connection):
+    """A second worker in a thread of this process that serves the quick ATS boards (crawl-light) only. Their crawls
+    take a couple of seconds; behind sitemap crawls of up to several minutes they waited days. A thread costs no
+    second process: a second worker pod made the 2 GB node swap (6 Oct 2026)."""
+    import threading
+
+    from rq import SimpleWorker
+
+    class LaneWorker(SimpleWorker):  # no fork; signal handlers can only be set in the main thread
+        def _install_signal_handlers(self):
+            pass
+
+    lane = LaneWorker([queue], connection=connection)
+    thread = threading.Thread(target=lane.work, kwargs={"with_scheduler": False}, name="crawl-light-lane", daemon=True)
+    thread.start()
+    return thread
+
+
 def cmd_worker(args: argparse.Namespace) -> None:
     """Consume crawl jobs from Redis. Exposes Prometheus metrics on --metrics-port."""
     from prometheus_client import start_http_server
@@ -661,6 +679,8 @@ def cmd_worker(args: argparse.Namespace) -> None:
     # the queues take turns (round robin) by default: with strict priority a single worker never reached the quick ATS
     # boards while sitemap crawls kept the crawl queue full, and most boards went unread for weeks (Oct 2026)
     queues = [get_queue(name.strip()) for name in args.queues.split(",") if name.strip()]
+    if args.light_lane and "crawl-light" in args.queues:
+        start_light_lane(get_queue("crawl-light"), get_redis())
     cls = SimpleWorker if (args.simple or sys.platform == "win32") else Worker
     worker = cls(queues, connection=get_redis())
     # the scheduler moves retried jobs (Retry with an interval) back onto the queue; without it they stay
@@ -827,6 +847,8 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--metrics-port", type=int, default=settings.metrics_port)
     p.add_argument("--queues", default="maintenance,crawl,crawl-light",
                    help="queues to serve (a second worker can serve crawl-light alone)")
+    p.add_argument("--no-light-lane", dest="light_lane", action="store_false",
+                   help="no extra thread serving crawl-light alone")
     p.add_argument("--dequeue", default="round_robin", choices=("round_robin", "default", "random"),
                    help="round_robin: the queues take turns; default: strict priority in --queues order")
     p.set_defaults(fn=cmd_worker)

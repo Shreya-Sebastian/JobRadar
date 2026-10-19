@@ -1416,7 +1416,7 @@
     en: { title: "Find your jobs in five questions", lead: "Each answer sets a filter. You can change them all afterwards.",
       skip: "Skip", back: "Back", next: "Next", show: "Show {n} jobs", count: "{n} jobs match so far",
       remember: "Remember my answers in this browser",
-      q1: "Do you speak Dutch?", q1a: "Yes, fluently", q1b: "A little", q1c: "No",
+      q1: "Do you speak Dutch?", q1a: "Yes", q1c: "No",
       q2: "Do you need visa sponsorship to work here?", q2a: "Yes, I need sponsorship", q2b: "No, I can already work here",
       q3: "How much work experience do you have?", q3a: "Student (internships)", q3b: "Graduate or under a year",
       q3c: "2 to 3 years", q3d: "4 to 5 years", q3e: "6 years or more",
@@ -1425,7 +1425,7 @@
     nl: { title: "Vind je vacatures in vijf vragen", lead: "Elk antwoord zet een filter. Je kunt ze daarna allemaal aanpassen.",
       skip: "Overslaan", back: "Terug", next: "Volgende", show: "Toon {n} vacatures", count: "{n} vacatures passen tot nu toe",
       remember: "Onthoud mijn antwoorden in deze browser",
-      q1: "Spreek je Nederlands?", q1a: "Ja, vloeiend", q1b: "Een beetje", q1c: "Nee",
+      q1: "Spreek je Nederlands?", q1a: "Ja", q1c: "Nee",
       q2: "Heb je visumsponsoring nodig om hier te werken?", q2a: "Ja, ik heb sponsoring nodig", q2b: "Nee, ik mag hier al werken",
       q3: "Hoeveel werkervaring heb je?", q3a: "Student (stages)", q3b: "Afgestudeerd of minder dan een jaar",
       q3c: "2 tot 3 jaar", q3d: "4 tot 5 jaar", q3e: "6 jaar of meer",
@@ -1446,7 +1446,7 @@
   function quizSteps() {
     const one = (key, name, opts) => ({ key, multi: false, q: qt(name), opts });
     return [
-      one("dutch", "q1", [["fluent", qt("q1a")], ["little", qt("q1b")], ["no", qt("q1c")]]),
+      one("dutch", "q1", [["yes", qt("q1a")], ["no", qt("q1c")]]),
       one("visa", "q2", [["yes", qt("q2a")], ["no", qt("q2b")]]),
       one("exp", "q3", [["student", qt("q3a")], ["grad", qt("q3b")], ["y23", qt("q3c")], ["y45", qt("q3d")], ["y6", qt("q3e")]]),
       { key: "roles", multi: true, q: qt("q4"), hint: qt("q4hint"), opts: QUIZ_ROLES.map((r) => [r, roleLabel(r)]) },
@@ -1455,7 +1455,7 @@
   }
   function quizFilters() {
     const f = emptyJobFilters();
-    if (quiz.dutch === "little" || quiz.dutch === "no") f.language = "en";
+    if (quiz.dutch === "no") f.language = "en";
     if (quiz.visa === "yes") f.visa = true;
     if (quiz.exp) f.levels = [...QUIZ_LEVELS[quiz.exp]];
     f.roles = [...quiz.roles];

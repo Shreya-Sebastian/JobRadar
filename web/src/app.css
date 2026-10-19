@@ -360,10 +360,10 @@
     :root:not([data-theme="light"]) :is(.quiz, .side) { border-color: var(--line-accent); }
     :root:not([data-theme="light"]) .side-body { scrollbar-color: #1b2c4f transparent; }
   }
-  /* dark mode: job listings in a dark grey (light mode keeps them white) */
-  :root[data-theme="dark"] .job { --card: #1f2023; --chip: #2c2d31; --chip-ink: #e4e4e7; --muted: #b4b6bd; --faint: #9d9fa7; --line: #34363b; }
+  /* dark mode: job listings in a darker, see-through grey (light mode keeps them white) */
+  :root[data-theme="dark"] .job { --card: rgb(30 31 35 / .55); --chip: #26272b; --chip-ink: #e4e4e7; --muted: #b4b6bd; --faint: #9d9fa7; --line: #34363b; }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .job { --card: #1f2023; --chip: #2c2d31; --chip-ink: #e4e4e7; --muted: #b4b6bd; --faint: #9d9fa7; --line: #34363b; }
+    :root:not([data-theme="light"]) .job { --card: rgb(30 31 35 / .55); --chip: #26272b; --chip-ink: #e4e4e7; --muted: #b4b6bd; --faint: #9d9fa7; --line: #34363b; }
   }
   .hero-title { @apply m-0 max-w-3xl font-display text-[1.5rem] leading-tight font-bold tracking-tight text-ink sm:text-[1.9rem]; }
   .hero-sub { @apply mt-2 mb-4 text-sm text-muted sm:mb-5; }

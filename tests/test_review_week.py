@@ -178,3 +178,10 @@ def test_a_dry_run_writes_prompts_and_calls_nothing(rw, tmp_path):
     run = next(out.iterdir())
     assert (run / "prompt_001.txt").read_text(encoding="utf-8").startswith(rw.INSTRUCTIONS)
     assert not (run / "decisions.jsonl").exists()
+
+
+def test_the_script_names_itself_so_the_site_does_not_refuse_it(rw):
+    from radar.throttle import BLOCKED_AGENTS, check
+
+    assert not BLOCKED_AGENTS.search(rw.USER_AGENT)
+    assert check("/api/admin/review/candidates", "203.0.113.9", rw.USER_AGENT) is None

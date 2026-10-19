@@ -44,6 +44,8 @@ FIELDS = ("is_tech", "role_family", "seniority", "years_experience", "dutch_requ
 MODEL_IDS = {"opus": "claude-opus-5-5", "haiku": "claude-haiku-5-5", "sonnet": "claude-sonnet-5-5"}
 EXAMPLES_PER_BATCH = 4
 EXAMPLE_CHARS = 700
+# the site refuses plain HTTP libraries by their user agent (radar/throttle.py): say what this is instead
+USER_AGENT = "TechJobsRadar-review/1.0 (admin script)"
 
 INSTRUCTIONS = """\
 You read job postings from the Netherlands (Dutch or English) for a job board and decide a few facts about each,
@@ -369,7 +371,8 @@ def fetch_candidates(server: str, token: str, since: str | None, limit: int) -> 
 
     items: list[dict] = []
     after = 0
-    with httpx.Client(base_url=server.rstrip("/"), headers={"Authorization": f"Bearer {token}"}, timeout=60) as c:
+    headers = {"Authorization": f"Bearer {token}", "User-Agent": USER_AGENT}
+    with httpx.Client(base_url=server.rstrip("/"), headers=headers, timeout=60) as c:
         while len(items) < limit:
             params = {"limit": min(500, limit - len(items)), "after_id": after}
             if since:
@@ -390,7 +393,7 @@ def post_decisions(server: str, token: str, run_id: str, decisions: list[dict]) 
     for attempt in range(3):
         try:
             r = httpx.post(f"{server.rstrip('/')}/api/admin/review/decisions", timeout=60,
-                           headers={"Authorization": f"Bearer {token}"},
+                           headers={"Authorization": f"Bearer {token}", "User-Agent": USER_AGENT},
                            json={"run_id": run_id, "decisions": decisions})
             r.raise_for_status()
             return r.json()

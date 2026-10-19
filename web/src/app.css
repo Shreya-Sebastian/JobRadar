@@ -37,7 +37,7 @@
 }
 
 @layer base {
-  /* a neutral base (white cards on light grey; dark blue cards on near-black in dark mode), a navy header, and the logo's
+  /* a neutral base (white cards on light grey; cards in the header's navy on near-black in dark mode), a navy header, and the logo's
      two accents: teal for actions,
      links and filters, orange for highlights (visa sponsorship, saved jobs, skills in a profile, new) */
   :root {
@@ -58,14 +58,14 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       color-scheme: dark;
-      --bg: #0a0a0a; --card: #121c33; --ink: #fafafa; --muted: #a7b2c4; --line: #26334f;
-      --accent: #73b5ac; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #1c2947; --chip-ink: #dfe5ef;
+      --bg: #0a0a0a; --card: #0a1a36; --ink: #fafafa; --muted: #b3c1d6; --line: #22345a;
+      --accent: #73b5ac; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #152a4f; --chip-ink: #e0e7f2;
       --ok: #73b5ac; --bad: #f87171; --warn: #fbbf24;
       --tag-lang-fg: #b9d9d4; --tag-lang-bg: #1f3633; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
       --badge-bg: #fb923c; --badge-fg: #1c0a00;
       --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
       --hero-bg: #111a18;  /* the search band: a deep green in dark mode */
-      --faint: #8f9bb0; --logo-edge: #475569;
+      --faint: #9eadc4; --logo-edge: #475569;
       --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
       --head-bg: rgb(10 26 54 / .92); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #fb923c;
       --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
@@ -74,14 +74,14 @@
   }
   :root[data-theme="dark"] {
     color-scheme: dark;
-    --bg: #0a0a0a; --card: #121c33; --ink: #fafafa; --muted: #a7b2c4; --line: #26334f;
-    --accent: #73b5ac; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #1c2947; --chip-ink: #dfe5ef;
+    --bg: #0a0a0a; --card: #0a1a36; --ink: #fafafa; --muted: #b3c1d6; --line: #22345a;
+    --accent: #73b5ac; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #152a4f; --chip-ink: #e0e7f2;
     --ok: #73b5ac; --bad: #f87171; --warn: #fbbf24;
     --tag-lang-fg: #b9d9d4; --tag-lang-bg: #1f3633; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
     --badge-bg: #fb923c; --badge-fg: #1c0a00;
     --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
     --hero-bg: #111a18;  /* the search band: a deep green in dark mode */
-    --faint: #8f9bb0; --logo-edge: #475569;
+    --faint: #9eadc4; --logo-edge: #475569;
     --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
     --head-bg: rgb(10 26 54 / .92); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #fb923c;
     --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
@@ -341,8 +341,12 @@
     :root:not([data-theme="light"]) .hero { color-scheme: dark; --ink: #fafafa; --muted: #b3c4c0; --card: #1a2826; --line: #2c3b38; --accent: #73b5ac;
     --on-accent: #042f2e; --chip: #22302e; --chip-ink: #e2ece9; }
   }
-  /* the filters box: the search band's green in light mode, the header's navy in dark mode */
-  :root .side { background-color: #e3f0ec; }
+  /* the filters box: green tints in light mode, the header's navy in dark mode */
+  /* light mode: the green on the box's heading strip, the faint teal tint below it */
+  :root .side { background-color: color-mix(in oklab, #0f766e 7%, #ffffff); }
+  :root .side .side-head { background: #e3f0ec; }
+  :root[data-theme="dark"] .side .side-head { background: var(--fill-accent); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .side .side-head { background: var(--fill-accent); } }
   :root[data-theme="dark"] .side { --card: #0a1a36; --chip: #152a4f; --chip-ink: #e0e7f2; --muted: #b3c1d6; --faint: #9eadc4; --line: #22345a; background-color: #0a1a36; }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) .side { --card: #0a1a36; --chip: #152a4f; --chip-ink: #e0e7f2; --muted: #b3c1d6; --faint: #9eadc4; --line: #22345a; background-color: #0a1a36; }

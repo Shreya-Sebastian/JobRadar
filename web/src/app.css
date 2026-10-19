@@ -64,7 +64,7 @@
       --tag-lang-fg: #99f6e4; --tag-lang-bg: #134e4a; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
       --badge-bg: #fb923c; --badge-fg: #1c0a00;
       --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
-      --hero-bg: #0e2521;  /* the search band: a deep green in dark mode */
+      --hero-bg: #091a17;  /* the search band: a deep green in dark mode */
       --faint: #8f9bb0; --logo-edge: #475569;
       --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
       --head-bg: rgb(10 26 54 / .92); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #fb923c;
@@ -80,7 +80,7 @@
     --tag-lang-fg: #99f6e4; --tag-lang-bg: #134e4a; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
     --badge-bg: #fb923c; --badge-fg: #1c0a00;
     --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
-    --hero-bg: #0e2521;  /* the search band: a deep green in dark mode */
+    --hero-bg: #091a17;  /* the search band: a deep green in dark mode */
     --faint: #8f9bb0; --logo-edge: #475569;
     --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
     --head-bg: rgb(10 26 54 / .92); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #fb923c;
@@ -335,26 +335,26 @@
           --tag-lang-fg: #115e59; --tag-lang-bg: #ccfbf1; --tag-visa-fg: #9a3412; --tag-visa-bg: #ffedd5;
           --badge-bg: #c2410c; --badge-fg: #ffffff; --bad: #dc2626; --ok: #0f766e; color: var(--ink); }
   /* dark mode: the search band dark too, its search field one step lighter */
-  :root[data-theme="dark"] .hero { color-scheme: dark; --ink: #fafafa; --muted: #b3c4c0; --card: #163a35; --line: #2b5149; --accent: #5cc6b8;
-    --on-accent: #042f2e; --chip: #1c423c; --chip-ink: #e2ece9; }
+  :root[data-theme="dark"] .hero { color-scheme: dark; --ink: #fafafa; --muted: #b3c4c0; --card: #10302b; --line: #244640; --accent: #5cc6b8;
+    --on-accent: #042f2e; --chip: #15332e; --chip-ink: #e2ece9; }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .hero { color-scheme: dark; --ink: #fafafa; --muted: #b3c4c0; --card: #163a35; --line: #2b5149; --accent: #5cc6b8;
-    --on-accent: #042f2e; --chip: #1c423c; --chip-ink: #e2ece9; }
+    :root:not([data-theme="light"]) .hero { color-scheme: dark; --ink: #fafafa; --muted: #b3c4c0; --card: #10302b; --line: #244640; --accent: #5cc6b8;
+    --on-accent: #042f2e; --chip: #15332e; --chip-ink: #e2ece9; }
   }
   /* the filters box in the search band's green; in dark mode the listings' dark green */
   .side { background-color: #e3f0ec; }
-  :root[data-theme="dark"] .side { --card: #12302c; --chip: #1c423c; --chip-ink: #e2ece9; --muted: #b3c4c0; --line: #23463f;
-    background-color: #12302c; }
+  :root[data-theme="dark"] .side { --card: #0c221f; --chip: #15332e; --chip-ink: #e2ece9; --muted: #b3c4c0; --line: #1c3a34;
+    background-color: #0c221f; }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .side { --card: #12302c; --chip: #1c423c; --chip-ink: #e2ece9; --muted: #b3c4c0;
-      --line: #23463f; background-color: #12302c; }
+    :root:not([data-theme="light"]) .side { --card: #0c221f; --chip: #15332e; --chip-ink: #e2ece9; --muted: #b3c4c0;
+      --line: #1c3a34; background-color: #0c221f; }
   }
   /* dark mode: job listings in a dark green (light mode keeps them white) */
-  :root[data-theme="dark"] .job { --card: #12302c; --chip: #1c423c; --chip-ink: #e2ece9; --muted: #b3c4c0; --faint: #9fb3ae;
-    --line: #23463f; --tag-lang-bg: #0d4a43; }
+  :root[data-theme="dark"] .job { --card: #0c221f; --chip: #15332e; --chip-ink: #e2ece9; --muted: #b3c4c0; --faint: #9fb3ae;
+    --line: #1c3a34; --tag-lang-bg: #0d4a43; }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .job { --card: #12302c; --chip: #1c423c; --chip-ink: #e2ece9; --muted: #b3c4c0;
-      --faint: #9fb3ae; --line: #23463f; --tag-lang-bg: #0d4a43; }
+    :root:not([data-theme="light"]) .job { --card: #0c221f; --chip: #15332e; --chip-ink: #e2ece9; --muted: #b3c4c0;
+      --faint: #9fb3ae; --line: #1c3a34; --tag-lang-bg: #0d4a43; }
   }
   .hero-title { @apply m-0 max-w-3xl font-display text-[1.5rem] leading-tight font-bold tracking-tight text-ink sm:text-[1.9rem]; }
   .hero-sub { @apply mt-2 mb-4 text-sm text-muted sm:mb-5; }

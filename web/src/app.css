@@ -64,7 +64,7 @@
       --tag-lang-fg: #99f6e4; --tag-lang-bg: #134e4a; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
       --badge-bg: #fb923c; --badge-fg: #1c0a00;
       --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
-      --hero-bg: #0f1f1d;
+      --hero-bg: #33200f;  /* the search band: a mild orange in dark mode */
       --faint: #8f9bb0; --logo-edge: #475569;
       --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
       --head-bg: rgb(10 26 54 / .92); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #fb923c;
@@ -80,7 +80,7 @@
     --tag-lang-fg: #99f6e4; --tag-lang-bg: #134e4a; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
     --badge-bg: #fb923c; --badge-fg: #1c0a00;
     --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
-    --hero-bg: #0f1f1d;
+    --hero-bg: #33200f;  /* the search band: a mild orange in dark mode */
     --faint: #8f9bb0; --logo-edge: #475569;
     --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
     --head-bg: rgb(10 26 54 / .92); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #fb923c;

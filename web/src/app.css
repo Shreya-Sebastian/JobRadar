@@ -50,7 +50,7 @@
     --badge-bg: #c2410c; --badge-fg: #ffffff;
     --faint: #67676f; --logo-edge: #020617;
     --logo-glow: 0 1px 2px rgb(15 23 42 / .22);
-    --head-bg: #0b4f4a;
+    --head-bg: #0c4760;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -64,7 +64,7 @@
       --hero-bg: #0f2030;
       --faint: #8b99b0; --logo-edge: #475569;
       --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
-      --head-bg: #0e3b3d;
+      --head-bg: #0f3348;
     }
   }
   :root[data-theme="dark"] {
@@ -78,7 +78,7 @@
     --hero-bg: #0f2030;
     --faint: #8b99b0; --logo-edge: #475569;
     --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
-    --head-bg: #0e3b3d;
+    --head-bg: #0f3348;
   }
   /* outlines and rules in a tint of the teal, and a faint teal fill for section headings (both themes) */
   :root { --line-accent: color-mix(in oklab, var(--accent) 30%, var(--line));
@@ -160,13 +160,13 @@
   .tab-controls { @apply ml-auto flex items-center gap-2; }
   .tag { @apply max-w-2xl text-sm text-muted; }
 
-  /* ---------- the header in teal: white type; the name's last word, the open tab and Log in in orange ----------
-     white on #0b4f4a is 9.4:1 (12:1 on the dark theme's #0e3b3d); the orange name is large bold type at 4.2:1 */
+  /* ---------- the header in a blue between teal and navy: white type; the name's last word, the open tab and Log in in
+     orange. White on #0c4760 is 10:1 (13:1 on the dark theme's #0f3348); the orange name is large bold type at 4.5:1 */
   .top { background: var(--head-bg); border-color: transparent; color: #ffffff; }
   .top .brand, .top .brand:hover h1, .top .brand:hover b { color: #ffffff; }
   .brand-last { color: var(--accent-2); }
   .top .brand-last { color: #fb923c; }
-  .top .tabs a { color: #cfe5e1; }
+  .top .tabs a { color: #cfe2ea; }
   .top .tabs a:hover { color: #ffffff; border-color: rgb(255 255 255 / .3); }
   .top .tabs a.on { color: #ffffff; border-color: #fb923c; }
   .top .tabs a.on svg, .top .tabs a:hover svg { color: #fb923c; }
@@ -174,9 +174,9 @@
   .top :is(.refresh-btn, .theme-btn):hover, .top .refresh-btn:disabled:hover { background: rgb(255 255 255 / .16); }
   .top .refresh-btn:not(:disabled) { border-color: #fb923c; color: #fdba74; }
   .top .langswitch { background: rgb(0 0 0 / .18); border-color: rgb(255 255 255 / .24); }
-  .top .langswitch > * { color: #cfe5e1; }
+  .top .langswitch > * { color: #cfe2ea; }
   .top .langswitch > :hover { color: #ffffff; }
-  .top .langswitch > .on { background: #ffffff; color: #0b4f4a; }
+  .top .langswitch > .on { background: #ffffff; color: #0c4760; }
   .top :is(.acct-btn, .avatar) { background: #fb923c; border-color: #fb923c; color: #1c0a00; }
   .top :is(.acct-btn, .avatar):hover { background: #fdba74; }
 

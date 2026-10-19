@@ -728,6 +728,9 @@ def _largest_first(newest: list[Row]) -> list[Row]:
     return out
 
 
+LONG_RUNNING_DAYS = 180  # a vacancy open longer than this is shown as ongoing and sorted after the rest
+
+
 def posting_dicts(
     rows: list[Row], page: int = 1, size: int = 50, sort: str = "newest", have_skills: set[str] | None = None
 ) -> dict[str, Any]:
@@ -742,6 +745,11 @@ def posting_dicts(
         rows = _largest_first(newest)
     else:
         rows = newest
+    # vacancies open for more than six months (consultancies' standing roles, often still listed) after the rest, in
+    # every order: they stay findable, but the jobs posted recently lead
+    cutoff = datetime.utcnow() - timedelta(days=LONG_RUNNING_DAYS)
+    rows = ([r for r in rows if (r.posted_at or r.first_seen) >= cutoff]
+            + [r for r in rows if (r.posted_at or r.first_seen) < cutoff])
     total = len(rows)
     start = (page - 1) * size
     items = [

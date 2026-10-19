@@ -44,7 +44,7 @@
     color-scheme: light;
     --bg: #f4f4f5; --card: #ffffff; --ink: #0a0a0a; --muted: #52525b; --line: #e4e4e7;
     --shadow-card: 0 1px 2px rgb(0 0 0 / .04), 0 4px 14px rgb(0 0 0 / .04);
-    --hero-bg: #e3f0ec;
+    --hero-bg: #cdeee3;
     --accent: #0f766e; --accent-2: #ea580c; --on-accent: #ffffff; --chip: #f4f4f5; --chip-ink: #3f3f46;
     --ok: #0f766e; --bad: #dc2626; --warn: #d97706;
     --tag-lang-fg: #115e59; --tag-lang-bg: #ccfbf1; --tag-visa-fg: #9a3412; --tag-visa-bg: #ffedd5;

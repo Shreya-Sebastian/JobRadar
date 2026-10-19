@@ -78,7 +78,7 @@
      
       "match.none": "No live posting fits all your preferences. Try fewer levels or more cities.",
       "li.match": "{p}% match", "li.have": "you have {s}", "li.missing": "missing {s}", "agency": "agency", "closed": "closed",
-      "jobs.match": "{n} jobs match", "jobs.match.one": "1 job matches", "page": "page {p} of {t}", "today": "today", "yesterday": "yesterday", "days.ago": "{d} days ago", "old": "90+ days", "old.year": "1+ year", "old.year.title": "Posted over a year ago: possibly a role the employer keeps open all the time", 
+      "jobs.match": "{n} jobs match", "jobs.match.one": "1 job matches", "page": "page {p} of {t}", "today": "today", "yesterday": "yesterday", "days.ago": "{d} days ago", "ongoing": "Ongoing vacancy", "ongoing.title": "Posted {p}, still on the employer's site on {c}", "old": "90+ days", "old.year": "1+ year", "old.year.title": "Posted over a year ago: possibly a role the employer keeps open all the time", 
       "lang.nl": "NL", "lang.en": "EN", "lang.both": "NL + EN", "lang.nl.title": "Dutch required, no English needed", "lang.en.title": "No Dutch required", "lang.both.title": "Dutch and English both required",
       "visa.yes": "yes", "visa.no": "no", "visa.unknown": "?", "save": "save", "remove": "remove",
       "salary.none": "No posting in this selection states a salary.", "salary.n": "postings state a salary", "salary.median": "median", "salary.p25": "25th percentile", "salary.p75": "75th percentile",
@@ -190,7 +190,7 @@
      
       "match.none": "Geen open vacature past bij al je voorkeuren. Kies minder niveaus of meer steden.",
       "li.match": "{p}% match", "li.have": "je hebt {s}", "li.missing": "mist {s}", "agency": "bureau", "closed": "gesloten",
-      "jobs.match": "{n} vacatures gevonden", "jobs.match.one": "1 vacature gevonden", "page": "pagina {p} van {t}", "today": "vandaag", "yesterday": "gisteren", "days.ago": "{d} dagen geleden", "old": "90+ dagen", "old.year": "1+ jaar", "old.year.title": "Meer dan een jaar geleden geplaatst: mogelijk een vacature die altijd open staat", 
+      "jobs.match": "{n} vacatures gevonden", "jobs.match.one": "1 vacature gevonden", "page": "pagina {p} van {t}", "today": "vandaag", "yesterday": "gisteren", "days.ago": "{d} dagen geleden", "ongoing": "Doorlopende vacature", "ongoing.title": "Geplaatst {p}, nog op de site van de werkgever op {c}", "old": "90+ dagen", "old.year": "1+ jaar", "old.year.title": "Meer dan een jaar geleden geplaatst: mogelijk een vacature die altijd open staat", 
       "lang.nl": "NL", "lang.en": "EN", "lang.both": "NL + EN", "lang.nl.title": "Nederlands vereist, geen Engels nodig", "lang.en.title": "Geen Nederlands vereist", "lang.both.title": "Nederlands en Engels allebei vereist",
       "visa.yes": "ja", "visa.no": "nee", "visa.unknown": "?", "save": "bewaren", "remove": "verwijderen",
       "salary.none": "Geen vacature in deze selectie noemt een salaris.", "salary.n": "vacatures noemen een salaris", "salary.median": "mediaan", "salary.p25": "25e percentiel", "salary.p75": "75e percentiel",
@@ -997,12 +997,16 @@
     ].filter(Boolean).join("");
     const shown = i.skills.slice(0, 6);
     const skills = shown.length ? `<div class="job-skills">${shown.map((s) => `<span${have.includes(s) ? ' class="have"' : ""}>${esc(s)}</span>`).join("")}${i.skills.length > 6 ? `<span class="more">+${i.skills.length - 6}</span>` : ""}</div>` : "";
-    const old = i.age_days > 365 ? `<span class="badge stale" title="${t("old.year.title")}">${t("old.year")}</span>` : i.age_days > 90 ? `<span class="badge stale">${t("old")}</span>` : "";
+    // open for more than six months and still on the employer's site in the past two weeks: an ongoing vacancy, not a
+    // stale one (consultancies keep standing roles up for years)
+    const confirmed = i.confirmed_at && (Date.now() - Date.parse(i.confirmed_at + "Z")) < 14 * 864e5;
+    const ongoing = i.age_days > 180 && confirmed;
+    const old = ongoing ? "" : i.age_days > 365 ? `<span class="badge stale" title="${t("old.year.title")}">${t("old.year")}</span>` : i.age_days > 90 ? `<span class="badge stale">${t("old")}</span>` : "";
     return `<li class="job${state.seen.includes(i.id) ? " seen" : ""}">
       ${logoTile(i)}
       <div class="job-body">
         <div class="job-top"><a class="job-title" href="${jobPath(i)}" data-pid="${i.id}" target="_blank" title="${esc(trustText(i))}">${esc(i.title)}</a>
-          <span class="job-age" title="${esc(i.posted_at)}">${age(i)}${old}</span></div>
+          <span class="job-age" title="${ongoing ? esc(t("ongoing.title", { p: i.posted_at, c: i.confirmed_at.slice(0, 10) })) : esc(i.posted_at)}">${ongoing ? t("ongoing") : age(i)}${old}</span></div>
         <div class="job-meta">${companyLink(i.company)}${place ? `<span class="place">${esc(place)}${more}</span>` : ""}</div>
         <div class="job-asks">${asks}${tags}</div>
         ${skills}

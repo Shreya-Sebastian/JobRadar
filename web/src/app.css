@@ -64,7 +64,7 @@
       --tag-lang-fg: #99f6e4; --tag-lang-bg: #134e4a; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
       --badge-bg: #fb923c; --badge-fg: #1c0a00;
       --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
-      --hero-bg: #33200f;  /* the search band: a mild orange in dark mode */
+      --hero-bg: #e3f0ec;  /* the search band as in light mode */
       --faint: #8f9bb0; --logo-edge: #475569;
       --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
       --head-bg: rgb(10 26 54 / .92); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #fb923c;
@@ -80,7 +80,7 @@
     --tag-lang-fg: #99f6e4; --tag-lang-bg: #134e4a; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
     --badge-bg: #fb923c; --badge-fg: #1c0a00;
     --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
-    --hero-bg: #33200f;  /* the search band: a mild orange in dark mode */
+    --hero-bg: #e3f0ec;  /* the search band as in light mode */
     --faint: #8f9bb0; --logo-edge: #475569;
     --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
     --head-bg: rgb(10 26 54 / .92); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #fb923c;
@@ -329,6 +329,9 @@
   /* the header band: a soft teal panel under the search */
   .hero { @apply -mx-4 mt-[-1.25rem] px-4 pt-6 pb-5 sm:mx-0 sm:mt-0 sm:rounded-[1.75rem] sm:px-8 sm:pt-7 sm:pb-6;
     background: var(--hero-bg); }
+  /* the search band looks the same in both themes: light mode's colours inside it */
+  .hero { color-scheme: light; --ink: #0a0a0a; --muted: #52525b; --card: #ffffff; --line: #e4e4e7; --accent: #0f766e;
+          --on-accent: #ffffff; --chip: #f4f4f5; --chip-ink: #3f3f46; color: var(--ink); }
   .hero-title { @apply m-0 max-w-3xl font-display text-[1.5rem] leading-tight font-bold tracking-tight text-ink sm:text-[1.9rem]; }
   .hero-sub { @apply mt-2 mb-4 text-sm text-muted sm:mb-5; }
   .hero .search { @apply mt-0 border-line shadow-sm; }

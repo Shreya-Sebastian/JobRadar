@@ -516,7 +516,7 @@
   .tag.lang { background: var(--tag-lang-bg); color: var(--tag-lang-fg); }
   .tag.visa { background: var(--tag-visa-bg); color: var(--tag-visa-fg); }
   .job-skills { @apply mt-2 flex flex-wrap gap-x-2.5 gap-y-0.5 text-[12.5px]; color: var(--faint); }
-  .job-skills .have { @apply font-semibold text-accent-2; }
+  .job-skills .have { @apply font-semibold text-accent; }  /* skills in the profile: the teal, not orange */
   .job-skills .more { @apply text-muted; }
   /* wide cards: what the job asks gets its own column on the right, ruled off from the title and skills */
   .job { container-type: inline-size; }

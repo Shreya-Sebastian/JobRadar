@@ -374,9 +374,9 @@
     :root:not([data-theme="light"]) .side-body { scrollbar-color: #2a3547 transparent; }
   }
   /* dark mode: job listings the lightest navy step (light mode keeps them white) */
-  :root[data-theme="dark"] .job { --card: #1b2638; --chip: #26324a; --chip-ink: #e2e7ef; --muted: #aeb8c6; --faint: #97a2b2; --line: #2c3a52; }
+  :root[data-theme="dark"] .job { --card: #182234; --chip: #222e45; --chip-ink: #e2e7ef; --muted: #aeb8c6; --faint: #97a2b2; --line: #29364d; }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .job { --card: #1b2638; --chip: #26324a; --chip-ink: #e2e7ef; --muted: #aeb8c6; --faint: #97a2b2; --line: #2c3a52; }
+    :root:not([data-theme="light"]) .job { --card: #182234; --chip: #222e45; --chip-ink: #e2e7ef; --muted: #aeb8c6; --faint: #97a2b2; --line: #29364d; }
   }
   .hero-title { @apply m-0 max-w-3xl font-display text-[1.5rem] leading-tight font-bold tracking-tight text-ink sm:text-[1.9rem]; }
   .hero-sub { @apply mt-2 mb-4 text-sm text-muted sm:mb-5; }

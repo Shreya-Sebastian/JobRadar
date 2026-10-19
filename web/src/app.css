@@ -50,7 +50,9 @@
     --badge-bg: #c2410c; --badge-fg: #ffffff;
     --faint: #67676f; --logo-edge: #020617;
     --logo-glow: 0 1px 2px rgb(15 23 42 / .22);
-    --head-bg: #0c4760;
+    --head-bg: #cfe3f0; --head-line: #b9d3e4; --head-ink: #0c2d40; --head-muted: #2f5468; --head-orange: #c2410c;
+    --head-btn: rgb(255 255 255 / .55); --head-btn-hover: rgb(255 255 255 / .85); --head-btn-line: #b0cadb;
+    --head-switch: rgb(255 255 255 / .45); --head-switch-on: #0c4760; --head-switch-on-ink: #ffffff;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -64,7 +66,9 @@
       --hero-bg: #0f2030;
       --faint: #8b99b0; --logo-edge: #475569;
       --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
-      --head-bg: #0f3348;
+      --head-bg: #0f3348; --head-line: transparent; --head-ink: #ffffff; --head-muted: #cfe2ea; --head-orange: #fb923c;
+      --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
+      --head-switch: rgb(0 0 0 / .18); --head-switch-on: #ffffff; --head-switch-on-ink: #0c4760;
     }
   }
   :root[data-theme="dark"] {
@@ -78,7 +82,9 @@
     --hero-bg: #0f2030;
     --faint: #8b99b0; --logo-edge: #475569;
     --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
-    --head-bg: #0f3348;
+    --head-bg: #0f3348; --head-line: transparent; --head-ink: #ffffff; --head-muted: #cfe2ea; --head-orange: #fb923c;
+    --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
+    --head-switch: rgb(0 0 0 / .18); --head-switch-on: #ffffff; --head-switch-on-ink: #0c4760;
   }
   /* outlines and rules in a tint of the teal, and a faint teal fill for section headings (both themes) */
   :root { --line-accent: color-mix(in oklab, var(--accent) 30%, var(--line));
@@ -160,23 +166,24 @@
   .tab-controls { @apply ml-auto flex items-center gap-2; }
   .tag { @apply max-w-2xl text-sm text-muted; }
 
-  /* ---------- the header in a blue between teal and navy: white type; the name's last word, the open tab and Log in in
-     orange. White on #0c4760 is 10:1 (13:1 on the dark theme's #0f3348); the orange name is large bold type at 4.5:1 */
-  .top { background: var(--head-bg); border-color: transparent; color: #ffffff; }
-  .top .brand, .top .brand:hover h1, .top .brand:hover b { color: #ffffff; }
+  /* ---------- the header: light blue with dark type in light mode, petrol blue with white type in dark mode; the name's
+     last word, the open tab and Log in in orange. Type 10:1 or more; the orange name is large bold type at 3.9:1 and
+     5.9:1 */
+  .top { background: var(--head-bg); border-color: var(--head-line); color: var(--head-ink); }
+  .top .brand, .top .brand:hover h1, .top .brand:hover b { color: var(--head-ink); }
   .brand-last { color: var(--accent-2); }
-  .top .brand-last { color: #fb923c; }
-  .top .tabs a { color: #cfe2ea; }
-  .top .tabs a:hover { color: #ffffff; border-color: rgb(255 255 255 / .3); }
-  .top .tabs a.on { color: #ffffff; border-color: #fb923c; }
-  .top .tabs a.on svg, .top .tabs a:hover svg { color: #fb923c; }
-  .top :is(.refresh-btn, .theme-btn) { background: rgb(255 255 255 / .08); border-color: rgb(255 255 255 / .24); color: #ffffff; }
-  .top :is(.refresh-btn, .theme-btn):hover, .top .refresh-btn:disabled:hover { background: rgb(255 255 255 / .16); }
-  .top .refresh-btn:not(:disabled) { border-color: #fb923c; color: #fdba74; }
-  .top .langswitch { background: rgb(0 0 0 / .18); border-color: rgb(255 255 255 / .24); }
-  .top .langswitch > * { color: #cfe2ea; }
-  .top .langswitch > :hover { color: #ffffff; }
-  .top .langswitch > .on { background: #ffffff; color: #0c4760; }
+  .top .brand-last { color: var(--head-orange); }
+  .top .tabs a { color: var(--head-muted); }
+  .top .tabs a:hover { color: var(--head-ink); border-color: color-mix(in oklab, var(--head-ink) 30%, transparent); }
+  .top .tabs a.on { color: var(--head-ink); border-color: var(--head-orange); }
+  .top .tabs a.on svg, .top .tabs a:hover svg { color: var(--head-orange); }
+  .top :is(.refresh-btn, .theme-btn) { background: var(--head-btn); border-color: var(--head-btn-line); color: var(--head-ink); }
+  .top :is(.refresh-btn, .theme-btn):hover, .top .refresh-btn:disabled:hover { background: var(--head-btn-hover); }
+  .top .refresh-btn:not(:disabled) { border-color: var(--head-orange); color: var(--head-orange); }
+  .top .langswitch { background: var(--head-switch); border-color: var(--head-btn-line); }
+  .top .langswitch > * { color: var(--head-muted); }
+  .top .langswitch > :hover { color: var(--head-ink); }
+  .top .langswitch > .on { background: var(--head-switch-on); color: var(--head-switch-on-ink); }
   .top :is(.acct-btn, .avatar) { background: #fb923c; border-color: #fb923c; color: #1c0a00; }
   .top :is(.acct-btn, .avatar):hover { background: #fdba74; }
 

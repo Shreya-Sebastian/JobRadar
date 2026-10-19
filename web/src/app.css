@@ -37,7 +37,7 @@
 }
 
 @layer base {
-  /* a neutral base (white and light grey; near-black in dark mode) and the logo's two accents: teal for actions,
+  /* a neutral base (white and light grey; dark blue in dark mode) and the logo's two accents: teal for actions,
      links and filters, orange for highlights (visa sponsorship, saved jobs, skills in a profile, new) */
   :root {
     color-scheme: light;
@@ -54,27 +54,27 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       color-scheme: dark;
-      --bg: #18181b; --card: #222226; --ink: #f4f4f5; --muted: #a1a1aa; --line: #34343a;
-      --accent: #4fb3a6; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #2c2c31; --chip-ink: #e4e4e7;
+      --bg: #121a2e; --card: #1a2440; --ink: #f1f5f9; --muted: #a3b1c6; --line: #2a3758;
+      --accent: #4fb3a6; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #232f50; --chip-ink: #dbe3ef;
       --ok: #4fb3a6; --bad: #f87171; --warn: #fbbf24;
-      --tag-lang-fg: #a7ddd5; --tag-lang-bg: #1f3b38; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
+      --tag-lang-fg: #a7ddd5; --tag-lang-bg: #1d3b47; --tag-visa-fg: #fdba74; --tag-visa-bg: #3d2418;
       --badge-bg: #fb923c; --badge-fg: #1c0a00;
       --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
-      --hero-bg: #1e2a28;
-      --faint: #8e8e96; --logo-edge: #475569;
+      --hero-bg: #15283a;
+      --faint: #8b99b0; --logo-edge: #475569;
       --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
     }
   }
   :root[data-theme="dark"] {
     color-scheme: dark;
-    --bg: #18181b; --card: #222226; --ink: #f4f4f5; --muted: #a1a1aa; --line: #34343a;
-    --accent: #4fb3a6; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #2c2c31; --chip-ink: #e4e4e7;
+    --bg: #121a2e; --card: #1a2440; --ink: #f1f5f9; --muted: #a3b1c6; --line: #2a3758;
+    --accent: #4fb3a6; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #232f50; --chip-ink: #dbe3ef;
     --ok: #4fb3a6; --bad: #f87171; --warn: #fbbf24;
-    --tag-lang-fg: #a7ddd5; --tag-lang-bg: #1f3b38; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
+    --tag-lang-fg: #a7ddd5; --tag-lang-bg: #1d3b47; --tag-visa-fg: #fdba74; --tag-visa-bg: #3d2418;
     --badge-bg: #fb923c; --badge-fg: #1c0a00;
     --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
-    --hero-bg: #1e2a28;
-    --faint: #8e8e96; --logo-edge: #475569;
+    --hero-bg: #15283a;
+    --faint: #8b99b0; --logo-edge: #475569;
     --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
   }
   [hidden] { display: none !important; }

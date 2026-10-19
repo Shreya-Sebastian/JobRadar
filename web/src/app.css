@@ -59,12 +59,12 @@
     :root:not([data-theme="light"]) {
       color-scheme: dark;
       --bg: #0a0a0a; --card: #121c33; --ink: #fafafa; --muted: #a7b2c4; --line: #26334f;
-      --accent: #5cc6b8; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #1c2947; --chip-ink: #dfe5ef;
-      --ok: #5cc6b8; --bad: #f87171; --warn: #fbbf24;
-      --tag-lang-fg: #99f6e4; --tag-lang-bg: #134e4a; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
+      --accent: #73b5ac; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #1c2947; --chip-ink: #dfe5ef;
+      --ok: #73b5ac; --bad: #f87171; --warn: #fbbf24;
+      --tag-lang-fg: #b9d9d4; --tag-lang-bg: #1f3633; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
       --badge-bg: #fb923c; --badge-fg: #1c0a00;
       --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
-      --hero-bg: #091a17;  /* the search band: a deep green in dark mode */
+      --hero-bg: #111a18;  /* the search band: a deep green in dark mode */
       --faint: #8f9bb0; --logo-edge: #475569;
       --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
       --head-bg: rgb(10 26 54 / .92); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #fb923c;
@@ -75,12 +75,12 @@
   :root[data-theme="dark"] {
     color-scheme: dark;
     --bg: #0a0a0a; --card: #121c33; --ink: #fafafa; --muted: #a7b2c4; --line: #26334f;
-    --accent: #5cc6b8; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #1c2947; --chip-ink: #dfe5ef;
-    --ok: #5cc6b8; --bad: #f87171; --warn: #fbbf24;
-    --tag-lang-fg: #99f6e4; --tag-lang-bg: #134e4a; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
+    --accent: #73b5ac; --accent-2: #fb923c; --on-accent: #042f2e; --chip: #1c2947; --chip-ink: #dfe5ef;
+    --ok: #73b5ac; --bad: #f87171; --warn: #fbbf24;
+    --tag-lang-fg: #b9d9d4; --tag-lang-bg: #1f3633; --tag-visa-fg: #fdba74; --tag-visa-bg: #431407;
     --badge-bg: #fb923c; --badge-fg: #1c0a00;
     --shadow-card: 0 1px 2px rgb(0 0 0 / .2);
-    --hero-bg: #091a17;  /* the search band: a deep green in dark mode */
+    --hero-bg: #111a18;  /* the search band: a deep green in dark mode */
     --faint: #8f9bb0; --logo-edge: #475569;
     --logo-glow: 0 0 0 1px rgb(148 163 184 / .3);
     --head-bg: rgb(10 26 54 / .92); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #fb923c;
@@ -335,11 +335,11 @@
           --tag-lang-fg: #115e59; --tag-lang-bg: #ccfbf1; --tag-visa-fg: #9a3412; --tag-visa-bg: #ffedd5;
           --badge-bg: #c2410c; --badge-fg: #ffffff; --bad: #dc2626; --ok: #0f766e; color: var(--ink); }
   /* dark mode: the search band dark too, its search field one step lighter */
-  :root[data-theme="dark"] .hero { color-scheme: dark; --ink: #fafafa; --muted: #b3c4c0; --card: #10302b; --line: #244640; --accent: #5cc6b8;
-    --on-accent: #042f2e; --chip: #15332e; --chip-ink: #e2ece9; }
+  :root[data-theme="dark"] .hero { color-scheme: dark; --ink: #fafafa; --muted: #b3c4c0; --card: #1a2826; --line: #2c3b38; --accent: #73b5ac;
+    --on-accent: #042f2e; --chip: #22302e; --chip-ink: #e2ece9; }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .hero { color-scheme: dark; --ink: #fafafa; --muted: #b3c4c0; --card: #10302b; --line: #244640; --accent: #5cc6b8;
-    --on-accent: #042f2e; --chip: #15332e; --chip-ink: #e2ece9; }
+    :root:not([data-theme="light"]) .hero { color-scheme: dark; --ink: #fafafa; --muted: #b3c4c0; --card: #1a2826; --line: #2c3b38; --accent: #73b5ac;
+    --on-accent: #042f2e; --chip: #22302e; --chip-ink: #e2ece9; }
   }
   /* the filters box: the search band's green in light mode, the header's navy in dark mode */
   :root .side { background-color: #e3f0ec; }
@@ -347,10 +347,10 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) .side { --card: #0a1a36; --chip: #152a4f; --chip-ink: #e0e7f2; --muted: #b3c1d6; --faint: #9eadc4; --line: #22345a; background-color: #0a1a36; }
   }
-  /* dark mode: job listings in a lighter navy (light mode keeps them white) */
-  :root[data-theme="dark"] .job { --card: #16284a; --chip: #213760; --chip-ink: #e0e7f2; --muted: #b3c1d6; --faint: #9eadc4; --line: #2a3f68; --tag-lang-bg: #123f45; }
+  /* dark mode: job listings in a dark grey (light mode keeps them white) */
+  :root[data-theme="dark"] .job { --card: #1f2023; --chip: #2c2d31; --chip-ink: #e4e4e7; --muted: #b4b6bd; --faint: #9d9fa7; --line: #34363b; }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .job { --card: #16284a; --chip: #213760; --chip-ink: #e0e7f2; --muted: #b3c1d6; --faint: #9eadc4; --line: #2a3f68; --tag-lang-bg: #123f45; }
+    :root:not([data-theme="light"]) .job { --card: #1f2023; --chip: #2c2d31; --chip-ink: #e4e4e7; --muted: #b4b6bd; --faint: #9d9fa7; --line: #34363b; }
   }
   .hero-title { @apply m-0 max-w-3xl font-display text-[1.5rem] leading-tight font-bold tracking-tight text-ink sm:text-[1.9rem]; }
   .hero-sub { @apply mt-2 mb-4 text-sm text-muted sm:mb-5; }

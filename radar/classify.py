@@ -225,12 +225,17 @@ _RESCUE_STRONG = re.compile("|".join(_RESCUE_FRAGMENTS), re.I)
 # "Developer" and "ontwikkelaar" outside software: business and real-estate development, Dutch installation and
 # energy-project developers ("Technisch Ontwikkelaar Werktuigbouwkunde", "Ontwikkelaar Duurzame Energie").
 _NON_SOFTWARE_DEVELOPER = re.compile(
-    r"\b(?:business|sales|property|real estate|commercieel|commerciële|technisch|project|plan|gebieds|vastgoed)[ -]?"
-    r"(?:developer|ontwikkelaar)\b|"
+    r"\b(?:business|sales|account|property|real estate|commercieel|commerciële|technisch|project|plan|gebieds|"
+    r"vastgoed)[ -]?(?:developer|ontwikkelaar)\b|"
     r"\bontwikkelaar\b.*\b(?:duurzame|energie\w*|warmte\w*|bouw|nieuwbouw|vastgoed|werktuigbouw\w*|elektrotechniek|"
     r"utiliteit\w*|installatie\w*|wind|zon)\b",
     re.I,
 )
+# Clothing development ("Technical Developer", "Product Developer" at a fashion brand): fit, patterns and fabrics, not
+# software. Decided on the text, since the title alone reads as a software developer.
+_APPAREL_TEXT = re.compile(r"\bgarments?\b|\bapparel\b|\btextiles?\b|\bfabrics?\b|pattern ?making|\bgrading\b|"
+                           r"\bkleding\w*|\bconfectie\b|\bfashion\b", re.I)
+_DEVELOPER_TITLE = re.compile(r"developer|ontwikkelaar", re.I)
 # Commercial, business and care roles that stay non-tech even when the title names a tech product or field
 # ("Cortex & Cloud Sales Specialist", "Category Manager IT - Software & Cloud", "Sales Developer Semiconductor",
 # "A.26.ML.MS.16 CCU Verpleegkundige").
@@ -500,6 +505,10 @@ def _title_score(title: str, description: str = "") -> float:
     if m and not _TECH_ROLE_NOUN.search(t[:m.start()] + " " + t[m.end():]):
         return 0.1
     if _NON_SOFTWARE_DEVELOPER.search(t) and not _RESCUE_STRONG.search(_NON_SOFTWARE_DEVELOPER.sub(" ", t)):
+        return 0.1
+    if _DEVELOPER_TITLE.search(t) and \
+            len({m.group(0).lower() for m in _APPAREL_TEXT.finditer(description or "")}) >= 2 and \
+            len(software_signals(description or "")) < 3:
         return 0.1
     if _ENGINEERING_TITLE.search(t) and not _COMMERCIAL_TITLE.search(t) and \
             len(_SIMULATION.findall(description or "")) >= 4:

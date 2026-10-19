@@ -54,3 +54,15 @@ def test_scrum_masters_and_software_test_roles_are_tech():
                   "Testprocesverbeteringsexpert", "Test Lead", "Test Analist"):
         assert is_tech(title, "") is True, title
     assert is_tech("Testbank medewerker", "") is False  # not a test role
+
+
+def test_clothing_and_account_developers_are_not_tech():
+    garment = ("You own the fit and construction of our garments: you review patterns and grading with our suppliers, "
+               "choose fabrics and approve samples for the apparel collection." + FILLER)
+    assert is_tech("Technical Developer", garment) is False
+    assert is_tech("Senior Product Developer Runway Team", garment) is False
+    assert is_tech("Sales & Account Developer Emmen", "") is False
+    # a software developer at a fashion company keeps its tech evidence
+    shop = ("You build our fashion web shop in TypeScript and React, with APIs in Python on AWS, and work in a scrum "
+            "team with our designers." + FILLER)
+    assert is_tech("Developer", shop) is True

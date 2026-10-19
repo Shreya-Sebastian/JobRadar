@@ -1158,16 +1158,16 @@
       const fixed = []; p.skills.forEach((s) => { const c = m[s] || s; if (!fixed.includes(c)) fixed.push(c); });
       if (JSON.stringify(fixed) !== JSON.stringify(p.skills)) { p.skills.splice(0, p.skills.length, ...fixed); store.set("profile", p); chipInput($("#p-skills"), p.skills, state.options.skills, null, t("ph.skill"), skillTransform); }
     });
-    // one save for the whole profile, from the button under the preferences or the one under the skills
-    const saveProfile = (status) => {
+    // one save for the whole profile. The handlers below are bound once, so they read state.profile when used:
+    // Clear and Import replace that object, and a reference kept from the first render saved the old profile
+    $("#p-save").addEventListener("click", () => {
+      const p = state.profile, status = $("#p-status");
       p.visa = $("#p-visa").checked; p.agencies = $("#p-agencies").checked; p.noenrol = $("#p-noenrol").checked;
       delete p.english;
       store.set("profile", p); store.set("jobsUseProfile", true); jobFilters = null; beacon("profile_save");
       status.textContent = t("p.saved.status"); setTimeout(() => status.textContent = "", 3000);
       loadHeader();
-    };
-    $("#p-save").addEventListener("click", () => saveProfile($("#p-status")));
-    $("#p-save-skills").addEventListener("click", () => saveProfile($("#p-skills-status")));
+    });
     $("#p-reset").addEventListener("click", () => { state.profile = emptyProfile(); store.set("profile", state.profile); jobFilters = null; renderProfile(); });
     $("#p-export").addEventListener("click", () => {
       const blob = new Blob([JSON.stringify({ profile: state.profile, saved: state.saved }, null, 2)], { type: "application/json" });
@@ -1180,7 +1180,7 @@
       catch { $("#p-status").textContent = t("p.import.fail"); }
     });
     $("#p-extract").addEventListener("click", async () => {
-      const text = $("#p-cv").value.trim();
+      const p = state.profile, text = $("#p-cv").value.trim();
       if (text.length < 20) { $("#p-extract-status").textContent = t("p.more.text"); return; }
       $("#p-extract-status").textContent = t("p.extracting");
       const r = await fetch("/api/gap", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cv_text: text, days: 30 }) });
@@ -1191,6 +1191,7 @@
       $("#p-cv").value = "";
     });
     $("#p-gap").addEventListener("click", async () => {
+      const p = state.profile;
       if (!p.skills.length) { $("#p-gap-status").textContent = t("p.add.skills"); return; }
       $("#p-gap-status").textContent = t("p.analysing");
       const body = { skills: p.skills, role: p.roles.join(",") || null, seniority: p.levels.join(",") || null, city: p.cities.join(",") || null,

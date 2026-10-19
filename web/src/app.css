@@ -461,6 +461,11 @@
   #ov-graph svg { @apply size-full; }
   #ov-graph text { @apply pointer-events-none fill-ink text-[11px]; }
 
+  /* ---------- profile: one save bar under both cards, kept in reach at the bottom of the screen ---------- */
+  .save-bar { @apply sticky bottom-3 z-20 mt-4 flex flex-wrap items-center gap-3 rounded-[1.25rem] border border-line bg-card px-4
+    py-3; box-shadow: var(--shadow-card), 0 8px 24px rgb(0 0 0 / .12); }
+  .save-bar-more { @apply ml-auto flex flex-wrap items-center gap-2; }
+
   /* ---------- account ---------- */
   .card.account #acct-email { @apply max-w-sm min-w-60 flex-[1_1_240px]; }
   .pw-form { @apply my-2 grid max-w-sm gap-2; }

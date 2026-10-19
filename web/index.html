@@ -25,7 +25,7 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preload" href="/static/fonts/figtree-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/static/app.css?v=57">
+<link rel="stylesheet" href="/static/app.css?v=58">
 <script src="/static/theme.js?v=2"></script>
 </head>
 <body>
@@ -219,13 +219,6 @@
         <div class="field"><label data-i18n="p.language">Languages you speak</label><div class="chips toggles" id="p-language"></div></div>
         <label class="check"><input type="checkbox" id="p-visa"> <span data-i18n="p.visa">Only jobs that mention visa sponsorship</span></label>
       </fieldset>
-      <div class="row mt">
-        <button class="primary" id="p-save" data-i18n="p.save">Save profile</button>
-        <button id="p-export" data-i18n="p.export">Export</button>
-        <label class="btn" for="p-import"><span data-i18n="p.import">Import</span><input type="file" id="p-import" accept="application/json" hidden></label>
-        <button class="link" id="p-reset" data-i18n="p.clear">Clear</button>
-        <span class="muted" id="p-status"></span>
-      </div>
     </div>
     <div class="card skills-card">
       <h2 data-i18n="p.skills">Skills</h2>
@@ -235,7 +228,6 @@
         <textarea id="p-cv" rows="6" data-i18n-placeholder="p.cv.ph" placeholder="Paste your CV text"></textarea>
         <div class="row"><button id="p-extract" data-i18n="p.extract.btn">Extract</button><span class="muted" id="p-extract-status"></span></div>
       </details>
-      <div class="row mt"><button class="primary" id="p-save-skills" data-i18n="p.save">Save profile</button><span class="muted" id="p-skills-status" role="status"></span></div>
       <h3 class="mt" data-i18n="p.gap">Skills gap</h3>
       <div class="row"><button id="p-gap" data-i18n="p.gap.btn">Analyse</button><span class="muted" id="p-gap-status"></span></div>
       <div id="p-gap-result" hidden>
@@ -243,6 +235,15 @@
         <div class="chart"><canvas id="p-gap-chart"></canvas></div>
       </div>
     </div>
+  </div>
+  <div class="save-bar">
+    <button class="primary" id="p-save" data-i18n="p.save">Save profile</button>
+    <span class="muted small" id="p-status" role="status"></span>
+    <span class="save-bar-more">
+      <button id="p-export" data-i18n="p.export">Export</button>
+      <label class="btn" for="p-import"><span data-i18n="p.import">Import</span><input type="file" id="p-import" accept="application/json" hidden></label>
+      <button class="link" id="p-reset" data-i18n="p.clear">Clear</button>
+    </span>
   </div>
 </section>
 
@@ -333,6 +334,6 @@
   <p class="foot-bottom"><a href="{{ABOUT_PATH}}" data-i18n="about">About</a> · <a href="{{PRIVACY_PATH}}" data-i18n="privacy">Privacy</a> · <a href="{{FEEDBACK_PATH}}" data-i18n="feedback">Feedback</a>{{SOURCE_LINK}}</p>
  </div>
 </footer>
-<script src="/static/app.js?v=151"></script>
+<script src="/static/app.js?v=152"></script>
 </body>
 </html>

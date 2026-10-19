@@ -334,6 +334,8 @@
           --accent-2: #ea580c; --on-accent: #ffffff; --chip: #f4f4f5; --chip-ink: #3f3f46; --faint: #71717a;
           --tag-lang-fg: #115e59; --tag-lang-bg: #ccfbf1; --tag-visa-fg: #9a3412; --tag-visa-bg: #ffedd5;
           --badge-bg: #c2410c; --badge-fg: #ffffff; --bad: #dc2626; --ok: #0f766e; color: var(--ink); }
+  /* job listings in the search band's light green; their small tags in white */
+  .job { --card: #e3f0ec; --chip: #ffffff; --faint: #5f5f68; }
   .hero-title { @apply m-0 max-w-3xl font-display text-[1.5rem] leading-tight font-bold tracking-tight text-ink sm:text-[1.9rem]; }
   .hero-sub { @apply mt-2 mb-4 text-sm text-muted sm:mb-5; }
   .hero .search { @apply mt-0 border-line shadow-sm; }

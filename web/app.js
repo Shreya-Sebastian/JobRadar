@@ -41,7 +41,7 @@
       "rep.new": "new jobs", "rep.before": "the week before: {n}", "rep.nodutch": "no Dutch required", "rep.visa": "mention visa sponsorship",
       "rep.salary": "median stated salary", "rep.skills": "Most requested skills", "rep.positions": "Most common job titles", "rep.change": "change in share compared with the previous week",
       "tab.tracker": "Saved jobs", "tr.title": "Saved jobs", "tr.hint": "Move a job to the next column as your application progresses.", "col.saved": "Saved", "col.interested": "Interested", "col.applied": "Applied", "col.archived": "Archived", "tr.move": "Move to", "tr.delete": "Remove", "tr.removed": "Job removed.", "tr.undo": "Undo", "tr.empty": "No saved jobs yet. Tap the star on a job in Discover to keep it here.", "tr.col.empty": "Drag a job here", "tr.applied.on": "Applied {d}", "tr.moved.on": "Since {d}", "tr.closed": "Closed", "hero.title": "Find tech jobs in the Netherlands", "hero.sub": "{n} open jobs at {c} companies · updated {d}", "foot.tag": "Tech jobs in the Netherlands, read straight from employers' own career sites and updated every day.",
-      "jobs.none": "No jobs match these filters. Try removing one.", "rss.title": "Your current search as an RSS feed", "rss.label": "RSS feed of your search", "pill.lang": "Language", "pill.visa": "Visa sponsorship", "pill.exp": "Experience", "pill.level": "Experience level", "pill.role": "Field", "pill.degree": "Education", "pill.remote": "On-site / remote", "pill.company": "Company", "pill.posted": "Date posted", "pill.more": "More", "remote.label": "Remote", "sal.from": "from {v}", "fact.noexp": "No experience required", "sal.upto": "up to {v}", "sal.title": "Salary stated in the posting (per year, gross)", "fact.visa": "Visa sponsorship", "fact.nodutch": "No Dutch required",
+      "jobs.none": "No jobs match these filters. Try removing one.", "rss.title": "Your current search as an RSS feed", "rss.label": "RSS feed of your search", "pill.lang": "Language", "pill.visa": "Visa sponsorship", "pill.exp": "Experience", "pill.level": "Experience level", "pill.role": "Field", "pill.degree": "Education", "pill.remote": "On-site / remote", "pill.company": "Company", "pill.posted": "Date posted", "pill.more": "More", "side.title": "Filters", "side.done": "Show jobs", "side.close": "Close filters", "remote.label": "Remote", "sal.from": "from {v}", "fact.noexp": "No experience required", "sal.upto": "up to {v}", "sal.title": "Salary stated in the posting (per year, gross)", "fact.visa": "Visa sponsorship", "fact.nodutch": "No Dutch required",
       "ov.graph": "Skills often requested together",
       "kpi.week": "posted in the last 7 days", "kpi.week.vs": "previous 7 days: {m}", "kpi.week.title": "Jobs posted in the last 7 days, by the date employers posted them, against the 7 days before",
       "ov.matches": "Suggested for you",
@@ -154,7 +154,7 @@
       "rep.new": "nieuwe vacatures", "rep.before": "de week ervoor: {n}", "rep.nodutch": "geen Nederlands vereist", "rep.visa": "noemen visumsponsoring",
       "rep.salary": "mediaan vermeld salaris", "rep.skills": "Meest gevraagde skills", "rep.positions": "Meest voorkomende functietitels", "rep.change": "verschil in aandeel met de week ervoor",
       "tab.tracker": "Bewaarde vacatures", "tr.title": "Bewaarde vacatures", "tr.hint": "Verplaats een vacature naar de volgende kolom naarmate je sollicitatie vordert.", "col.saved": "Bewaard", "col.interested": "Interessant", "col.applied": "Gesolliciteerd", "col.archived": "Gearchiveerd", "tr.move": "Verplaats naar", "tr.delete": "Verwijderen", "tr.removed": "Vacature verwijderd.", "tr.undo": "Ongedaan maken", "tr.empty": "Nog geen bewaarde vacatures. Tik op de ster bij een vacature in Ontdekken om hem hier te bewaren.", "tr.col.empty": "Sleep een vacature hierheen", "tr.applied.on": "Gesolliciteerd {d}", "tr.moved.on": "Sinds {d}", "tr.closed": "Gesloten", "hero.title": "Vind techvacatures in Nederland", "hero.sub": "{n} open vacatures bij {c} bedrijven · bijgewerkt {d}", "foot.tag": "Techvacatures in Nederland, rechtstreeks van de carrièresites van werkgevers en elke dag bijgewerkt.",
-      "jobs.none": "Geen vacatures met deze filters. Haal er een weg.", "rss.title": "Je huidige zoekopdracht als RSS-feed", "rss.label": "RSS-feed van je zoekopdracht", "pill.lang": "Taal", "pill.visa": "Visumsponsoring", "pill.exp": "Ervaring", "pill.level": "Ervaringsniveau", "pill.role": "Vakgebied", "pill.degree": "Opleiding", "pill.remote": "Op kantoor / remote", "pill.company": "Werkgever", "pill.posted": "Geplaatst", "pill.more": "Meer", "remote.label": "Remote", "sal.from": "vanaf {v}", "fact.noexp": "Geen ervaring vereist", "sal.upto": "tot {v}", "sal.title": "Salaris volgens de vacature (per jaar, bruto)", "fact.visa": "Visumsponsoring", "fact.nodutch": "Geen Nederlands vereist",
+      "jobs.none": "Geen vacatures met deze filters. Haal er een weg.", "rss.title": "Je huidige zoekopdracht als RSS-feed", "rss.label": "RSS-feed van je zoekopdracht", "pill.lang": "Taal", "pill.visa": "Visumsponsoring", "pill.exp": "Ervaring", "pill.level": "Ervaringsniveau", "pill.role": "Vakgebied", "pill.degree": "Opleiding", "pill.remote": "Op kantoor / remote", "pill.company": "Werkgever", "pill.posted": "Geplaatst", "pill.more": "Meer", "side.title": "Filters", "side.done": "Toon vacatures", "side.close": "Filters sluiten", "remote.label": "Remote", "sal.from": "vanaf {v}", "fact.noexp": "Geen ervaring vereist", "sal.upto": "tot {v}", "sal.title": "Salaris volgens de vacature (per jaar, bruto)", "fact.visa": "Visumsponsoring", "fact.nodutch": "Geen Nederlands vereist",
       "ov.graph": "Skills die vaak samen gevraagd worden",
       "kpi.week": "geplaatst in de laatste 7 dagen", "kpi.week.vs": "7 dagen daarvoor: {m}", "kpi.week.title": "Vacatures geplaatst in de laatste 7 dagen, op de datum van de werkgever, tegenover de 7 dagen daarvoor",
       "ov.matches": "Voorgesteld voor jou",
@@ -790,43 +790,39 @@
     if (state.skill) q.set("skill", state.skill);
     return q;
   }
-  // how many choices each filter pill holds (the pill is highlighted and shows the number)
+  // how many choices each filter group holds (its heading shows the number; on a phone the Filters button shows the sum)
   const PILL_COUNTS = {
-    lang: (f) => langList(f.language).length, exp: (f) => f.exp.length + f.levels.length,
+    visa: (f) => (f.visa ? 1 : 0), lang: (f) => langList(f.language).length, exp: (f) => f.exp.length + f.levels.length,
     role: (f) => f.roles.length + (f.positions || []).length, degree: (f) => f.degrees.length, distance: (f) => (f.distanceFrom ? 1 : 0), remote: (f) => f.remote.length,
     company: (f) => f.emps.length + f.sectors.length + (f.agencies ? 1 : 0),
     posted: (f) => (f.days ? 1 : 0) + (f.confirmed ? 1 : 0), more: (f) => (f.noenrol ? 1 : 0) + (f.savedOnly ? 1 : 0) + (f.hideSeen ? 1 : 0) + (f.hideApplied ? 1 : 0),
   };
   function paintPills() {
     const f = currentJobFilters();
-    $$("#pillbar .pill[data-pop]").forEach((b) => {
-      const n = PILL_COUNTS[b.dataset.pop](f);
-      b.classList.toggle("on", n > 0); $(".n", b).textContent = n > 0 ? n : "";
+    let total = 0;
+    $$("#filters .fgroup[data-pop]").forEach((g) => {
+      const n = PILL_COUNTS[g.dataset.pop](f);
+      total += n;
+      g.classList.toggle("on", n > 0); $("summary .n", g).textContent = n > 0 ? n : "";
+      if (n > 0) g.open = true;  // a group in use stays open, so a shared link shows what it filters on
     });
-    const any = Object.values(PILL_COUNTS).some((c) => c(f) > 0) || f.visa || f.q || f.cities.length || state.skill;
+    $("#side-n").textContent = total > 0 ? total : "";
+    const any = total > 0 || f.q || f.cities.length || state.skill;
     $("#f-reset").hidden = !any;  // nothing to reset
   }
-  function openPop(key) {
-    $$("#pops .pop").forEach((p) => { p.hidden = p.dataset.pop !== key; });
-    $$("#pillbar .pill[data-pop]").forEach((b) => { const on = b.dataset.pop === key; b.classList.toggle("open", on); b.setAttribute("aria-expanded", on); });
-    if (!key) return;
-    // right under the pill that opened it (the pills wrap onto more rows in Dutch, so a fixed place drifts away)
-    const pill = $(`#pillbar .pill[data-pop="${key}"]`), pop = $(`#pops .pop[data-pop="${key}"]`), host = $("#pops");
-    const pr = pill.getBoundingClientRect(), hr = host.getBoundingClientRect();
-    if (getComputedStyle(pop).position !== "absolute") return;  // phones: the panel sits in the page under the pills
-    pop.style.top = Math.round(pr.bottom - hr.top + 6) + "px";
-    pop.style.left = Math.max(0, Math.min(pr.left - hr.left, host.clientWidth - pop.offsetWidth)) + "px";
-  }
-  function bindPills() {
-    $("#pillbar").addEventListener("click", (e) => {
-      const b = e.target.closest(".pill[data-pop]"); if (!b) return;
-      openPop(b.classList.contains("open") ? null : b.dataset.pop);
-    });
-    $("#pillbar").addEventListener("scroll", () => openPop(null), { passive: true });
-    document.addEventListener("click", (e) => { if (!e.target.closest("#pillbar, #pops")) openPop(null); });
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") openPop(null); });
-    // the pills reflow on a resize (or a phone's keyboard opening): keep the open panel under its pill
-    window.addEventListener("resize", () => { const open = $("#pillbar .pill.open"); if (open) openPop(open.dataset.pop); });
+  // phones and tablets: the filters open as a drawer over the jobs
+  function bindSide() {
+    const side = $("#filters"), backdrop = $("#side-backdrop"), opener = $("#side-open");
+    const show = (on) => {
+      side.classList.toggle("open", on); backdrop.hidden = !on; opener.setAttribute("aria-expanded", on);
+      document.documentElement.classList.toggle("side-locked", on);
+      if (on) $("#side-close").focus(); else if (document.activeElement && side.contains(document.activeElement)) opener.focus();
+    };
+    opener.addEventListener("click", () => show(true));
+    $("#side-close").addEventListener("click", () => show(false));
+    $("#side-done").addEventListener("click", () => { show(false); $(".results-head").scrollIntoView({ block: "start" }); });
+    backdrop.addEventListener("click", () => show(false));
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && side.classList.contains("open")) show(false); });
   }
   let jobsBuilt = false;
   function buildJobsFilters() {
@@ -849,7 +845,7 @@
     paintPills();
     if (!jobsBuilt) {
       jobsBuilt = true;
-      bindPills();
+      bindSide();
       [["#f-visa", "visa"], ["#f-agencies", "agencies"], ["#f-noenrol", "noenrol"], ["#f-confirmed", "confirmed"], ["#f-saved", "savedOnly"],
        ["#f-hideseen", "hideSeen"], ["#f-hideapplied", "hideApplied"]]
         .forEach(([id, key]) => $(id).addEventListener("change", (e) => { currentJobFilters()[key] = e.target.checked; refreshJobs(true); }));

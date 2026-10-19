@@ -291,11 +291,11 @@
   .pages button:hover { @apply border-line text-ink; }
   .pages button.on { @apply border-accent bg-accent text-on-accent; }
 
-  /* ---------- jobs: header band, search bar, filter pills, job cards ---------- */
+  /* ---------- jobs: header band, search bar, filter sidebar, job cards ---------- */
   /* the header band: a soft teal panel under the search */
-  .hero { @apply -mx-4 mt-[-1.25rem] px-4 pt-7 pb-5 sm:mx-0 sm:mt-0 sm:rounded-[1.75rem] sm:px-8 sm:pt-9 sm:pb-7;
+  .hero { @apply -mx-4 mt-[-1.25rem] px-4 pt-6 pb-5 sm:mx-0 sm:mt-0 sm:rounded-[1.75rem] sm:px-8 sm:pt-7 sm:pb-6;
     background: var(--hero-bg); }
-  .hero-title { @apply m-0 max-w-3xl font-display text-[1.6rem] leading-tight font-bold tracking-tight text-ink sm:text-[2.15rem]; }
+  .hero-title { @apply m-0 max-w-3xl font-display text-[1.5rem] leading-tight font-bold tracking-tight text-ink sm:text-[1.9rem]; }
   .hero-sub { @apply mt-2 mb-4 text-sm text-muted sm:mb-5; }
   .hero .search { @apply mt-0 border-transparent shadow-sm; }
   .search { @apply mt-1 flex flex-col rounded-3xl border border-line bg-card shadow-sm sm:flex-row sm:rounded-full; }
@@ -305,16 +305,6 @@
   .search-city { @apply flex items-center gap-2.5 border-t border-line pl-5 sm:w-2/5 sm:border-t-0 sm:border-l sm:pr-3; }
   .search-city .chipinput { @apply min-h-12 flex-1 rounded-none border-0 bg-transparent shadow-none focus-within:ring-0; }
   .search:focus-within { @apply border-accent/60 ring-3 ring-accent/15; }
-  .pillbar { @apply mt-3 flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible; scrollbar-width: none; }
-  .pill { @apply inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-line bg-card px-3.5 py-1.5
-    text-sm font-medium whitespace-nowrap text-ink shadow-none transition-colors select-none hover:border-accent/60 hover:bg-card; }
-  .pill.on, .pill:has(input:checked) { color: var(--accent); border-color: var(--accent);
-    background: color-mix(in oklab, var(--accent) 12%, var(--card)); }
-  .pill.open { @apply border-accent; }
-  .pill .chev { @apply size-4 opacity-60 transition-transform; }
-  .pill.open .chev { @apply rotate-180; }
-  .pill .n { @apply rounded-full bg-accent px-1.5 text-[11px] leading-4 font-semibold text-on-accent; }
-  .pill .n:empty { display: none; }
   /* light / dark switch (web/theme.js): the moon in light mode, the sun in dark mode */
   .masked { -webkit-text-security: disc; }  /* a secret typed into a plain text field (admin token) */
   .theme-btn { @apply grid size-9 shrink-0 cursor-pointer place-items-center rounded-full border border-line bg-card p-0 text-muted
@@ -330,9 +320,52 @@
   .pill-s { @apply inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap; }
   .pill-s.human { @apply bg-accent/15 text-accent; }
   .pill-s.bot { @apply bg-accent-2/15 text-accent-2; }
-  .pops { @apply relative z-30; }
-  .pop { @apply absolute top-1.5 flex w-[min(32rem,100%)] flex-col gap-4 rounded-2xl border border-line bg-card p-4 shadow-xl; }  /* top and left set under the pill (app.js openPop) */
-  .pop .field > label { @apply text-sm font-semibold text-ink; }
+  /* ---------- filter sidebar: beside the jobs on wide screens, a drawer on phones and tablets ---------- */
+  .browse { @apply mt-5 grid gap-6; }
+  .results { @apply min-w-0; }
+  .results > .results-head:first-child, .results > .quiz:first-child { @apply mt-0; }
+  .side { @apply flex flex-col overflow-hidden rounded-[1.25rem] border border-line bg-card; box-shadow: var(--shadow-card); }
+  .side-head { @apply flex items-center gap-3 border-b border-line px-4 py-3; }
+  .side-head h2 { @apply m-0 mr-auto text-base; }
+  .side-close { @apply size-8 rounded-full border-0 bg-transparent p-0 text-xl leading-none text-muted shadow-none hover:bg-chip
+    hover:text-ink; }
+  .side-body { @apply min-h-0 flex-1 overflow-y-auto overscroll-contain; }
+  .fgroup + .fgroup { @apply border-t border-line; }
+  .fgroup > summary { @apply flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-semibold text-ink select-none
+    hover:text-accent; }
+  .fgroup > summary::-webkit-details-marker { display: none; }
+  .fgroup > summary::after { content: ""; @apply ml-auto size-4 shrink-0 opacity-50 transition-transform; background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5.2 7.2a.75.75 0 0 1 1.06.02L10 11.1l3.74-3.88a.75.75 0 1 1 1.08 1.04l-4.25 4.4a.75.75 0 0 1-1.08 0l-4.25-4.4a.75.75 0 0 1 .02-1.06Z'/%3E%3C/svg%3E") center / contain no-repeat; }
+  .fgroup[open] > summary::after { @apply rotate-180; }
+  .fgroup.on > summary { @apply text-accent; }
+  .fgroup .n, .side-open .n { @apply rounded-full bg-accent px-1.5 text-[11px] leading-4 font-semibold text-on-accent; }
+  .fgroup .n:empty, .side-open .n:empty { display: none; }
+  .fbody { @apply flex flex-col gap-3.5 px-4 pb-4; }
+  .fbody .field > label { @apply text-xs font-medium text-muted; }
+  .fbody label.check { @apply items-start pb-0 leading-snug; }
+  .fbody label.check input { @apply mt-0.5 shrink-0; }
+  .fbody select { @apply w-full; }
+  .side-foot { @apply hidden border-t border-line p-3; }
+  .side-foot button { @apply w-full; }
+  .side-open { @apply hidden; }
+  @media (min-width: 1024px) {
+    .browse { grid-template-columns: 17rem minmax(0, 1fr); align-items: start; }
+    /* stays in view while the jobs scroll, clear of the sticky header */
+    .side { @apply sticky; top: 8rem; max-height: calc(100vh - 9rem); }
+    .side-close { display: none; }
+  }
+  @media (max-width: 1023.98px) {
+    .side { @apply fixed inset-y-0 left-0 z-50 w-[min(22rem,88vw)] rounded-none border-y-0 border-l-0 shadow-xl;
+      transform: translateX(-100%); visibility: hidden; transition: transform .2s ease, visibility 0s linear .2s; }
+    .side.open { transform: none; visibility: visible; transition: transform .2s ease; }
+    .side-foot { @apply block; }
+    .side-backdrop { @apply fixed inset-0 z-40 bg-black/45; }
+    .side-open { @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-3.5 py-1.5 text-sm font-semibold
+      text-ink shadow-none hover:border-accent/60; }
+    .side-open svg { @apply size-4 text-accent; }
+    :root.side-locked, :root.side-locked body { overflow: hidden; }
+  }
+  @media (prefers-reduced-motion: reduce) { .side, .side.open { transition: none; } }
   .results-head { @apply mt-5 mb-2.5 flex flex-wrap items-center gap-x-3 gap-y-2; scroll-margin-top: 8.5rem; }  /* clear of the sticky header */
   .results-head .count { @apply mr-auto ml-0 text-sm font-semibold text-ink; }
   .sort { @apply flex items-center gap-2 text-sm text-muted; }
@@ -512,11 +545,9 @@
 
   .job { padding: .85rem; gap: .75rem; }
   .job-logo { width: 2.5rem; height: 2.5rem; font-size: 12px; border-radius: .65rem; }
-  .pop { position: static; width: auto; margin-top: .5rem; }  /* under the pill row, pushing the jobs down */
   .board { grid-template-columns: repeat(4, 85%); margin-inline: -1rem; padding-inline: 1rem; }
   .refresh-btn:disabled { display: none; }  /* room for the name in the header; it shows once there is news */
   .topbar-right { gap: .4rem; }
-  .pillbar { mask-image: linear-gradient(to right, #000 85%, transparent); padding-right: 2rem; }
   .job-skills span:nth-child(n+5):not(.more) { display: none; }
   .job-title { font-size: 16px; }
   .results-head .count { flex-basis: auto; }

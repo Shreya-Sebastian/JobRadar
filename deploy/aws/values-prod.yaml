@@ -33,6 +33,8 @@ config:
   siteUrl: "https://techjobsradar.nl"
   extraEnv:
     RADAR_SOURCE_URL: ""  # the repository is private: no source link in the footer
+    RADAR_REVIEW_THRESHOLD: "0.7"
+    RADAR_REVIEW_FIELDS: "role_family"
 
 # sized for one 2 GB node (t3.small): k3s, Postgres, Traefik and cert-manager use about 1 GB, so the app gets
 # the rest, with a hard cap per pod so one process cannot push the node into swap

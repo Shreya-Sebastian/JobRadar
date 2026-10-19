@@ -343,15 +343,15 @@
     :root:not([data-theme="light"]) .hero { color-scheme: dark; --ink: #fafafa; --muted: #b3c4c0; --card: #1a2826; --line: #2c3b38; --accent: #73b5ac;
     --on-accent: #042f2e; --chip: #22302e; --chip-ink: #e2ece9; }
   }
-  /* the filters box: green tints in light mode, the header's navy in dark mode */
-  /* light mode: the green on the box's heading strip, the faint teal tint below it */
-  :root .side { background-color: color-mix(in oklab, #0f766e 7%, #ffffff); }
-  :root .side .side-head { background: #e3f0ec; }
+  /* the filters box: a light navy tint in light mode, the header's navy in dark mode */
+  /* light mode: the quick start's light navy tint, the heading strip one shade deeper, soft navy outline and dividers */
+  :root .side { background-color: #e9eef7; --line-accent: #c8d3e6; }
+  :root .side .side-head { background: #dfe6f2; }
   :root[data-theme="dark"] .side .side-head { background: var(--fill-accent); }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .side .side-head { background: var(--fill-accent); } }
-  :root[data-theme="dark"] .side { --card: #071227; --chip: #0f2043; --chip-ink: #e0e7f2; --muted: #b3c1d6; --faint: #9eadc4; --line: #1b2c4f; background-color: #071227; }
+  :root[data-theme="dark"] .side { --card: #071227; --chip: #0f2043; --chip-ink: #e0e7f2; --muted: #b3c1d6; --faint: #9eadc4; --line: #1b2c4f; background-color: #071227; --line-accent: #0e1d39; }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .side { --card: #071227; --chip: #0f2043; --chip-ink: #e0e7f2; --muted: #b3c1d6; --faint: #9eadc4; --line: #1b2c4f; background-color: #071227; }
+    :root:not([data-theme="light"]) .side { --card: #071227; --chip: #0f2043; --chip-ink: #e0e7f2; --muted: #b3c1d6; --faint: #9eadc4; --line: #1b2c4f; background-color: #071227; --line-accent: #0e1d39; }
   }
   /* light mode: the quick start in a light navy tint, its answer buttons and progress steps in white */
   :root .quiz { background: #e9eef7; border-color: #c8d3e6; }

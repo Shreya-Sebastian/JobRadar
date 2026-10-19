@@ -464,6 +464,12 @@ def get_data(user: User = Depends(require_user), session: Session = Depends(_db)
             "updated_at": row.updated_at.isoformat()}
 
 
+def _older(incoming: dict, stored: dict | None) -> bool:
+    """Whether an uploaded profile was saved before the stored one (profiles carry their save time, saved_at)."""
+    have = (stored or {}).get("saved_at")
+    return bool(have) and str(incoming.get("saved_at") or "") < str(have)
+
+
 @router.put("/api/me/data")
 def put_data(body: DataBody, request: Request, user: User = Depends(require_user), session: Session = Depends(_db)):
     _require_json_header(request)
@@ -473,7 +479,10 @@ def put_data(body: DataBody, request: Request, user: User = Depends(require_user
     if row is None:
         row = UserData(user_id=user.id)
         session.add(row)
-    row.profile = body.profile
+    # every upload carries the whole profile, also when only saved jobs changed; a tab or device with an older copy
+    # (one opened before the last save) must not overwrite a newer one, so the profile with the later saved_at stays
+    if not _older(body.profile, row.profile):
+        row.profile = body.profile
     row.saved = sorted(set(body.saved))
     # only stages of saved jobs, in the known columns: nothing else rides along
     row.board = {str(k): {"col": v["col"], "at": str(v.get("at", ""))[:40]} for k, v in body.board.items()

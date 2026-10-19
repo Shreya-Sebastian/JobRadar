@@ -261,8 +261,10 @@
   const store = {
     get(k, d) { try { const v = localStorage.getItem("radar." + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
     set(k, v) {
+      // the profile carries the time it was saved, so an older copy (another tab, another device) never wins over it
+      if (k === "profile" && v) v.saved_at = new Date().toISOString();
       try { localStorage.setItem("radar." + k, JSON.stringify(v)); } catch { /* private mode */ }
-      if (k === "profile" || k === "saved" || k === "board") account.push();
+      if (k === "profile" || k === "saved" || k === "board") account.push(k === "profile" ? 0 : 800);
     },
   };
   // anonymous usage events for the admin analytics page (radar/analytics.py): no cookie, no personal data
@@ -284,7 +286,7 @@
       if (!this.me || !this.me.signed_in) { this.me = null; return; }
       try {
         const d = await (await fetch("/api/me/data", { credentials: "same-origin" })).json();
-        // saved jobs: the union of both sides; profile: the account's copy wins once it has one
+        // saved jobs: the union of both sides
         const saved = [...new Set([...(d.saved || []), ...state.saved])];
         state.saved.splice(0, state.saved.length, ...saved);
         // tracker stages: per job, the most recent move wins
@@ -292,7 +294,12 @@
           if (!state.board[id] || (v.at || "") > (state.board[id].at || "")) state.board[id] = v;
         }
         try { localStorage.setItem("radar.board", JSON.stringify(state.board)); } catch { /* private mode */ }
-        if (d.updated_at && d.profile && Object.keys(d.profile).length) state.profile = Object.assign(emptyProfile(), d.profile);
+        // profile: the most recently saved copy wins (an account copy from before saved_at existed wins over a local one
+        // without it, as before)
+        const mine = state.profile.saved_at || "", theirs = (d.profile || {}).saved_at || "";
+        if (d.updated_at && d.profile && Object.keys(d.profile).length && (theirs > mine || (!theirs && !mine))) {
+          state.profile = Object.assign(emptyProfile(), d.profile);
+        }
         try { localStorage.setItem("radar.profile", JSON.stringify(state.profile)); localStorage.setItem("radar.saved", JSON.stringify(state.saved)); } catch { /* private mode */ }
         this.push(0);
       } catch { /* offline: keep the local copy */ }
@@ -303,18 +310,27 @@
       this.timer = setTimeout(async () => {
         const el = document.getElementById("acct-sync");
         try {
-          const r = await fetch("/api/me/data", { method: "PUT", credentials: "same-origin",
+          const r = await fetch("/api/me/data", { method: "PUT", credentials: "same-origin", keepalive: true,
             headers: { "Content-Type": "application/json", "X-Requested-With": "radar" },
             body: JSON.stringify({ profile: state.profile, saved: state.saved, board: state.board }) });
           if (el) el.textContent = r.ok ? t("acct.synced") : t("acct.sync.fail");
         } catch { if (el) el.textContent = t("acct.sync.fail"); }
       }, delay);
     },
+    flush() { if (this.timer) this.push(0); },
     async post(path, method = "POST", body = null) {
       return fetch(path, { method, credentials: "same-origin",
         headers: { "Content-Type": "application/json", "X-Requested-With": "radar" }, body: body ? JSON.stringify(body) : null });
     },
   };
+  window.addEventListener("pagehide", () => account.flush());
+  // another tab saved the profile: use its copy here too, so this tab does not upload the old one later
+  window.addEventListener("storage", (e) => {
+    if (e.key !== "radar.profile" || !e.newValue) return;
+    try { state.profile = Object.assign(emptyProfile(), JSON.parse(e.newValue)); } catch { return; }
+    jobFilters = null;
+    if (state.tab === "profile") renderProfile();
+  });
   // stored choice first; then the page itself (/nl/ is served in Dutch); then the browser
   const pageLang = location.pathname.startsWith("/nl") ? "nl" : null;
   let LANG = store.get("lang", null) || pageLang || ((navigator.language || "").toLowerCase().startsWith("nl") ? "nl" : "en");

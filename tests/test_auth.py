@@ -51,6 +51,17 @@ def test_magic_link_login_sync_and_logout(client):
     assert d["profile"] == {"skills": ["Python"]} and d["saved"] == [1, 3]
     # tracker stages of saved jobs, in the known columns only
     assert d["board"] == {"3": {"col": "applied", "at": "2026-10-06T10:00:00Z"}}
+    # a newer profile is kept when an older copy (another tab or device) is uploaded with the saved jobs
+    new = {"skills": ["Python", "SQL"], "saved_at": "2026-10-19T15:00:00.000Z"}
+    client.put("/api/me/data", json={"profile": new, "saved": [1, 3]}, headers=H)
+    client.put("/api/me/data", json={"profile": {"skills": [], "saved_at": "2026-10-19T14:00:00.000Z"}, "saved": [1, 3]},
+               headers=H)
+    client.put("/api/me/data", json={"profile": {"skills": []}, "saved": [1, 3]}, headers=H)  # an old page without saved_at
+    d = client.get("/api/me/data").json()
+    assert d["profile"] == new and d["saved"] == [1, 3]
+    later = {"skills": ["Go"], "saved_at": "2026-10-19T16:00:00.000Z"}
+    client.put("/api/me/data", json={"profile": later, "saved": [1, 3]}, headers=H)
+    assert client.get("/api/me/data").json()["profile"] == later
     export = client.get("/api/me/export")
     assert export.json()["email"] == "ada@example.org" and export.json()["saved_job_ids"] == [1, 3]
 

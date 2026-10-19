@@ -353,6 +353,15 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) .side { --card: #071227; --chip: #0f2043; --chip-ink: #e0e7f2; --muted: #b3c1d6; --faint: #9eadc4; --line: #1b2c4f; background-color: #071227; }
   }
+  /* light mode: the quick start in a light navy tint, its answer buttons and progress steps in white */
+  :root .quiz { background: #e9eef7; border-color: #c8d3e6; }
+  :root .quiz .quiz-steps i:not(.on) { background: #ffffff; }
+  :root[data-theme="dark"] .quiz { background: var(--card); }
+  :root[data-theme="dark"] .quiz .quiz-steps i:not(.on) { background: var(--chip); }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .quiz { background: var(--card); }
+    :root:not([data-theme="light"]) .quiz .quiz-steps i:not(.on) { background: var(--chip); }
+  }
   /* dark mode: the quick start's outline and the filter list's scrollbar in the same faint navy */
   :root[data-theme="dark"] :is(.quiz, .side) { border-color: var(--line-accent); }
   :root[data-theme="dark"] .side-body { scrollbar-color: #1b2c4f transparent; }

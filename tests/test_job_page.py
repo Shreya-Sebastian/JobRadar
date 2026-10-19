@@ -108,7 +108,7 @@ def test_sitemap_falls_back_to_the_last_one_built(fresh_db, monkeypatch):
 def test_font_files_have_their_own_type(fresh_db):
     from radar.api import app
 
-    r = TestClient(app).get("/static/fonts/instrument-sans-latin.woff2")
+    r = TestClient(app).get("/static/fonts/figtree-latin.woff2")
     assert r.status_code == 200 and r.headers["content-type"] == "font/woff2"
 
 

@@ -3,10 +3,18 @@
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-  // the first two follow the stylesheet's accent colours (they differ in dark mode)
-  const palette = [css("--accent") || "#047857", css("--accent-2") || "#f97316", "#2a6f97", "#8e44ad", "#c0392b", "#16a085", "#f39c12", "#34495e",
-    "#7f8c8d", "#27ae60", "#d35400", "#2980b9"];
-  // the site's colour set, for charts that show one colour per item (the same tokens as the tags and tabs)
+  // one accent across the site: charts use it, and for charts with one colour per item (doughnuts, lines) lighter
+  // shades of it mixed toward the card colour. Read when drawn, so they follow light and dark mode
+  const mixHex = (a, b, w) => {
+    const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+    const x = rgb(a), y = rgb(b);
+    return "#" + x.map((v, i) => Math.round(v * w + y[i] * (1 - w)).toString(16).padStart(2, "0")).join("");
+  };
+  const shades = (n) => {
+    const a = css("--accent"), c = css("--card");
+    if (!/^#[0-9a-f]{6}$/i.test(a) || !/^#[0-9a-f]{6}$/i.test(c)) return Array(n).fill(a);
+    return Array.from({ length: n }, (_, i) => mixHex(a, c, 1 - (i * 0.8) / Math.max(n - 1, 1)));
+  };
   const LEVELS = ["intern", "trainee", "junior", "medior", "senior", "lead", "staff", "manager"];
   const REMOTE = ["remote", "hybrid", "onsite"];
   const EXP = ["none", "1", "2-3", "4-5", "6+", "unspecified"];
@@ -325,30 +333,29 @@
   const degreeLabel = (d) => t("deg." + d);
   const empLabel = (e) => t("emp." + e);
   const sectorLabel = (s) => t("sector." + s);
-  // the employer's sector as a small icon on a tint of its own colour: the card's marker when there is no logo
+  // the employer's sector as a small icon: the card's marker when there is no logo
   const SECTOR_ICON = {
-    software: ["#2563eb", "M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 5l-3 14"],
-    consultancy: ["#7c3aed", "M3 8h18v12H3zM9 8V5h6v3M3 13h18"],
-    hardware: ["#0891b2", "M7 7h10v10H7zM10 10h4v4h-4zM9.5 3v4M14.5 3v4M9.5 17v4M14.5 17v4M3 9.5h4M3 14.5h4M17 9.5h4M17 14.5h4"],
-    finance: ["#059669", "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM15.5 9a4 4 0 1 0 0 6M7.5 11h6M7.5 13.5h6"],
-    pharma: ["#db2777", "M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3M7.5 15h9"],
-    health: ["#e11d48", "M12 20s-7.5-4.6-9-9.4A4.8 4.8 0 0 1 12 7.3a4.8 4.8 0 0 1 9 3.3C19.5 15.4 12 20 12 20zM8 12h2.5l1.5-2.5 2 5 1.5-2.5H16"],
-    government: ["#475569", "M4 21h16M6 18v-7M10 18v-7M14 18v-7M18 18v-7M3 11h18M12 3l8.5 5h-17z"],
-    education: ["#ca8a04", "M2 9l10-5 10 5-10 5zM6 11v5c3.5 2.5 8.5 2.5 12 0v-5M22 9v5"],
-    energy: ["#d97706", "M13 2L4.5 13.5H11L10 22l8.5-11.5H12z"],
-    transport: ["#0d9488", "M2 6h12v10H2zM14 10h4l3 3v3h-7M6 19.5a1.5 1.5 0 1 0 0-.01M17 19.5a1.5 1.5 0 1 0 0-.01"],
-    engineering: ["#ea580c", "M12 3v3M12 6l-6 15M12 6l6 15M8.2 15.5h7.6M12 6a1.5 1.5 0 1 0 0-.01"],
-    industry: ["#78716c", "M2 21h20M3 21V10l6 4v-4l6 4V6l6 3v12M7 17h2M12 17h2M17 17h2"],
-    retail: ["#c026d3", "M5 8h14l-1.2 13H6.2zM9 8V6.5a3 3 0 0 1 6 0V8"],
-    telecom_media: ["#4f46e5", "M12 21v-9M8.4 8.4a5 5 0 0 1 7.2 0M5.5 5.5a9 9 0 0 1 13 0M12 12a.5.5 0 1 0 0-.01"],
-    staffing: ["#64748b", "M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21a7 7 0 0 1 14 0M16 3.5a4 4 0 0 1 0 7.5M18 14.5a6 6 0 0 1 4 6.5"],
-    other: ["#64748b", "M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16M15 9h4a1 1 0 0 1 1 1v11M3 21h18M8 8h3M8 12h3M8 16h3"]
+    software: "M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 5l-3 14",
+    consultancy: "M3 8h18v12H3zM9 8V5h6v3M3 13h18",
+    hardware: "M7 7h10v10H7zM10 10h4v4h-4zM9.5 3v4M14.5 3v4M9.5 17v4M14.5 17v4M3 9.5h4M3 14.5h4M17 9.5h4M17 14.5h4",
+    finance: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM15.5 9a4 4 0 1 0 0 6M7.5 11h6M7.5 13.5h6",
+    pharma: "M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3M7.5 15h9",
+    health: "M12 20s-7.5-4.6-9-9.4A4.8 4.8 0 0 1 12 7.3a4.8 4.8 0 0 1 9 3.3C19.5 15.4 12 20 12 20zM8 12h2.5l1.5-2.5 2 5 1.5-2.5H16",
+    government: "M4 21h16M6 18v-7M10 18v-7M14 18v-7M18 18v-7M3 11h18M12 3l8.5 5h-17z",
+    education: "M2 9l10-5 10 5-10 5zM6 11v5c3.5 2.5 8.5 2.5 12 0v-5M22 9v5",
+    energy: "M13 2L4.5 13.5H11L10 22l8.5-11.5H12z",
+    transport: "M2 6h12v10H2zM14 10h4l3 3v3h-7M6 19.5a1.5 1.5 0 1 0 0-.01M17 19.5a1.5 1.5 0 1 0 0-.01",
+    engineering: "M12 3v3M12 6l-6 15M12 6l6 15M8.2 15.5h7.6M12 6a1.5 1.5 0 1 0 0-.01",
+    industry: "M2 21h20M3 21V10l6 4v-4l6 4V6l6 3v12M7 17h2M12 17h2M17 17h2",
+    retail: "M5 8h14l-1.2 13H6.2zM9 8V6.5a3 3 0 0 1 6 0V8",
+    telecom_media: "M12 21v-9M8.4 8.4a5 5 0 0 1 7.2 0M5.5 5.5a9 9 0 0 1 13 0M12 12a.5.5 0 1 0 0-.01",
+    staffing: "M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21a7 7 0 0 1 14 0M16 3.5a4 4 0 0 1 0 7.5M18 14.5a6 6 0 0 1 4 6.5",
+    other: "M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16M15 9h4a1 1 0 0 1 1 1v11M3 21h18M8 8h3M8 12h3M8 16h3"
   };
   function sectorTile(sector) {
-    const [colour, path] = SECTOR_ICON[sector] || SECTOR_ICON.other;
+    const path = SECTOR_ICON[sector] || SECTOR_ICON.other;
     return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${path}"/></svg>`;
   }
-  const sectorColour = (sector) => (SECTOR_ICON[sector] || SECTOR_ICON.other)[0];
   const positionLabel = (s) => t("pos." + s);
   // typed text becomes the position whose name it matches; anything else is not added
   const positionPick = (v) => {
@@ -454,7 +461,7 @@
     }
     return lines;
   }
-  function barChart(id, labels, values, { horizontal = true, color = palette[0], onClick, pct = false } = {}) {
+  function barChart(id, labels, values, { horizontal = true, color = css("--accent"), onClick, pct = false } = {}) {
     const ctx = document.getElementById(id);
     if (!ctx) return;
     if (state.charts[id]) state.charts[id].destroy();
@@ -478,7 +485,7 @@
     if (!ctx) return;
     if (state.charts[id]) state.charts[id].destroy();
     state.charts[id] = new Chart(ctx, { type: "doughnut",
-      data: { labels, datasets: [{ data: values, backgroundColor: palette, borderWidth: 0 }] },
+      data: { labels, datasets: [{ data: values, backgroundColor: shades(values.length), borderColor: css("--card"), borderWidth: 2 }] },
       options: { maintainAspectRatio: false, plugins: { legend: { position: "right", labels: { color: css("--ink"), boxWidth: 10, font: { size: 11 } } } } } });
   }
   function lineChart(id, labels, series) {
@@ -486,7 +493,7 @@
     if (!ctx) return;
     if (state.charts[id]) state.charts[id].destroy();
     state.charts[id] = new Chart(ctx, { type: "line",
-      data: { labels, datasets: series.map((s, i) => ({ label: s.label, data: s.data, borderColor: palette[i % palette.length], backgroundColor: palette[i % palette.length], tension: 0.3, pointRadius: 3 })) },
+      data: { labels, datasets: series.map((s, i, all) => ({ label: s.label, data: s.data, borderColor: shades(all.length)[i], backgroundColor: shades(all.length)[i], tension: 0.3, pointRadius: 3 })) },
       options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: css("--ink") } } },
         scales: { x: { ticks: { color: css("--muted") }, grid: { color: css("--line") } }, y: { ticks: { color: css("--muted") }, grid: { color: css("--line") }, beginAtZero: true } } } });
   }
@@ -629,7 +636,7 @@
     const [skills, co] = await Promise.all([api("/api/skills", withParams(p, { top: 30 })), api("/api/cooccurrence", withParams(p, { top: 28 }))]);
     const have = new Set(state.profile.skills);
     barChart("ov-skills", skills.skills.map((s) => s.skill), skills.skills.map((s) => Math.round(s.share * 100)),
-      { pct: true, onClick: (s) => openJobsWithSkill(s), color: skills.skills.map((s) => have.has(s.skill) ? palette[1] : palette[0]) });
+      { pct: true, onClick: (s) => openJobsWithSkill(s), color: skills.skills.map((s) => have.has(s.skill) ? css("--accent-2") : css("--accent")) });
     // one colour for every skill; orange marks the ones in the visitor's profile, explained under the charts
     $$("[data-skill-key]").forEach((k) => { k.hidden = !skills.skills.some((s) => have.has(s.skill)); });
     graph($("#ov-graph"), co, (s) => openJobsWithSkill(s));
@@ -684,7 +691,7 @@
       .map(([v, l]) => `<div class="kpi"><b>${v}</b><span>${esc(l)}</span></div>`).join("");
     const have = new Set(state.profile.skills);
     barChart("co-skills", skills.skills.map((x) => x.skill), skills.skills.map((x) => Math.round(x.share * 100)),
-      { pct: true, onClick: (sk) => openJobsWithSkill(sk), color: skills.skills.map((x) => have.has(x.skill) ? palette[1] : palette[0]) });
+      { pct: true, onClick: (sk) => openJobsWithSkill(sk), color: skills.skills.map((x) => have.has(x.skill) ? css("--accent-2") : css("--accent")) });
     doughnut("co-seniority", sen.items.map((i) => levelLabel(i.key)), sen.items.map((i) => i.count));
     doughnut("co-lang", lang.items.map((i) => t("lang.chart." + i.key) === "lang.chart." + i.key ? i.key : t("lang.chart." + i.key)), lang.items.map((i) => i.count));
     $("#co-count").textContent = fmt(jobs.total);
@@ -965,10 +972,10 @@
     const policy = i.remote_policy && i.remote_policy !== "onsite" && i.remote_policy !== "unknown" ? remoteLabel(i.remote_policy) : "";
     const exp = expCell(i), salary = salaryText(i);
     const asks = [
-      levelCell(i) && `<span class="tag c-sky">${cap(levelCell(i))}</span>`,
-      i.experience === "none" && !i.years_text && i.years == null ? `<span class="tag c-indigo">${t("fact.noexp")}</span>` : !exp.includes('class="muted"') && `<span class="tag c-indigo">${exp}</span>`,
-      policy && `<span class="tag c-teal">${esc(policy)}</span>`,
-      salary && `<span class="tag c-emerald sal" title="${t("sal.title")}">${esc(salary)}</span>`,
+      levelCell(i) && `<span class="tag">${cap(levelCell(i))}</span>`,
+      i.experience === "none" && !i.years_text && i.years == null ? `<span class="tag">${t("fact.noexp")}</span>` : !exp.includes('class="muted"') && `<span class="tag">${exp}</span>`,
+      policy && `<span class="tag">${esc(policy)}</span>`,
+      salary && `<span class="tag sal" title="${t("sal.title")}">${esc(salary)}</span>`,
     ].filter(Boolean).join("");
     const tags = [
       i.english_only ? `<span class="tag lang" title="${t("lang.en.title")}">${t("fact.nodutch")}</span>`
@@ -979,7 +986,7 @@
     const shown = i.skills.slice(0, 6);
     const skills = shown.length ? `<div class="job-skills">${shown.map((s) => `<span${have.includes(s) ? ' class="have"' : ""}>${esc(s)}</span>`).join("")}${i.skills.length > 6 ? `<span class="more">+${i.skills.length - 6}</span>` : ""}</div>` : "";
     const old = i.age_days > 365 ? `<span class="badge stale" title="${t("old.year.title")}">${t("old.year")}</span>` : i.age_days > 90 ? `<span class="badge stale">${t("old")}</span>` : "";
-    return `<li class="job${state.seen.includes(i.id) ? " seen" : ""}" style="--sc:${sectorColour(i.sector)}">
+    return `<li class="job${state.seen.includes(i.id) ? " seen" : ""}">
       ${logoTile(i)}
       <div class="job-body">
         <div class="job-top"><a class="job-title" href="${jobPath(i)}" data-pid="${i.id}" target="_blank" title="${esc(trustText(i))}">${esc(i.title)}</a>
@@ -995,7 +1002,7 @@
     </li>`;
   }
   function logoTile(i) {
-    return `<span class="job-logo${i.logo_dark ? " dark-plate" : ""}" style="--sc:${sectorColour(i.sector)}" title="${esc(sectorLabel(i.sector || "other"))}">${sectorTile(i.sector)}${i.logo ? `<img src="/logo/${encodeURIComponent(i.logo)}${i.logo_v ? "?v=" + i.logo_v : ""}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ""}</span>`;
+    return `<span class="job-logo${i.logo_dark ? " dark-plate" : ""}" title="${esc(sectorLabel(i.sector || "other"))}">${sectorTile(i.sector)}${i.logo ? `<img src="/logo/${encodeURIComponent(i.logo)}${i.logo_v ? "?v=" + i.logo_v : ""}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ""}</span>`;
   }
 
   // ---------- TRACKER: the saved jobs as a board, Saved -> Interested -> Applied -> Archived ----------
@@ -1098,7 +1105,7 @@
       ...(r.salary_median ? [["€" + fmt(Math.round(r.salary_median / 1000) * 1000), t("rep.salary"), ""]] : []),
     ].map(([v, l, s]) => `<div class="kpi"><b>${esc(v)}</b><span>${esc(l)}</span>${s ? `<span class="kpi-sub">${esc(s)}</span>` : ""}</div>`).join("");
     const bars = (items) => { const top = Math.max(1, ...items.map((i) => i.n));
-      return items.map((i) => `<div class="rbar"><span>${esc(i.k)}</span><i style="width:${Math.round(i.n / top * 100)}%"></i><b>${esc(i.v)}</b>${i.c != null ? ` <small class="${i.c > 0.004 ? "ok" : i.c < -0.004 ? "bad" : "muted"}" title="${t("rep.change")}">${i.c > 0.004 ? "▲" : i.c < -0.004 ? "▼" : "="} ${Math.abs(Math.round(i.c * 100))}</small>` : ""}</div>`).join(""); };
+      return items.map((i) => `<div class="rbar"><span>${esc(i.k)}</span><i style="width:${Math.round(i.n / top * 100)}%"></i><b>${esc(i.v)}</b>${i.c != null ? ` <small class="muted" title="${t("rep.change")}">${i.c > 0.004 ? "▲" : i.c < -0.004 ? "▼" : "="} ${Math.abs(Math.round(i.c * 100))}</small>` : ""}</div>`).join(""); };
     $("#rep-skills").innerHTML = bars(r.skills.slice(0, 8).map((s) => ({ k: s.skill, n: s.share, v: pct(s.share), c: s.change })));
     $("#rep-positions").innerHTML = bars(r.positions.map((p) => ({ k: positionLabel(p.key), n: p.share, v: pct(p.share) })));
   }
@@ -1117,12 +1124,12 @@
     const order = (k) => EXP.indexOf(k);
     exp.items.sort((a, b) => order(a.key) - order(b.key));
     doughnut("mk-exp", exp.items.map((i) => expLabel(i.key)), exp.items.map((i) => i.count));
-    barChart("mk-city", city.items.map((i) => cityLabel(i.key)), city.items.map((i) => i.count), { color: palette[2] });
+    barChart("mk-city", city.items.map((i) => cityLabel(i.key)), city.items.map((i) => i.count));
     doughnut("mk-seniority", sen.items.map((i) => levelLabel(i.key)), sen.items.map((i) => i.count));
-    barChart("mk-role", role.items.map((i) => roleLabel(i.key)), role.items.map((i) => i.count), { color: palette[3] });
-    barChart("mk-sector", sector.items.map((i) => sectorLabel(i.key)), sector.items.map((i) => i.count), { color: palette[4] });
+    barChart("mk-role", role.items.map((i) => roleLabel(i.key)), role.items.map((i) => i.count));
+    barChart("mk-sector", sector.items.map((i) => sectorLabel(i.key)), sector.items.map((i) => i.count));
     const top = pos.items.filter((i) => i.key !== "other").slice(0, 20);
-    barChart("mk-position", top.map((i) => positionLabel(i.key)), top.map((i) => i.count), { color: palette[0], onClick: (l) => openJobsWithPosition(top.find((i) => positionLabel(i.key) === l).key) });
+    barChart("mk-position", top.map((i) => positionLabel(i.key)), top.map((i) => i.count), { onClick: (l) => openJobsWithPosition(top.find((i) => positionLabel(i.key) === l).key) });
     $("#mk-companies tbody").innerHTML = comp.items.map((i) => `<tr><td>${companyLink(i.key)}</td><td>${i.count}</td><td>${Math.round(i.share * 100)}%</td></tr>`).join("");
     $("#mk-salary").innerHTML = sal.n
       ? [[t("salary.n"), fmt(sal.n)], [t("salary.p25"), "€" + fmt(sal.p25)], [t("salary.median"), "€" + fmt(sal.median)], [t("salary.p75"), "€" + fmt(sal.p75)]].map(([l, v]) => `<div class="kpi"><b>${v}</b><span>${esc(l)}</span></div>`).join("")
@@ -1198,7 +1205,7 @@
       $("#p-gap-result").hidden = false;
       $("#p-gap-coverage").textContent = t("p.coverage", { p: Math.round(g.demand_coverage * 100) });
       await needCharts();
-      barChart("p-gap-chart", g.missing.map((m) => m.skill), g.missing.map((m) => Math.round(m.share * 100)), { pct: true, color: palette[1], onClick: (s) => openJobsWithSkill(s) });
+      barChart("p-gap-chart", g.missing.map((m) => m.skill), g.missing.map((m) => Math.round(m.share * 100)), { pct: true, color: css("--accent-2"), onClick: (s) => openJobsWithSkill(s) });
     });
   }
 

@@ -168,11 +168,11 @@
   .tag { @apply max-w-2xl text-sm text-muted; }
 
   /* ---------- the header: navy in both themes, slightly see-through over the page like the search band; white type,
-     the name's last word, the open tab and Log in in orange. White 14:1 or more, orange 6:1 or more ---------- */
+     the name's last word in teal, the open tab and Log in in orange. White 14:1 or more, orange 6:1 or more ---------- */
   .top { background: var(--head-bg); border-color: var(--head-line); color: var(--head-ink); }
   .top .brand, .top .brand:hover h1, .top .brand:hover b { color: var(--head-ink); }
-  .brand-last { color: var(--accent-2); }
-  .top .brand-last { color: var(--head-orange); }
+  .brand-last { color: var(--accent); }
+  .top .brand-last { color: #5cc6b8; }  /* the logo's teal, a touch brighter on the navy: 8:1 */
   .top .tabs a { color: var(--head-muted); }
   .top .tabs a:hover { color: var(--head-ink); border-color: color-mix(in oklab, var(--head-ink) 30%, transparent); }
   .top .tabs a.on { color: var(--head-ink); border-color: var(--head-orange); }

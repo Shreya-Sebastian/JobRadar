@@ -612,7 +612,7 @@ def alerts_unsubscribe(t: str, u: int | None = None, s: int | None = None, sessi
           else "Deze afmeldlink is niet geldig. Je kunt alerts uitzetten onder Accountinstellingen.")
     html = (f'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" '
             f'content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>'
-            f'{escape(settings.site_name)}</title><link rel="stylesheet" href="/static/app.css?v=16"></head>'
+            f'{escape(settings.site_name)}</title><link rel="stylesheet" href="/static/app.css?v=17"></head>'
             f'<body><main class="wrap max-w-xl pt-[12vh]">'
             f'<div class="card"><h2>{"Unsubscribed" if ok else "Link not valid"}</h2><p>{escape(msg)}</p>'
             f'<p class="muted">{escape(nl)}</p>'

@@ -3,7 +3,7 @@ from __future__ import annotations
 import html
 import re
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 import httpx
@@ -112,7 +112,8 @@ def html_to_text(fragment: str) -> str:
 
 
 def parse_dt(value: Any) -> datetime | None:
-    """Parse ISO strings and epoch milliseconds into naive UTC datetimes."""
+    """Parse ISO strings and epoch milliseconds into naive UTC datetimes. A date before 2000 is a board's empty
+    value (0 becomes 1 January 1970), not a real posting date: None."""
     if value is None or value == "":
         return None
     try:
@@ -120,12 +121,13 @@ def parse_dt(value: Any) -> datetime | None:
             ts = float(value)
             if ts > 1e11:
                 ts /= 1000.0
-            return datetime.utcfromtimestamp(ts)
-        from dateutil import parser as dtparser
+            dt = datetime(1970, 1, 1) + timedelta(seconds=ts)
+        else:
+            from dateutil import parser as dtparser
 
-        dt = dtparser.parse(str(value))
-        if dt.tzinfo is not None:
-            dt = dt.astimezone(tz=None).replace(tzinfo=None)
-        return dt
+            dt = dtparser.parse(str(value))
+            if dt.tzinfo is not None:
+                dt = dt.astimezone(tz=None).replace(tzinfo=None)
+        return dt if dt.year >= 2000 else None
     except (ValueError, OverflowError, TypeError):
         return None

@@ -129,3 +129,9 @@ def test_scrub_contact_removes_emails_and_dutch_phones_but_keeps_numbers_we_need
     for keep in ("4.500 - 6.000", "3-5 years", "01-02-2027", "2010", "40 hours", "1012 AB", "KvK 12345678"):
         assert keep in out, keep
     assert out.count("[e-mail]") == 1 and out.count("[telefoon]") == 3
+
+
+
+def test_an_empty_board_date_is_no_date():
+    assert parse_dt(0) is None and parse_dt("1970-01-01T00:00:00Z") is None and parse_dt("0001-01-01") is None
+    assert parse_dt(1760000000000).year == 2025 and parse_dt("2026-10-01").day == 1

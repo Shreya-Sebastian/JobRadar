@@ -869,14 +869,12 @@ def _render_index(session: Session | None = None, lang: str = "en") -> str:
     # what the site does, not a running count: a count dates within hours and reads like an advert
     if lang == "nl":
         title = settings.site_headline_nl
-        desc = ("Filter op wat de vacature echt vraagt: Nederlands of Engels, visumsponsoring, jaren ervaring en "
-                "opleiding. Plus functie, skills, bedrijfsgrootte en stad. Rechtstreeks van de carrièresites van "
-                "werkgevers, dagelijks bijgewerkt.")
+        desc = ("Techvacatures in Nederland van de eigen vacaturesites van werkgevers. Filter op Engelstalig, "
+                "visumsponsoring en jaren ervaring. Dagelijks bijgewerkt.")
     else:
         title = settings.site_headline
-        desc = ("Filter by what each posting actually asks: Dutch or English, visa sponsorship, years of experience "
-                "and degree. Plus position, skills, company size and city. Straight from employers' own career "
-                "sites, updated daily.")
+        desc = ("Tech jobs in the Netherlands from employers' own career sites. Filter by English-speaking, "
+                "visa sponsorship and years of experience. Updated daily.")
     base = settings.site_url.rstrip("/")
     ld = {"@context": "https://schema.org", "@graph": [
         {"@type": "WebSite", "@id": f"{base}/#website", "name": settings.site_name, "alternateName": aliases,

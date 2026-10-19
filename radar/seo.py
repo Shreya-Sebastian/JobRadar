@@ -27,6 +27,19 @@ WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 MIN_POSTINGS = 8
 MIN_POSTINGS_COMBO = 20
 
+
+SNIPPET_VERB = {"nl": "Filter op", "en": "Filter by"}
+_SNIPPET_FILTERS = {  # theme -> the filters a landing page snippet names (not the one the page itself is about)
+    "nl": [("english", "Engelstalig"), ("visa", "visumsponsoring"), (None, "jaren ervaring")],
+    "en": [("english", "English-speaking"), ("visa", "visa sponsorship"), (None, "years of experience")],
+}
+
+
+def _filter_list(theme: str | None, lang: str) -> str:
+    names = [name for t, name in _SNIPPET_FILTERS[lang] if t != theme or t is None]
+    joiner = " en " if lang == "nl" else " and "
+    return names[0] if len(names) == 1 else ", ".join(names[:-1]) + joiner + names[-1]
+
 ROLES = {  # key: (role families, nl name, en name)
     "software-developer": ("backend,frontend,fullstack,mobile", "Software developer", "Software developer"),
     "data": ("data", "Data", "Data"),
@@ -381,18 +394,15 @@ def render(page: Page, lang: str, rows: list[stats.Row], pages: list[Page]) -> s
         f'{escape(p.nl_title if lang == "nl" else p.en_title)}</a> <span class="muted">{p.count}</span></li>'
         for p in related
     )
-    top = ", ".join(s for s, _ in skills.most_common(4))
-    # no counts in the snippet: they go stale between crawls and read as clickbait in search results
+    # the snippet leads with the search words and the filters, and fits Google's ~155 characters; no counts (they go
+    # stale between crawls and read as clickbait), no skills list (it pushed the filters out of view)
     if lang == "nl":
-        desc = (
-            f"{title}, rechtstreeks van de eigen vacaturesites van werkgevers"
-            f"{f'. Gevraagd: {top}' if top else ''}. Filter op Engelstalig, visum en niveau. Dagelijks bijgewerkt."
-        )
+        where = "" if page.city or page.nl_title.endswith(" in Nederland") else " in Nederland"
+        desc = (f"{title}{where}. {SNIPPET_VERB['nl']} {_filter_list(page.theme, 'nl')}. "
+                "Rechtstreeks van werkgevers, dagelijks bijgewerkt.")
     else:
-        desc = (
-            f"{title}, straight from the employers' own career sites"
-            f"{f'. Top skills: {top}' if top else ''}. Filter on English-speaking, visa and level. Updated daily."
-        )
+        desc = (f"{title}. {SNIPPET_VERB['en']} {_filter_list(page.theme, 'en')}. "
+                "Straight from employers, updated daily.")
     ld = {
         "@context": "https://schema.org",
         "@graph": [

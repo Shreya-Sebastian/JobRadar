@@ -492,7 +492,8 @@ def similar_jobs(rows: list[Row], p, limit: int = 5) -> list[Row]:
     if kind == "other":
         return []
     same = [r for r in rows if r.closed_at is None and r.id != p.id and r.company != p.company and r.position == kind]
-    same.sort(key=lambda r: (r.city != p.city, -(r.posted_at or r.first_seen).timestamp()))
+    same.sort(key=lambda r: r.posted_at or r.first_seen, reverse=True)
+    same.sort(key=lambda r: r.city != p.city)  # stable: the same city first, each part still newest first
     seen, out = set(), []
     for r in same:
         if r.company not in seen:  # one job per employer, for variety

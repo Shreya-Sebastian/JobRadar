@@ -236,6 +236,16 @@ def verify(token: str, request: Request, session: Session = Depends(_db)):
     return resp
 
 
+def _count(request: Request, event: str) -> None:
+    """A sign-in or a new account for the visit statistics (radar/analytics.py): an event, no address."""
+    from radar import analytics
+
+    try:
+        analytics.record(request, 200, 0, 0, event=event, path=request.url.path)
+    except Exception:  # statistics never stop a sign-in
+        pass
+
+
 def _local(request: Request) -> bool:
     return request.url.hostname in {"localhost", "127.0.0.1", "::1", "testserver"}
 
@@ -249,6 +259,8 @@ def _sign_in(session: Session, request: Request, email: str, remember: bool, res
         user = User(email=email)
         session.add(user)
         session.flush()
+        _count(request, "signup")
+    _count(request, "login")
     user.last_login_at = now
     raw = secrets.token_urlsafe(32)
     # "keep me signed in": a cookie that lasts session_days; otherwise a browser-session cookie that ends when the

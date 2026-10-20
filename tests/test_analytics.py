@@ -225,3 +225,48 @@ def test_cloud_networks():
     assert analytics.cloud_network("62.108.7.25") is None and analytics.cloud_network("2a02:a44c::1") is None
     assert analytics.cloud_network("") is None and analytics.cloud_network(None) is None
     assert analytics.parse_agent("Mediapartners-Google")[3] is True
+
+
+def test_people_are_visitors_who_used_the_page(client):
+    """A browser that runs the script but never sends input (a scripted copy of the page) stays out of "people";
+    the funnel and the account figures count only people and accounts, never addresses."""
+    from urllib.parse import parse_qs, urlparse
+
+    from radar import auth, mailer
+    from radar.models import User, UserData
+
+    mailer.OUTBOX.clear()
+    auth._ip_hits.clear()
+    person = {"user-agent": CHROME, "cf-connecting-ip": "203.0.113.5", "X-Requested-With": "radar"}
+    client.get("/", headers=person)
+    for e in ("seen", "active", "star", "job_click", "quiz_done"):
+        client.post("/api/e", json={"e": e, "d": "1" if e == "job_click" else None, "p": "/"}, headers=person)
+    client.get("/api/postings?q=python", headers=person)
+    client.post("/api/auth/request", json={"email": "ada@example.org"}, headers=person)
+    body = mailer.OUTBOX[-1].get_body(("plain",)).get_content()
+    token = parse_qs(urlparse(next(w for w in body.split() if "token=" in w)).query)["token"][0]
+    client.get(f"/auth/verify?token={token}", headers=person, follow_redirects=False)
+    copier = {"user-agent": CHROME, "cf-connecting-ip": "198.51.100.7"}
+    client.get("/", headers=copier)
+    client.post("/api/e", json={"e": "seen", "p": "/"}, headers=copier)  # ran the script, never used the page
+    analytics.flush()
+    with session_scope() as s:
+        s.query(UserData).filter_by(user_id=s.query(User).one().id).delete()
+        s.add(UserData(user_id=s.query(User).one().id, saved=[1, 2, 3], profile={"skills": ["Python"]}, board={}))
+
+    auth_h = {"Authorization": "Bearer secret-token"}
+    d = client.get("/api/admin/analytics?who=people", headers=auth_h).json()
+    assert d["kpi"]["people_24h"] == 1 and d["kpi"]["humans_24h"] == 2 and d["kpi"]["people_since"]
+    assert {r["ip"] for r in d["recent"]} == {"203.0.113.5"}
+    steps = {f["event"]: f["people"] for f in d["funnel"]}
+    assert steps == {"active": 1, "search": 1, "job_click": 1, "star": 1, "profile_save": 0, "login_request": 1,
+                     "login": 1}
+    acc = d["accounts"]
+    assert acc["total"] == acc["new_24h"] == acc["signed_in_7d"] == 1
+    assert acc["saved_jobs"] == 3 and acc["with_saved_jobs"] == acc["with_skills"] == 1
+    assert acc["links_30d"] == acc["links_used_30d"] == 1 and "ada@example.org" not in str(d)
+    assert {"key": "quiz_done", "hits": 1} in d["events"] and {"key": "signup", "hits": 1} in d["events"]
+
+    with session_scope() as s:  # people per day survive in the daily totals
+        analytics.rollup(s, datetime.utcnow().date())
+        assert s.query(DailyStat).filter_by(dim="people").one().uniques == 1

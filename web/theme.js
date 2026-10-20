@@ -36,5 +36,17 @@
       navigator.sendBeacon("/api/e", new Blob([JSON.stringify({ e: "seen", p: location.pathname })], { type: "application/json" }));
     } catch { /* statistics are optional */ }
   });
+  // ...and that someone used it: the first real key press, tap, click, scroll wheel or mouse movement. Scripted
+  // browsers that load pages to copy them run the script but rarely send input
+  const inputs = ["pointerdown", "keydown", "wheel", "touchstart", "mousemove"];
+  const active = (ev) => {
+    if (!ev.isTrusted) return;
+    inputs.forEach((n) => removeEventListener(n, active, true));
+    if (location.pathname.startsWith("/admin")) return;
+    try {
+      navigator.sendBeacon("/api/e", new Blob([JSON.stringify({ e: "active", p: location.pathname })], { type: "application/json" }));
+    } catch { /* statistics are optional */ }
+  };
+  inputs.forEach((n) => addEventListener(n, active, { capture: true, passive: true }));
   if (dark.addEventListener) dark.addEventListener("change", () => { if (!root.dataset.theme) { paint(); window.dispatchEvent(new CustomEvent("themechange")); } });
 })();

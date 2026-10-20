@@ -17,6 +17,11 @@ referrer. So a visit that names a browser is still counted as a bot when it come
 probes for files this site does not have (/wp-login.php, /.env), or never runs the page's script: every page sends a
 `seen` event from theme.js, and a visitor without one did not run JavaScript. `_audit` applies these rules when the
 dashboard and the daily totals are computed, so they also hold for rows recorded before the rules existed.
+
+Who counts as someone who used the site ("people"): a human visit as above that also sent `active`, which theme.js
+sends on the first real key press, tap, click, scroll wheel or mouse movement on a page. Scripted browsers that load
+pages to copy them run the script but rarely send input, so "humans" can still hold some of them; "people" should not.
+Account figures (sign-ups, sign-ins, saved jobs) come from the account tables, as counts only, never per person.
 """
 
 from __future__ import annotations
@@ -45,10 +50,18 @@ log = logging.getLogger(__name__)
 RAW_DAYS = 90
 API_DAYS = 14
 IP_DAYS = 30  # then the address is blanked; the rest of the row stays until RAW_DAYS
-AUDIENCES = ("humans", "bots", "all")
+AUDIENCES = ("people", "humans", "bots", "all")
 SESSION_GAP = timedelta(minutes=30)
-EVENTS = {"nav", "job_click", "profile_save", "login_request", "gap", "import", "export", "star", "seen"}
+EVENTS = {"nav", "job_click", "profile_save", "login_request", "gap", "import", "export", "star", "seen", "active",
+          "quiz_open", "quiz_done", "search_save"}
 JS_SINCE = "analytics_js_since"  # Meta key: when the first `seen` event arrived; visits before it are not checked
+ACTIVE_SINCE = "analytics_active_since"  # Meta key: when the first `active` event arrived
+# what people did, in the order a visit usually goes: (event, label). `login` is recorded by the server (radar/auth.py)
+FUNNEL = [("active", "Used a page"), ("search", "Searched"), ("job_click", "Opened a job"),
+          ("star", "Saved a job"), ("profile_save", "Saved a profile"), ("login_request", "Asked to sign in"),
+          ("login", "Signed in")]
+FUNNEL_DAYS = 7
+_BOOKKEEPING = ("seen", "active")  # events that only tell people from bots, not something anyone did
 JS_GRACE = timedelta(minutes=2)  # a page's `seen` event can arrive a moment after the page itself
 
 # Paths that would only add noise: assets, health checks, polling, admin, the beacon itself
@@ -296,9 +309,10 @@ def flush() -> int:
     try:
         with session_scope() as s:
             s.bulk_insert_mappings(PageView, rows)
-            seen = [r["ts"] for r in rows if r["event"] == "seen"]
-            if seen and s.get(Meta, JS_SINCE) is None:
-                s.add(Meta(key=JS_SINCE, value=min(seen).isoformat()))
+            for event, key in (("seen", JS_SINCE), ("active", ACTIVE_SINCE)):
+                stamps = [r["ts"] for r in rows if r["event"] == event]
+                if stamps and s.get(Meta, key) is None:
+                    s.add(Meta(key=key, value=min(stamps).isoformat()))
     except Exception:
         log.exception("analytics flush failed; %d rows dropped", len(rows))
         return 0
@@ -389,9 +403,12 @@ def dashboard(session: Session, who: str = "humans", now: datetime | None = None
     if include_bots is not None:  # older callers
         who = "all" if include_bots else "humans"
     who = who if who in AUDIENCES else "humans"
-    include_bots = who != "humans"
+    include_bots = who not in ("humans", "people")
+    people: set[str] = set()
 
     def keep(r) -> bool:
+        if who == "people":
+            return not r.bot and r.visitor in people
         return who == "all" or (who == "bots") == bool(r.bot)
 
     now = now or datetime.utcnow()
@@ -403,6 +420,7 @@ def dashboard(session: Session, who: str = "humans", now: datetime | None = None
     rows = session.execute(select(*cols).where(PageView.ts >= min(since, day_start)).order_by(PageView.ts)).all()
     rows += [_as_row(r) for r in list(_buffer)]  # not yet flushed
     rows = _audit(rows, js_since(session), until=now - JS_GRACE)
+    people.update(r.visitor for r in rows if r.event == "active" and not r.bot)
     h24 = [r for r in rows if r.ts >= since]
     today = [r for r in rows if r.ts >= day_start]
     shown = [r for r in h24 if keep(r)]
@@ -459,6 +477,10 @@ def dashboard(session: Session, who: str = "humans", now: datetime | None = None
             "views_today": len(views_today), "uniques_today": len({r.visitor for r in views_today}),
             "views_24h": len(views_24), "uniques_24h": len({r.visitor for r in views_24}),
             "human_views_24h": len(human_views),
+            "people_today": len({r.visitor for r in today if r.visitor in people}),
+            "people_24h": len({r.visitor for r in h24 if r.visitor in people}),
+            "humans_24h": len({r.visitor for r in h24 if not r.bot and r.kind != "event"}),
+            "people_since": _meta_time(session, ACTIVE_SINCE),
             "bot_hits_24h": sum(1 for r in h24 if r.bot and r.kind != "event"),
             "bounce_rate": round(bounced / sessions, 3) if sessions else None, "pages_per_session": round(pps, 1),
             "avg_ms": round(sum(times) / len(times)) if times else 0,
@@ -466,7 +488,7 @@ def dashboard(session: Session, who: str = "humans", now: datetime | None = None
             "bytes_today": sum(r.bytes for r in today if r.kind != "event"), "bytes_24h": bytes_24,
             "bytes_per_visitor": round(bytes_24 / len(visitors_24)) if visitors_24 else 0,
             "spa_navigations": sum(1 for r in shown if r.event == "nav"),
-            "interactions": sum(1 for r in shown if (r.kind == "event" or r.event) and r.event != "seen"),
+            "interactions": sum(1 for r in shown if (r.kind == "event" or r.event) and r.event not in _BOOKKEEPING),
             "crawler_fetches": sum(1 for r in h24 if r.kind == "crawl"),
             "job_clicks": len(clicks), "searches": sum(1 for r in shown if r.event == "search"),
             "buffered": buffer_size(),
@@ -487,7 +509,8 @@ def dashboard(session: Session, who: str = "humans", now: datetime | None = None
         "job_clicks_by_employer": _top(by_employer),
         "job_clicks_by_job": _top(by_job),
         "searches": _top(Counter(r.detail for r in shown if r.event == "search" and r.detail), 15),
-        "events": _top(Counter(r.event for r in shown if r.event and r.event not in ("nav", "search", "seen")), 12),
+        "events": _top(Counter(r.event for r in shown
+                               if r.event and r.event not in ("nav", "search", *_BOOKKEEPING)), 12),
         # every visit of the last 24 hours except the API calls a page makes while it loads, newest first
         "recent": [
             {"ts": r.ts.isoformat(timespec="seconds") + "Z", "kind": r.kind, "path": r.path, "status": r.status,
@@ -499,6 +522,79 @@ def dashboard(session: Session, who: str = "humans", now: datetime | None = None
         ],
         "recent_total": sum(1 for r in h24 if r.kind != "api" and keep(r)),
         "all_time": all_time,
+        "funnel": funnel(session, now),
+        "accounts": accounts(session, now),
+    }
+
+
+def _meta_time(session: Session, key: str) -> str | None:
+    from radar.models import Meta
+
+    row = session.get(Meta, key)
+    return row.value[:19] + "Z" if row else None
+
+
+def funnel(session: Session, now: datetime | None = None, days: int = FUNNEL_DAYS) -> list[dict]:
+    """How many people (visitors who sent `active`, see the module docstring) took each step in the past `days`.
+    A visitor id is a daily hash, so someone who comes back on three days counts three times."""
+    from radar.models import PageView
+
+    now = now or datetime.utcnow()
+    names = [e for e, _ in FUNNEL]
+    rows = session.execute(select(PageView.ts, PageView.kind, PageView.path, PageView.bot, PageView.visitor,
+                                  PageView.ip, PageView.event)
+                           .where(PageView.ts >= now - timedelta(days=days), PageView.event.in_(names))).all()
+    rows += [_as_row(r) for r in list(_buffer) if r["event"] in names]
+    did: dict[str, set] = defaultdict(set)
+    for r in _audit(rows, None):
+        if not r.bot:
+            did[r.event].add(r.visitor)
+    users = did["active"]
+    out = []
+    for event, label in FUNNEL:
+        n = len(users) if event == "active" else len(did[event] & users)
+        out.append({"step": label, "event": event, "people": n, "share": round(n / len(users), 3) if users else None})
+    return out
+
+
+def accounts(session: Session, now: datetime | None = None) -> dict:
+    """Account figures: totals and counts only, no addresses."""
+    from radar.models import LoginToken, SavedSearch, User, UserData, UserSession
+
+    now = now or datetime.utcnow()
+    d1, d7, d30 = (now - timedelta(days=n) for n in (1, 7, 30))
+    users = session.execute(select(User.id, User.created_at, User.last_login_at, User.alerts)).all()
+    seen7 = set(session.scalars(select(UserSession.user_id).where(UserSession.last_seen_at >= d7)))
+    saved_jobs = with_saved = with_skills = tracking = 0
+    for saved, board, profile in session.execute(select(UserData.saved, UserData.board, UserData.profile)):
+        saved_jobs += len(saved or [])
+        with_saved += bool(saved)
+        tracking += bool(board)
+        with_skills += bool((profile or {}).get("skills"))
+    searches = session.execute(select(SavedSearch.user_id, SavedSearch.frequency)).all()
+    alerted = ({u.id for u in users if (u.alerts or "off") != "off"}
+               | {x.user_id for x in searches if (x.frequency or "off") != "off"})
+    links = session.execute(select(LoginToken.used_at).where(LoginToken.created_at >= d30)).all()
+    day0 = datetime(now.year, now.month, now.day)
+    daily = []
+    for i in range(13, -1, -1):
+        start = day0 - timedelta(days=i)
+        end = start + timedelta(days=1)
+        daily.append({"day": start.date().isoformat(),
+                      "new": sum(1 for u in users if start <= u.created_at < end),
+                      "signed_in": sum(1 for u in users if u.last_login_at and start <= u.last_login_at < end)})
+    return {
+        "total": len(users),
+        "new_24h": sum(1 for u in users if u.created_at >= d1),
+        "new_7d": sum(1 for u in users if u.created_at >= d7),
+        "new_30d": sum(1 for u in users if u.created_at >= d30),
+        "signed_in_7d": sum(1 for u in users if u.last_login_at and u.last_login_at >= d7),
+        "signed_in_30d": sum(1 for u in users if u.last_login_at and u.last_login_at >= d30),
+        "active_7d": len(seen7),
+        "with_saved_jobs": with_saved, "saved_jobs": saved_jobs, "with_skills": with_skills,
+        "tracking_applications": tracking, "saved_searches": len(searches), "with_alerts": len(alerted),
+        "links_30d": len(links), "links_used_30d": sum(1 for x in links if x.used_at is not None),
+        "daily": daily,
     }
 
 
@@ -521,7 +617,7 @@ def _all_time(session: Session, today_rows: list, day_start: datetime) -> dict:
     n_days = (day_start.date() - since).days + 1
     by = defaultdict(Counter)
     for s in stats:
-        if s.dim != "total":
+        if s.dim not in ("total", "people"):
             by[s.dim][s.key] += s.humans
     for r in live:
         if not r.bot:
@@ -532,17 +628,20 @@ def _all_time(session: Session, today_rows: list, day_start: datetime) -> dict:
             if r.kind == "page":
                 by["page"][r.path] += 1
     daily = {s.day: s for s in totals}
+    people_daily = {s.day: s.uniques for s in stats if s.dim == "people"}
     last14 = []
     for i in range(13, -1, -1):
         d = day_start.date() - timedelta(days=i)
         if d == day_start.date():
             people = [r for r in live if not r.bot]
             last14.append({"day": d.isoformat(), "humans": len(people), "bots": len(live) - len(people),
-                           "uniques": len({r.visitor for r in people})})
+                           "uniques": len({r.visitor for r in people}),
+                           "people": len({r.visitor for r in today_rows if r.event == "active" and not r.bot})})
         else:
             s = daily.get(d)
             last14.append({"day": d.isoformat(), "humans": s.humans if s else 0,
-                           "bots": (s.hits - s.humans) if s else 0, "uniques": s.uniques if s else 0})
+                           "bots": (s.hits - s.humans) if s else 0, "uniques": s.uniques if s else 0,
+                           "people": people_daily.get(d, 0)})
     return {
         "hits": hits, "humans": humans, "bots": hits - humans, "uniques": uniques, "since": since.isoformat(),
         "days": n_days, "countries": len(by["country"]), "avg_daily_humans": round(humans / n_days) if n_days else 0,
@@ -560,14 +659,19 @@ def rollup(session: Session, day: date) -> int:
     rows = session.execute(select(PageView.ts, PageView.kind, PageView.path, PageView.referrer, PageView.country,
                                   PageView.bot, PageView.visitor, PageView.ip, PageView.event)
                            .where(PageView.ts >= start, PageView.ts < start + timedelta(days=1),
-                                  (PageView.kind != "event") | (PageView.event == "seen"))).all()
-    rows = [r for r in _audit(rows, js_since(session)) if r.kind != "event"]
+                                  (PageView.kind != "event") | PageView.event.in_(("seen", "active")))).all()
+    audited = _audit(rows, js_since(session))
+    people = {r.visitor for r in audited if r.event == "active" and not r.bot}
+    rows = [r for r in audited if r.kind != "event"]
     session.execute(delete(DailyStat).where(DailyStat.day == day))
     if not rows:
         return 0
     humans = [r for r in rows if not r.bot]
     out = [DailyStat(day=day, dim="total", key="all", hits=len(rows), humans=len(humans),
                      uniques=len({r.visitor for r in humans}))]
+    if people:
+        views = sum(1 for r in humans if r.visitor in people)
+        out.append(DailyStat(day=day, dim="people", key="all", hits=views, humans=views, uniques=len(people)))
     for dim, values in (("country", [r.country for r in humans]), ("referrer", [r.referrer for r in humans]),
                         ("page", [r.path for r in humans if r.kind == "page"])):
         for key, n in Counter(v for v in values if v).most_common(200):

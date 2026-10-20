@@ -16,7 +16,7 @@ import json
 import re
 from collections import Counter
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from html import escape
 from pathlib import Path
 
@@ -101,6 +101,52 @@ def feed_path(page: Page, lang: str) -> str:
     if page.city:
         params["city"] = page.city
     return ("/nl/feed.xml" if lang == "nl" else "/feed.xml") + (f"?{urlencode(params)}" if params else "")
+
+
+def rounded(n: int, lang: str) -> str:
+    """A count for a search result, rounded down so it stays true for weeks between Google's visits: 12, 30+, 450+,
+    1,200+. An exact figure goes stale the day after a crawl; a rounded one only when the number really falls."""
+    step = 1 if n < 20 else 10 if n < 100 else 50 if n < 1000 else 100
+    v = n // step * step
+    text = f"{v:,}".replace(",", "." if lang == "nl" else ",")
+    return text if step == 1 else text + "+"
+
+
+def short_money(v: float) -> str:
+    return f"€{round(v / 1000)}k"
+
+
+# a title that starts with a count reads "450+ junior and entry-level tech jobs": these first words go lower case;
+# names, acronyms and Dutch titles keep their capitals
+_LOWER_FIRST = {"Tech", "Junior", "Remote", "Software", "Data", "Cloud", "Cybersecurity", "Embedded", "Test",
+                "Product", "Simulation"}
+SNIPPET_TAIL = {"en": ", updated daily", "nl": ", dagelijks bijgewerkt"}
+TITLE_MAX = 65  # characters Google shows of a title before it cuts it off, about
+
+
+def with_brand(title: str) -> str:
+    """The site name after a search title when it still fits; Google shows the site name above the result anyway."""
+    full = doc_title(title)
+    return full if len(full) <= TITLE_MAX else title
+
+
+def counted_title(title: str, n: int, lang: str) -> str:
+    """The search title of a list page: the rounded count first, then the page's own title, then "updated daily"
+    when it fits."""
+    first, _, rest = title.partition(" ")
+    if lang == "en" and first in _LOWER_FIRST:
+        title = first.lower() + " " + rest
+    out = f"{rounded(n, lang)} {title}"
+    return out + SNIPPET_TAIL[lang] if len(out + SNIPPET_TAIL[lang]) <= 60 else out
+
+
+def fit(parts: list[str], limit: int = 158) -> str:
+    """Sentences in order of importance, as many as fit in a search snippet."""
+    out = ""
+    for p in parts:
+        if p and len((out + " " + p).strip()) <= limit:
+            out = (out + " " + p).strip()
+    return out
 
 
 def doc_title(title: str) -> str:
@@ -394,15 +440,40 @@ def render(page: Page, lang: str, rows: list[stats.Row], pages: list[Page]) -> s
         f'{escape(p.nl_title if lang == "nl" else p.en_title)}</a> <span class="muted">{p.count}</span></li>'
         for p in related
     )
-    # the snippet leads with the search words and the filters, and fits Google's ~155 characters; no counts (they go
-    # stale between crawls and read as clickbait), no skills list (it pushed the filters out of view)
+    # The search result: the title leads with a rounded count (true until the number really falls, unlike an exact
+    # one), the snippet says what the list holds that the title does not: how many employers, how many new this
+    # week, and the answers this site is for (no Dutch needed, visa sponsorship, room for starters), in ~155
+    # characters. Nothing it says repeats the title.
+    search_title = with_brand(counted_title(title, n, lang))
+    week = sum(1 for r in mine if (r.posted_at or r.first_seen) >= datetime.utcnow() - timedelta(days=7))
+    r_ = lambda k: rounded(k, lang)  # noqa: E731
+    facts = []
     if lang == "nl":
-        where = "" if page.city or page.nl_title.endswith(" in Nederland") else " in Nederland"
-        desc = (f"{title}{where}. {SNIPPET_VERB['nl']} {_filter_list(page.theme, 'nl')}. "
-                "Rechtstreeks van werkgevers, dagelijks bijgewerkt.")
+        e = len(employers)
+        lead = f"{r_(n)} {'vacature' if n == 1 else 'vacatures'} bij {r_(e)} {'werkgever' if e == 1 else 'werkgevers'}"
+        lead += f", {r_(week)} nieuw deze week" if week >= 5 else ""
+        if page.theme != "english" and n and no_dutch / n >= 0.1:
+            facts.append(f"{pct(no_dutch)} vraagt geen Nederlands")
+        if page.theme != "visa" and visa >= 3:
+            facts.append(f"{r_(visa)} noemen visumsponsoring")
+        if page.theme not in ("junior", "trainee", "intern") and entry >= 5:
+            facts.append(f"{r_(entry)} voor starters")
+        tail = "Rechtstreeks van de eigen sites van werkgevers, dagelijks bijgewerkt."
     else:
-        desc = (f"{title}. {SNIPPET_VERB['en']} {_filter_list(page.theme, 'en')}. "
-                "Straight from employers, updated daily.")
+        e = len(employers)
+        lead = f"{r_(n)} {'opening' if n == 1 else 'openings'} at {r_(e)} {'employer' if e == 1 else 'employers'}"
+        lead += f", {r_(week)} new this week" if week >= 5 else ""
+        if page.theme != "english" and n and no_dutch / n >= 0.1:
+            facts.append(f"{pct(no_dutch)} need no Dutch")
+        if page.theme != "visa" and visa >= 3:
+            facts.append(f"{r_(visa)} mention visa sponsorship")
+        if page.theme not in ("junior", "trainee", "intern") and entry >= 5:
+            facts.append(f"{r_(entry)} open to starters")
+        tail = "Straight from employers' own sites, updated daily."
+    sentences = [lead + "."]
+    if facts:
+        sentences.append((", ".join(facts) + ".")[0].upper() + (", ".join(facts) + ".")[1:])
+    desc = fit(sentences + [tail]) or fit([lead + ".", tail])
     ld = {
         "@context": "https://schema.org",
         "@graph": [
@@ -443,7 +514,7 @@ def render(page: Page, lang: str, rows: list[stats.Row], pages: list[Page]) -> s
     reps = {
         "{{LANG}}": lang,
         "{{TITLE}}": escape(title),
-        "{{DOC_TITLE}}": escape(doc_title(title)),
+        "{{DOC_TITLE}}": escape(search_title),
         "{{COUNT}}": str(n),
         "{{SITE_NAME}}": escape(settings.site_name),
         "{{BRAND}}": brand_html(),

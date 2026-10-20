@@ -167,6 +167,12 @@ def render_company(name: str, rows: list[Row], lang: str = "en") -> str:
             + (t["desc_skills"].format(x=", ".join(s for s, _ in skills.most_common(5))) if skills else "")
             + t["desc_end"])
     self_path = company_path(slug, lang)
+    from radar.seo import rounded, with_brand
+
+    n = len(mine)
+    search_title = with_brand(
+        f"{name} vacatures: {rounded(n, lang)} open {'techvacature' if n == 1 else 'techvacatures'}" if lang == "nl"
+        else f"{name} jobs in the Netherlands: {rounded(n, lang)} open tech {'role' if n == 1 else 'roles'}")
     ld = {
         "@context": "https://schema.org", "@type": "CollectionPage", "inLanguage": lang,
         "name": t["title"].format(c=name), "url": base + self_path, "description": desc,
@@ -185,6 +191,7 @@ def render_company(name: str, rows: list[Row], lang: str = "en") -> str:
     for key, value in t.items():
         html = html.replace("{{L_" + key.upper() + "}}", escape(value.replace("{c}", name)))
     return _brand(html, lang).replace("{{LANG}}", "nl" if lang == "nl" else "en") \
+        .replace("{{DOC_TITLE}}", escape(search_title)) \
         .replace("{{TITLE}}", escape(t["title"].format(c=name))) \
         .replace("{{TAGLINE}}", escape(TAGLINE_NL if lang == "nl" else settings.site_tagline)) \
         .replace("{{HOME}}", "/nl/" if lang == "nl" else "/") \
@@ -241,6 +248,8 @@ _JOB_TEXT = {
         "enrol": "For enrolled students", "salary": "€{lo} – €{hi} a year", "salary_from": "from €{lo} a year",
         "skills": "Skills asked for", "nice": "Nice to have", "related": "More like this",
         "home_crumb": "Tech jobs", "skills_short": "Skills",
+        "hook_english": "English-speaking", "hook_visa": "visa sponsorship", "hook_noexp": "no experience needed",
+        "trust": "From {c}'s own careers site, checked daily.",
     },
     "nl": {
         "overview": "Overzicht", "jobs": "Ontdekken", "market": "Markt", "employers": "Werkgevers",
@@ -268,6 +277,8 @@ _JOB_TEXT = {
         "salary_from": "vanaf €{lo} per jaar",
         "skills": "Gevraagde skills", "nice": "Pluspunten", "related": "Vergelijkbare vacatures",
         "home_crumb": "Techvacatures", "skills_short": "Skills",
+        "hook_english": "Engelstalig", "hook_visa": "visumsponsoring", "hook_noexp": "geen ervaring nodig",
+        "trust": "Van de eigen vacaturesite van {c}, dagelijks gecontroleerd.",
     },
 }
 
@@ -350,6 +361,7 @@ def render_job(p, lang: str = "en", sector: str | None = None, related: list[tup
         facts.append(t["salary"].format(lo=money(lo), hi=money(hi)))
     elif lo:
         facts.append(t["salary_from"].format(lo=money(lo)))
+    core = [f for f in facts if f]  # what the posting asks, before the job type and the sector go in front
     if sector and sector != "other":
         from radar.sectors import LABELS
 
@@ -375,13 +387,37 @@ def render_job(p, lang: str = "en", sector: str | None = None, related: list[tup
     title = t["title"].format(t=p.title, c=p.company)
     summary = " ".join(text.split())
     head = title + (t["in"].format(x=city) if city else "")
-    shown = [f for f in facts if f][:4]
+    # the search title: the job, the employer and the place, then what makes someone click (no Dutch needed, visa
+    # sponsorship, the salary, room for a starter), as many as fit before Google cuts the title off
+    from radar.seo import fit, short_money, with_brand
+
+    hooks = []
+    if ex.get("english_only"):
+        hooks.append(t["hook_english"])
+    if ex.get("visa_sponsorship") is True:
+        hooks.append(t["hook_visa"])
+    if lo:
+        hooks.append(short_money(lo) + (f"–{short_money(hi)}" if hi and hi > lo else "+"))
+    if experience_band(ex, p.title) == "none" and not ex.get("years_experience"):
+        hooks.append(t["hook_noexp"])
+    if not p.city:  # a remote job: "· Remote", not "in Remote"
+        head = title
+        if p.remote:
+            hooks.insert(0, t["remote"])
+    search_title = head if len(head) <= 70 else title
+    for h in hooks:
+        if len(search_title + " · " + h) > 70:
+            break
+        search_title += " · " + h
+    search_title = with_brand(search_title)
+    # the snippet: what the posting asks, language and visa first (the title already names the job and the
+    # employer), then where it comes from, then the skills when they still fit
+    ask = [f for f in core if f in (t["english"], t["dutch"], t["visa_yes"])]
+    ask += [f for f in core if f not in ask]
+    shown = ask[:4]
     if shown or req:
-        desc = head + (": " + ", ".join(shown) if shown else "") + "."
-        if req:
-            desc += f" {t['skills_short']}: " + ", ".join(req[:4]) + "."
-        if len(desc) > 160:
-            desc = desc[:157].rstrip(" ,.:") + "…"
+        desc = fit([(", ".join(shown) + ".") if shown else "", t["trust"].format(c=p.company),
+                    f"{t['skills_short']}: " + ", ".join(req[:4]) + "." if req else ""])
     else:
         desc = (head + ". " + summary)[:155].rstrip() + ("…" if summary else "")
     url_link = f'<a href="{escape(p.url)}" rel="noopener" target="_blank">{escape(host)}</a>'
@@ -456,6 +492,7 @@ def render_job(p, lang: str = "en", sector: str | None = None, related: list[tup
         if isinstance(value, str):
             html = html.replace("{{L_" + key.upper() + "}}", escape(value))
     return _brand(html, lang).replace("{{LANG}}", lang) \
+        .replace("{{DOC_TITLE}}", escape(search_title)) \
         .replace("{{TITLE}}", escape(title)) \
         .replace("{{DESCRIPTION}}", escape(desc)) \
         .replace("{{SELF_PATH}}", self_path) \

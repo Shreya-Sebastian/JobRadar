@@ -22,6 +22,10 @@ Who counts as someone who used the site ("people"): a human visit as above that 
 sends on the first real key press, tap, click, scroll wheel or mouse movement on a page. Scripted browsers that load
 pages to copy them run the script but rarely send input, so "humans" can still hold some of them; "people" should not.
 Account figures (sign-ups, sign-ins, saved jobs) come from the account tables, as counts only, never per person.
+
+Returning visitors: a browser that accepted the consent question (theme.js) carries a random `radar_id` cookie; its
+visits store a hash of it as `browser_id`, so `returning` can count browsers that come back on another day, the
+visits before a first saved job or sign-in, and which sources bring people back. Without consent nothing changes.
 """
 
 from __future__ import annotations
@@ -53,7 +57,10 @@ IP_DAYS = 30  # then the address is blanked; the rest of the row stays until RAW
 AUDIENCES = ("people", "humans", "bots", "all")
 SESSION_GAP = timedelta(minutes=30)
 EVENTS = {"nav", "job_click", "profile_save", "login_request", "gap", "import", "export", "star", "seen", "active",
-          "quiz_open", "quiz_done", "search_save"}
+          "quiz_open", "quiz_done", "search_save", "consent"}
+CONSENT_COOKIE, ID_COOKIE = "radar_consent", "radar_id"
+_ID_RX = re.compile(r"[0-9a-f]{32}")
+RETURNING_DAYS = 30
 JS_SINCE = "analytics_js_since"  # Meta key: when the first `seen` event arrived; visits before it are not checked
 ACTIVE_SINCE = "analytics_active_since"  # Meta key: when the first `active` event arrived
 # what people did, in the order a visit usually goes: (event, label). `login` is recorded by the server (radar/auth.py)
@@ -282,6 +289,14 @@ def forget_today(session: Session, visitor: str) -> int:
     return n or 0
 
 
+def browser_id(request) -> str | None:
+    """A hash of the consented radar_id cookie (never the cookie itself), or None without consent."""
+    value = request.cookies.get(ID_COOKIE) or ""
+    if request.cookies.get(CONSENT_COOKIE) != "yes" or not _ID_RX.fullmatch(value):
+        return None
+    return hashlib.sha256(f"radar-id|{value}".encode()).hexdigest()[:16]
+
+
 def request_visitor(request) -> str:
     return visitor_id(client_ip(request), request.headers.get("user-agent", ""), datetime.utcnow().date().isoformat())
 
@@ -314,7 +329,7 @@ def record(request, status: int, ms: float, size: int, event: str | None = None,
         "referrer": _referrer(request.headers.get("referer")) if kind == "page" else None,
         "utm_source": utm[:60] if utm else None, "country": (request.headers.get("cf-ipcountry") or "")[:2] or None,
         "browser": browser, "os": os_name, "device": device, "bot": bot,
-        "visitor": request_visitor(request), "ip": ip[:45] or None,
+        "visitor": request_visitor(request), "ip": ip[:45] or None, "browser_id": browser_id(request),
         "event": event, "detail": detail[:200] if detail else None,
     }
     with _buffer_lock:
@@ -554,6 +569,7 @@ def dashboard(session: Session, who: str = "humans", now: datetime | None = None
         "recent_total": sum(1 for r in h24 if r.kind != "api" and keep(r)),
         "all_time": all_time,
         "funnel": funnel(session, now),
+        "returning": returning(session, now),
         "accounts": accounts(session, now),
     }
 
@@ -586,6 +602,60 @@ def funnel(session: Session, now: datetime | None = None, days: int = FUNNEL_DAY
         n = len(users) if event == "active" else len(did[event] & users)
         out.append({"step": label, "event": event, "people": n, "share": round(n / len(users), 3) if users else None})
     return out
+
+
+def returning(session: Session, now: datetime | None = None, days: int = RETURNING_DAYS) -> dict:
+    """What browsers that accepted the ID did over `days`: how many came back on another day, after how many days of
+    visits they first saved a job or signed in, and which first source brought the ones that return. Also the share
+    of answers to the consent question that were yes."""
+    from statistics import median
+
+    from radar.models import PageView
+
+    now = now or datetime.utcnow()
+    rows = session.execute(select(PageView.ts, PageView.kind, PageView.path, PageView.bot, PageView.visitor,
+                                  PageView.ip, PageView.event, PageView.detail, PageView.referrer,
+                                  PageView.utm_source, PageView.browser_id)
+                           .where(PageView.ts >= now - timedelta(days=days),
+                                  PageView.browser_id.is_not(None) | (PageView.event == "consent"))
+                           .order_by(PageView.ts)).all()
+    rows += [_as_row(r) for r in list(_buffer) if r.get("browser_id") or r["event"] == "consent"]
+    rows = [r for r in _audit(rows, None) if not r.bot]
+    answers = {}
+    for r in rows:
+        if r.event == "consent" and r.detail in ("yes", "no"):
+            answers[r.visitor] = r.detail  # the last answer of the day counts
+    seen: dict[str, set] = defaultdict(set)
+    source: dict[str, str] = {}
+    first: dict[str, dict[str, date]] = defaultdict(dict)
+    for r in sorted((r for r in rows if r.browser_id), key=lambda r: r.ts):
+        b = r.browser_id
+        seen[b].add(r.ts.date())
+        if b not in source and r.kind == "page":
+            source[b] = r.utm_source or r.referrer or "direct"
+        if r.event in ("star", "login") and r.event not in first[b]:
+            first[b][r.event] = r.ts.date()
+    back = {b for b, d in seen.items() if len(d) >= 2}
+
+    def days_before(event: str) -> float | None:
+        n = [len({d for d in seen[b] if d <= f[event]}) for b, f in first.items() if event in f]
+        return median(n) if n else None
+
+    by_source: dict[str, list[int]] = defaultdict(lambda: [0, 0])
+    for b in seen:
+        s = source.get(b, "direct")
+        by_source[s][0] += 1
+        by_source[s][1] += b in back
+    return {
+        "days": days, "browsers": len(seen), "returning": len(back),
+        "share_returning": round(len(back) / len(seen), 3) if seen else None,
+        "avg_days": round(sum(len(d) for d in seen.values()) / len(seen), 1) if seen else None,
+        "visit_days_before_save": days_before("star"), "visit_days_before_signin": days_before("login"),
+        "consent_yes": sum(1 for a in answers.values() if a == "yes"),
+        "consent_no": sum(1 for a in answers.values() if a == "no"),
+        "sources": [{"source": s, "browsers": n, "returning": k}
+                    for s, (n, k) in sorted(by_source.items(), key=lambda x: -x[1][0])[:10]],
+    }
 
 
 def account_list(session: Session) -> list[dict]:

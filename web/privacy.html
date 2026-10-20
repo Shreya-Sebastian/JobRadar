@@ -9,9 +9,9 @@
 <link rel="icon" href="/favicon.ico?v=7" sizes="48x48">
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png?v=7">
 <link rel="preload" href="/static/fonts/figtree-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/static/app.css?v=86">
+<link rel="stylesheet" href="/static/app.css?v=105">
 <style>html[lang="nl"] .en, html[lang="en"] .nl { display: none !important; }</style>
-<script src="/static/theme.js?v=3"></script>
+<script src="/static/theme.js?v=4"></script>
 </head>
 <body>
 <header class="top"><div class="wrap topbar max-w-3xl">
@@ -51,7 +51,7 @@
     <tr><td>A session cookie (<code>radar_session</code>)</td><td>To keep you logged in</td><td>90 days if you choose "stay signed in", otherwise until you close the browser (12 hours at most); always until you log out</td></tr>
     <tr><td>If you sign in with Google: a sign-in cookie (<code>radar_oauth</code>)</td><td>To check that Google's answer belongs to the sign-in you started in this browser, which prevents forged sign-ins</td><td>10 minutes at most; removed as soon as the sign-in is finished</td></tr>
   </table>
-  <p>Only a one-way hash of each login link and session token is stored, never the token itself. Only the site owner can see account details, on a page for the site owner alone; they are not shared with anyone. The legal basis is performance of the service you ask for (GDPR article 6(1)(b)). Both cookies are strictly necessary, so they need no cookie consent. There are no analytics, advertising or tracking cookies.</p>
+  <p>Only a one-way hash of each login link and session token is stored, never the token itself. Only the site owner can see account details, on a page for the site owner alone; they are not shared with anyone. The legal basis is performance of the service you ask for (GDPR article 6(1)(b)). Both cookies are strictly necessary, so they need no cookie consent. There are no advertising or tracking cookies; the only optional cookie is the anonymous ID described under <a href="#returning">Returning visitors</a>, set only with permission.</p>
 
   <h2>Stored in your browser</h2>
   <p>Without an account, the site keeps your settings in your own browser (its local storage), not on the server. Nothing in it is read by anyone else, and it is not used to track you.</p>
@@ -63,6 +63,15 @@
     <tr><td>Whether you answered or skipped the quick-start questions</td><td>So they are not shown again</td><td>Same as above</td></tr>
   </table>
   <p>This storage only serves things you use on the site, so it needs no cookie consent (Telecommunicatiewet article 11.7a). The site sets no advertising or tracking cookies and loads no scripts from other parties. To remove it all, clear this site's data in your browser settings.</p>
+
+  <h2 id="returning">Returning visitors (optional)</h2>
+  <p>Visits are counted without cookies, as described under Visit log. The site also asks once, in a small box, whether this browser may get an anonymous ID, so it is possible to see whether people come back, how many visits come before a first saved job or sign-in, and which sources bring people who return. Accept and Decline are equally easy, and declining changes nothing on the site.</p>
+  <table>
+    <tr><th>What</th><th>Why</th><th>How long</th></tr>
+    <tr><td><code>radar_consent</code>: the answer (yes or no)</td><td>To ask only once</td><td>13 months</td></tr>
+    <tr><td><code>radar_id</code>: a random code, only after Accept</td><td>To recognise this browser on a later visit; the server stores only a one-way hash of it with each visit, never the code itself, and never links it to an account or an e-mail address</td><td>The cookie 13 months; the visits it is stored with are deleted after 90 days</td></tr>
+  </table>
+  <p>The legal basis is consent (GDPR article 6(1)(a), Telecommunicatiewet article 11.7a). The choice can be changed at any time with "Cookie settings" at the bottom of every page; declining removes the ID from the browser.</p>
 
   <h2>Feedback</h2>
   <p>If you send a message through the <a href="/feedback">feedback page</a>, the message, the page you came from and, only if you fill it in, your e-mail address are stored and forwarded to the site owner by e-mail, to reply and to fix what you report. They are deleted after a year. The legal basis is the legitimate interest in improving the site (GDPR article 6(1)(f)).</p>
@@ -109,7 +118,7 @@
     <tr><td>Een sessiecookie (<code>radar_session</code>)</td><td>Om je ingelogd te houden</td><td>90 dagen als je "ingelogd blijven" kiest, anders tot je de browser sluit (hooguit 12 uur); altijd tot je uitlogt</td></tr>
     <tr><td>Als je inlogt met Google: een inlogcookie (<code>radar_oauth</code>)</td><td>Om te controleren dat het antwoord van Google hoort bij de inlogpoging die je in deze browser bent begonnen, zodat niemand een inlog kan vervalsen</td><td>Hooguit 10 minuten; verwijderd zodra het inloggen klaar is</td></tr>
   </table>
-  <p>Van elke inloglink en sessie wordt alleen een eenrichtingshash opgeslagen, nooit de link zelf. Alleen de beheerder kan accountgegevens inzien, op een pagina die alleen voor de beheerder is; ze worden met niemand gedeeld. De grondslag is de uitvoering van de dienst die je vraagt (AVG artikel 6 lid 1 sub b). Beide cookies zijn strikt noodzakelijk en vragen daarom geen cookietoestemming. Er zijn geen analytische, advertentie- of trackingcookies.</p>
+  <p>Van elke inloglink en sessie wordt alleen een eenrichtingshash opgeslagen, nooit de link zelf. Alleen de beheerder kan accountgegevens inzien, op een pagina die alleen voor de beheerder is; ze worden met niemand gedeeld. De grondslag is de uitvoering van de dienst die je vraagt (AVG artikel 6 lid 1 sub b). Beide cookies zijn strikt noodzakelijk en vragen daarom geen cookietoestemming. Er zijn geen advertentie- of trackingcookies; de enige optionele cookie is de anonieme ID onder <a href="#terugkerend">Terugkerende bezoekers</a>, alleen met toestemming.</p>
 
   <h2>Opgeslagen in je browser</h2>
   <p>Zonder account bewaart de site je instellingen in je eigen browser (de lokale opslag), niet op de server. Niemand anders leest het, en het wordt niet gebruikt om je te volgen.</p>
@@ -121,6 +130,15 @@
     <tr><td>Of je de startvragen hebt beantwoord of overgeslagen</td><td>Zodat ze niet opnieuw verschijnen</td><td>Zie hierboven</td></tr>
   </table>
   <p>Deze opslag dient alleen voor wat je zelf op de site gebruikt en vraagt daarom geen toestemming (Telecommunicatiewet artikel 11.7a). De site plaatst geen advertentie- of trackingcookies en laadt geen scripts van andere partijen. Alles verwijderen kan door de gegevens van deze site te wissen in je browserinstellingen.</p>
+
+  <h2 id="terugkerend">Terugkerende bezoekers (optioneel)</h2>
+  <p>Bezoeken worden zonder cookies geteld, zoals beschreven onder Bezoeklogboek. Daarnaast vraagt de site één keer, in een klein venster, of deze browser een anonieme ID mag krijgen, zodat te zien is of mensen terugkomen, hoeveel bezoeken er voorafgaan aan een eerste bewaarde vacature of inlog, en via welke bronnen mensen terugkomen. Accepteren en weigeren zijn even eenvoudig, en weigeren verandert niets aan de site.</p>
+  <table>
+    <tr><th>Wat</th><th>Waarom</th><th>Hoe lang</th></tr>
+    <tr><td><code>radar_consent</code>: het antwoord (ja of nee)</td><td>Om het maar één keer te vragen</td><td>13 maanden</td></tr>
+    <tr><td><code>radar_id</code>: een willekeurige code, alleen na Accepteren</td><td>Om deze browser bij een later bezoek te herkennen; de server bewaart bij elk bezoek alleen een eenrichtingshash ervan, nooit de code zelf, en koppelt die nooit aan een account of e-mailadres</td><td>De cookie 13 maanden; de bezoeken waarbij hij is opgeslagen worden na 90 dagen verwijderd</td></tr>
+  </table>
+  <p>De grondslag is toestemming (AVG artikel 6 lid 1 sub a, Telecommunicatiewet artikel 11.7a). De keuze is altijd te wijzigen met "Cookie-instellingen" onderaan elke pagina; weigeren verwijdert de ID uit de browser.</p>
 
   <h2>Feedback</h2>
   <p>Als je een bericht stuurt via de <a href="/nl/feedback">feedbackpagina</a>, worden het bericht, de pagina waar je vandaan kwam en, alleen als je het invult, je e-mailadres opgeslagen en per e-mail doorgestuurd naar de beheerder, om te antwoorden en op te lossen wat je meldt. Ze worden na een jaar verwijderd. De grondslag is het gerechtvaardigd belang bij het verbeteren van de site (AVG artikel 6 lid 1 sub f).</p>

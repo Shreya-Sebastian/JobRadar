@@ -144,6 +144,13 @@
   .menu-head b { @apply block truncate text-sm font-semibold text-ink; }
   .menu > a, .menu > button { @apply flex w-full items-center justify-start rounded-none border-0 bg-transparent px-4 py-2 text-left
     text-sm font-normal text-ink no-underline shadow-none hover:bg-chip; }
+  /* the consent question (theme.js): a small card in a corner, never over the whole page; both answers look the same */
+  .consent { @apply fixed right-4 bottom-4 left-4 z-50 rounded-2xl border border-line bg-card p-4 text-sm text-ink shadow-xl sm:left-auto sm:max-w-[25rem]; }
+  .consent-title { @apply m-0 mb-1 font-semibold; }
+  .consent-body { @apply m-0 text-muted; }
+  .consent-body a { @apply text-accent; }
+  .consent-actions { @apply mt-3 grid grid-cols-2 gap-2; }
+  .consent-actions button { @apply justify-center rounded-full border border-line bg-chip px-4 py-2 font-semibold text-ink hover:border-accent; }
   .toast { @apply fixed bottom-6 left-1/2 z-50 max-w-[90vw] -translate-x-1/2 rounded-full bg-ink px-4 py-2 text-sm text-bg shadow-lg; }
 
   /* ---------- header ---------- */

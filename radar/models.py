@@ -279,6 +279,8 @@ class PageView(Base):
     device: Mapped[str | None] = mapped_column(String(10), nullable=True)  # desktop | mobile | tablet | bot
     bot: Mapped[bool] = mapped_column(Boolean, default=False)
     visitor: Mapped[str | None] = mapped_column(String(16), nullable=True, index=True)
+    # a hash of the radar_id cookie, only for browsers that accepted it (radar/analytics.py `returning`)
+    browser_id: Mapped[str | None] = mapped_column(String(16), nullable=True, index=True)
     event: Mapped[str | None] = mapped_column(String(30), nullable=True)  # job_click, search, profile_save, ...
     detail: Mapped[str | None] = mapped_column(String(200), nullable=True)  # a redirect's target, a search
     ip: Mapped[str | None] = mapped_column(String(45), nullable=True)

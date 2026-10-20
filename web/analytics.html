@@ -9,9 +9,9 @@
 <link rel="icon" href="/favicon.ico?v=7" sizes="48x48">
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png?v=7">
 <link rel="preload" href="/static/fonts/figtree-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/static/app.css?v=90">
+<link rel="stylesheet" href="/static/app.css?v=105">
 <script src="/static/vendor/chart.umd.min.js"></script>
-<script src="/static/theme.js?v=3"></script>
+<script src="/static/theme.js?v=4"></script>
 </head>
 <body>
 <main class="an wrap max-w-[1320px] pt-5 pb-12">
@@ -47,6 +47,10 @@
       <div class="card"><h2>What people did (7 days) <span class="hint">share of people who used a page</span></h2><div id="funnel" class="bars"></div></div>
       <div class="card"><h2>People and accounts (14 days)</h2><div class="chart"><canvas id="accounts"></canvas></div></div>
     </div>
+
+    <h2 class="mt-8 mb-3 text-base">Returning visitors <span class="hint">browsers that accepted the anonymous ID, last 30 days</span></h2>
+    <div class="tiles" id="returning"></div>
+    <div class="card mb-4"><h2>Where returning visitors first came from</h2><div id="ret_sources"></div></div>
 
     <div class="card mb-4 overflow-x-auto">
       <div class="mb-3 flex flex-wrap items-center gap-3">
@@ -183,6 +187,18 @@
       { label: "New accounts", data: p.daily.map((x) => x.new), backgroundColor: css("--accent") },
       { label: "Sign-ins", data: p.daily.map((x) => x.signed_in), backgroundColor: css("--accent-2") },
     ]);
+    const rt = d.returning, asked = rt.consent_yes + rt.consent_no;
+    tiles("#returning", [
+      [asked ? pct(rt.consent_yes, asked) : "-", "Accepted the ID", `${fmt(rt.consent_yes)} yes · ${fmt(rt.consent_no)} no`],
+      [fmt(rt.browsers), "Browsers remembered", `${rt.days} days`],
+      [rt.share_returning == null ? "-" : Math.round(rt.share_returning * 100) + "%", "Came back", `${fmt(rt.returning)} on another day`],
+      [rt.avg_days == null ? "-" : String(rt.avg_days), "Days with a visit", "average per browser"],
+      [rt.visit_days_before_save == null ? "-" : String(rt.visit_days_before_save), "Visit days before saving", "median, first saved job"],
+      [rt.visit_days_before_signin == null ? "-" : String(rt.visit_days_before_signin), "Visit days before signing in", "median, first sign-in"],
+    ]);
+    $("#ret_sources").innerHTML = rt.sources.length
+      ? `<table><tr><th>First source</th><th style="text-align:right">Browsers</th><th style="text-align:right">Came back</th></tr>${rt.sources.map((s) => `<tr><td>${esc(s.source)}</td><td class="n">${fmt(s.browsers)}</td><td class="n">${fmt(s.returning)} (${pct(s.returning, s.browsers)})</td></tr>`).join("")}</table>`
+      : `<div class="empty">No browsers with the ID yet</div>`;
     tiles("#tiles", [
       [fmt(k.views_today), "Page views today", `${fmt(k.uniques_today)} unique`],
       [fmt(k.views_24h), "Views (24 h)", `${fmt(k.uniques_24h)} unique`],
@@ -206,7 +222,7 @@
     table("#job_clicks_by_employer", d.job_clicks_by_employer, "Employer");
     table("#job_clicks_by_job", d.job_clicks_by_job, "Job");
     table("#searches", d.searches, "Filters", (s) => s.replace(/&/g, " · ").replace(/=/g, ": "));
-    table("#events", d.events, "Action", (e) => ({ profile_save: "Profile saved", login_request: "Login link requested", gap: "Gap analysis", star: "Job starred", export: "Profile exported", import: "Profile imported", job_click: "Job click", quiz_open: "Quick start opened", quiz_done: "Quick start finished", search_save: "Search saved", login: "Signed in", signup: "New account", active: "Used a page" }[e] || e));
+    table("#events", d.events, "Action", (e) => ({ profile_save: "Profile saved", login_request: "Login link requested", gap: "Gap analysis", star: "Job starred", export: "Profile exported", import: "Profile imported", job_click: "Job click", quiz_open: "Quick start opened", quiz_done: "Quick start finished", search_save: "Search saved", consent: "Answered the cookie question", login: "Signed in", signup: "New account", active: "Used a page" }[e] || e));
     bars("#countries", d.countries, country);
     table("#utm", d.utm, "Source");
     bars("#os", d.os);

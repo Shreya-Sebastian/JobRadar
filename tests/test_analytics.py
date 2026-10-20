@@ -332,3 +332,31 @@ def test_the_admin_can_list_accounts_with_their_addresses(client):
     (a,) = r.json()["accounts"]
     assert a["email"] == "ada@example.org" and a["saved_jobs"] == 2 and a["tracked"] == 1 and a["skills"] == 1
     assert a["searches"] == 1 and a["alerts"] == "weekly" and a["owner"] is False
+
+
+def test_returning_visitors_need_consent(client):
+    """Only a browser that accepted carries the ID; its visits on two days count as a return, and the source of its
+    first visit is kept. A cookie without the yes, or the ID itself, never reaches the database."""
+    rid = "0123456789abcdef0123456789abcdef"
+    yes = {"user-agent": CHROME, "cf-connecting-ip": "203.0.113.5", "referer": "https://www.reddit.com/r/x",
+           "cookie": f"radar_consent=yes; radar_id={rid}"}
+    no_consent = {"user-agent": IPHONE, "cf-connecting-ip": "198.51.100.7", "cookie": f"radar_id={rid}"}
+    client.post("/api/e", json={"e": "consent", "d": "yes", "p": "/"}, headers=yes)
+    client.get("/", headers=yes)
+    client.post("/api/e", json={"e": "star", "p": "/"}, headers=yes)
+    client.get("/", headers=no_consent)
+    client.post("/api/e", json={"e": "consent", "d": "no", "p": "/"}, headers=no_consent)
+    analytics.flush()
+    with session_scope() as s:
+        rows = s.query(PageView).all()
+        assert {r.browser_id for r in rows if r.ip == "198.51.100.7"} == {None}
+        ids = {r.browser_id for r in rows if r.ip == "203.0.113.5"}
+        assert len(ids) == 1 and rid not in ids
+        for r in s.query(PageView).filter_by(ip="203.0.113.5", event="star"):  # the same browser two days later
+            s.add(PageView(ts=r.ts + timedelta(days=2), kind="page", path="/jobs/junior", status=200, bot=False,
+                           visitor="later", browser_id=r.browser_id, browser="Chrome"))
+    with session_scope() as s:
+        rt = analytics.returning(s, datetime.utcnow() + timedelta(days=3))
+    assert rt["browsers"] == 1 and rt["returning"] == 1 and rt["share_returning"] == 1.0
+    assert rt["consent_yes"] == 1 and rt["consent_no"] == 1 and rt["visit_days_before_save"] == 1
+    assert rt["sources"] == [{"source": "reddit.com", "browsers": 1, "returning": 1}]

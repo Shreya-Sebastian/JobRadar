@@ -34,6 +34,12 @@ runcmd:
   # 2 GB swap as a cushion on a 4 GB machine
   - fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
   - echo '/swapfile none swap sw 0 0' >> /etc/fstab
+  # compressed swap in RAM, used before the swap file: swapping to it is far cheaper than to disk, which is what
+  # stalled the node (added by hand on 20 Oct 2026 through a node debug pod)
+  - DEBIAN_FRONTEND=noninteractive apt-get install -y systemd-zram-generator
+  - printf '[zram0]\nzram-size = ram / 2\ncompression-algorithm = zstd\nswap-priority = 100\n' > /etc/systemd/zram-generator.conf
+  - echo 'vm.swappiness = 100' > /etc/sysctl.d/99-zram.conf && sysctl -q -p /etc/sysctl.d/99-zram.conf
+  - systemctl daemon-reload && systemctl start systemd-zram-setup@zram0.service dev-zram0.swap
   - /root/setup-postgres.sh
   - snap install aws-cli --classic
   # memory trims for a 2 GB node: no metrics-server, a soft memory cap for k3s, no multipathd (unused on EC2)

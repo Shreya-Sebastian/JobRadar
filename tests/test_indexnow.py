@@ -65,3 +65,5 @@ def test_the_key_file_is_served_only_for_the_key(fresh_db, monkeypatch):
         assert r.status_code == 200 and r.text == KEY
         assert c.get("/other.txt").status_code == 404
         assert c.get("/robots.txt").text.startswith("User-agent")
+        assert c.get(f"/{KEY}.txt", headers={"user-agent": "Go-http-client/2.0"}).status_code == 200
+        assert c.get("/", headers={"user-agent": "Go-http-client/2.0"}).status_code == 403

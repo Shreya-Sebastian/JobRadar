@@ -105,6 +105,8 @@ def check(path: str, ip: str, agent: str) -> tuple[int, str] | None:
     """None when the request may go ahead, else (status, reason)."""
     if path.startswith(_EXEMPT):
         return None
+    if settings.indexnow_key and path == f"/{settings.indexnow_key}.txt":
+        return None  # the IndexNow key file: search engines check it with whatever HTTP client they use
     if settings.block_scraper_agents and (not agent or BLOCKED_AGENTS.search(agent)):
         return 403, "automated access is not permitted, see /robots.txt"
     if settings.rate_limit_per_minute <= 0 or not ip:

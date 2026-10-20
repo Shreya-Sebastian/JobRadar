@@ -650,11 +650,8 @@ def start_light_lane(queue, connection):
     import threading
 
     from rq import SimpleWorker
-    from rq.timeouts import TimerDeathPenalty
 
-    class LaneWorker(SimpleWorker):  # no fork; signals only work in the main thread
-        death_penalty_class = TimerDeathPenalty  # job timeouts by timer, not SIGALRM (the Linux default)
-
+    class LaneWorker(SimpleWorker):  # no fork; signal handlers can only be set in the main thread
         def _install_signal_handlers(self):
             pass
 

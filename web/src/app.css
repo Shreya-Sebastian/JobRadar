@@ -54,6 +54,8 @@
     --head-bg: rgb(13 22 38 / .94); --head-line: transparent; --head-ink: #ffffff; --head-muted: #c9d6ea; --head-orange: #d9692a;
     --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
     --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #0d1626;
+    /* chart colours for items (doughnuts, lines): professional, distinct, the brand's teal, navy and orange first */
+    --chart-1: #0f766e; --chart-2: #1d4e89; --chart-3: #c2410c; --chart-4: #64748b; --chart-5: #7c6fb0; --chart-6: #ca8a04; --chart-7: #94a3b8; --chart-8: #a3485a;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -71,6 +73,7 @@
       --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
       --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #0d1626;
       --fill-accent: var(--card); --line-accent: #1e293a;  /* plain navy strips and soft outlines, no teal tint */
+      --chart-1: #5eb8ad; --chart-2: #6b93d6; --chart-3: #e0823f; --chart-4: #94a3b8; --chart-5: #a99be0; --chart-6: #e2b44b; --chart-7: #64748b; --chart-8: #d47a8c;
     }
   }
   :root[data-theme="dark"] {
@@ -88,6 +91,7 @@
     --head-btn: rgb(255 255 255 / .08); --head-btn-hover: rgb(255 255 255 / .16); --head-btn-line: rgb(255 255 255 / .24);
     --head-switch: rgb(0 0 0 / .2); --head-switch-on: #ffffff; --head-switch-on-ink: #0d1626;
     --fill-accent: var(--card); --line-accent: #1e293a;  /* plain navy strips and soft outlines, no teal tint */
+    --chart-1: #5eb8ad; --chart-2: #6b93d6; --chart-3: #e0823f; --chart-4: #94a3b8; --chart-5: #a99be0; --chart-6: #e2b44b; --chart-7: #64748b; --chart-8: #d47a8c;
   }
   /* outlines and rules in a tint of the teal, and a faint teal fill for section headings (both themes) */
   :root { --line-accent: color-mix(in oklab, var(--accent) 30%, var(--line));

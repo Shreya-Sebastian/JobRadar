@@ -10,6 +10,12 @@
     const x = rgb(a), y = rgb(b);
     return "#" + x.map((v, i) => Math.round(v * w + y[i] * (1 - w)).toString(16).padStart(2, "0")).join("");
   };
+  // charts with one colour per item (doughnuts, lines): eight professional colours from the stylesheet (--chart-1..8),
+  // the brand's teal, navy and orange first; read when drawn, so they follow light and dark mode
+  const chartColours = (n) => {
+    const set = Array.from({ length: 8 }, (_, i) => css(`--chart-${i + 1}`)).filter(Boolean);
+    return set.length ? Array.from({ length: n }, (_, i) => set[i % set.length]) : shades(n);
+  };
   const shades = (n) => {
     const a = css("--accent"), c = css("--card");
     if (!/^#[0-9a-f]{6}$/i.test(a) || !/^#[0-9a-f]{6}$/i.test(c)) return Array(n).fill(a);
@@ -501,7 +507,7 @@
     if (!ctx) return;
     if (state.charts[id]) state.charts[id].destroy();
     state.charts[id] = new Chart(ctx, { type: "doughnut",
-      data: { labels, datasets: [{ data: values, backgroundColor: shades(values.length), borderColor: css("--card"), borderWidth: 2 }] },
+      data: { labels, datasets: [{ data: values, backgroundColor: chartColours(values.length), borderColor: css("--card"), borderWidth: 2 }] },
       options: { maintainAspectRatio: false, plugins: { legend: { position: "right", labels: { color: css("--ink"), boxWidth: 10, font: { size: 11 } } } } } });
   }
   function lineChart(id, labels, series) {
@@ -509,7 +515,7 @@
     if (!ctx) return;
     if (state.charts[id]) state.charts[id].destroy();
     state.charts[id] = new Chart(ctx, { type: "line",
-      data: { labels, datasets: series.map((s, i, all) => ({ label: s.label, data: s.data, borderColor: shades(all.length)[i], backgroundColor: shades(all.length)[i], tension: 0.3, pointRadius: 3 })) },
+      data: { labels, datasets: series.map((s, i, all) => ({ label: s.label, data: s.data, borderColor: chartColours(all.length)[i], backgroundColor: chartColours(all.length)[i], tension: 0.3, pointRadius: 3 })) },
       options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: css("--ink") } } },
         scales: { x: { ticks: { color: css("--muted") }, grid: { color: css("--line") } }, y: { ticks: { color: css("--muted") }, grid: { color: css("--line") }, beginAtZero: true } } } });
   }

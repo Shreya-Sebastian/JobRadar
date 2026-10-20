@@ -31,7 +31,8 @@
       <a class="brand" href="/"><svg class="logo" aria-hidden="true" viewBox="0 0 32 32"><rect x=".5" y=".5" width="31" height="31" rx="8" fill="#020617" stroke="var(--logo-edge, #020617)"/><g stroke-linejoin="round"><path d="M6.30 19.25L16.00 14.40L25.70 19.25L16.00 24.10Z" fill="#020617" stroke="#020617" stroke-width="2.60"/><path d="M6.30 19.25L16.00 14.40L25.70 19.25L16.00 24.10Z" fill="#0f766e" stroke="#0f766e" stroke-width="1.10"/><path d="M9.00 14.65L16.00 11.15L23.00 14.65L16.00 18.15Z" fill="#020617" stroke="#020617" stroke-width="2.60"/><path d="M9.00 14.65L16.00 11.15L23.00 14.65L16.00 18.15Z" fill="#14b8a6" stroke="#14b8a6" stroke-width="1.10"/><path d="M11.70 10.05L16.00 7.90L20.30 10.05L16.00 12.20Z" fill="#020617" stroke="#020617" stroke-width="2.60"/><path d="M11.70 10.05L16.00 7.90L20.30 10.05L16.00 12.20Z" fill="#fb923c" stroke="#fb923c" stroke-width="1.10"/></g></svg><b>Analytics</b></a><span class="small muted">{{SITE_NAME}}</span>
       <span class="small muted"><span class="mr-1 inline-block size-2 rounded-full bg-ok"></span><span id="stamp"></span> · auto-refreshes every 60 s</span>
       <div class="controls ml-auto flex flex-wrap items-center gap-2">
-        <button id="me" title="Sets a cookie in this browser only, so your own visits are not counted">Exclude this browser</button>
+        <span class="small muted" id="me-note"></span>
+        <button id="me" title="Sets a cookie in this browser, so your own visits are not counted. Signed in to your account here, the account is excluded on every device it signs in on too.">Exclude this browser</button>
         <div class="langswitch" id="who" role="group" aria-label="Show traffic from">
           <button data-who="people" class="on" title="Visitors who clicked, typed, scrolled or moved the mouse">People</button><button data-who="humans" title="Visitors with a browser that ran the page's script, input or not">Humans</button><button data-who="bots">Bots</button><button data-who="all">All</button>
         </div>
@@ -45,6 +46,14 @@
     <div class="mb-4 grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr))]">
       <div class="card"><h2>What people did (7 days) <span class="hint">share of people who used a page</span></h2><div id="funnel" class="bars"></div></div>
       <div class="card"><h2>People and accounts (14 days)</h2><div class="chart"><canvas id="accounts"></canvas></div></div>
+    </div>
+
+    <div class="card mb-4 overflow-x-auto">
+      <div class="mb-3 flex flex-wrap items-center gap-3">
+        <h2 class="m-0">Accounts <span class="hint" id="acct-count"></span></h2>
+        <button id="acct-toggle" class="ml-auto">Show e-mail addresses</button>
+      </div>
+      <div id="acct-list"><div class="empty">Hidden. Addresses are loaded only when shown.</div></div>
     </div>
 
     <h2 class="mt-8 mb-3 text-base">Traffic</h2>
@@ -151,6 +160,9 @@
     excludedMe = !!d.this_browser_excluded;
     $("#me").textContent = excludedMe ? "Count this browser again" : "Exclude this browser";
     $("#me").classList.toggle("on", excludedMe);
+    $("#me-note").textContent = d.account_excluded ? "Your account is not counted on any device"
+      : excludedMe ? (d.signed_in ? "Only this browser is excluded" : "Only this browser is excluded · sign in to your account here to exclude every device")
+      : d.signed_in ? "" : "Sign in to your account here first to exclude every device";
     $("#stamp").textContent = new Date(d.generated_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
     const p = d.accounts, pct = (a, b) => b ? Math.round((a / b) * 100) + "%" : "-";
     tiles("#people", [
@@ -267,7 +279,7 @@
   });
   $("#me").addEventListener("click", async () => {
     const r = await fetch("/api/admin/analytics/exclude", { method: excludedMe ? "DELETE" : "POST", headers: { Authorization: `Bearer ${token}` } });
-    if (r.ok) { const j = await r.json(); if (j.excluded && j.forgotten) $("#stamp").textContent = `removed ${j.forgotten} of today's visits from this browser`; }
+    if (r.ok) { const j = await r.json(); if (j.excluded) $("#stamp").textContent = `removed ${j.forgotten} of today's visits from this browser${j.account ? "; your account is now excluded on every device" : ""}`; }
     load().catch(() => {});
   });
   const paintWho = () => document.querySelectorAll("#who button").forEach((b) => b.classList.toggle("on", b.dataset.who === who));
@@ -277,6 +289,22 @@
     who = b.dataset.who; paintWho(); recentShown = 100;
     try { sessionStorage.setItem("radar.analytics.who", who); } catch { /* storage blocked */ }
     load().catch(() => {});
+  });
+  let acctShown = false;
+  const day = (iso) => iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" }) : "-";
+  async function loadAccounts() {
+    const r = await fetch("/api/admin/accounts", { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+    if (!r.ok) { $("#acct-list").innerHTML = `<div class="empty">Could not load (HTTP ${r.status})</div>`; return; }
+    const list = (await r.json()).accounts;
+    $("#acct-count").textContent = `${fmt(list.length)}`;
+    $("#acct-list").innerHTML = list.length
+      ? `<table><tr><th>E-mail</th><th>Created</th><th>Last sign-in</th><th>Last seen</th><th style="text-align:right">Saved</th><th style="text-align:right">Tracked</th><th style="text-align:right">Skills</th><th style="text-align:right">Searches</th><th>Alerts</th><th>Password</th></tr>${list.map((a) => `<tr><td>${esc(a.email)}${a.owner ? ' <span class="pill-s human">you, not counted</span>' : ""}</td><td class="whitespace-nowrap">${day(a.created)}</td><td class="whitespace-nowrap">${day(a.last_login)}</td><td class="whitespace-nowrap">${day(a.last_seen)}</td><td class="n">${fmt(a.saved_jobs)}</td><td class="n">${fmt(a.tracked)}</td><td class="n">${fmt(a.skills)}</td><td class="n">${fmt(a.searches)}</td><td>${esc(a.alerts)}</td><td>${a.password ? "yes" : "-"}</td></tr>`).join("")}</table>`
+      : `<div class="empty">No accounts yet</div>`;
+  }
+  $("#acct-toggle").addEventListener("click", () => {
+    acctShown = !acctShown;
+    $("#acct-toggle").textContent = acctShown ? "Hide e-mail addresses" : "Show e-mail addresses";
+    if (acctShown) loadAccounts().catch(() => {}); else $("#acct-list").innerHTML = `<div class="empty">Hidden. Addresses are loaded only when shown.</div>`;
   });
   $("#recent-more").addEventListener("click", () => { recentShown += 200; paintRecent(); });
   let rq; $("#recent-q").addEventListener("input", () => { clearTimeout(rq); rq = setTimeout(() => { recentShown = 100; paintRecent(); }, 150); });

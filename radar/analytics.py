@@ -232,10 +232,41 @@ def _search_detail(query: str) -> str | None:
 
 
 IGNORE_COOKIE = "radar_noanalytics"  # set only in the admin's own browsers, from the analytics page
+OWNERS = "analytics_owner_accounts"  # Meta key: ids of the accounts whose devices are never counted
 
 
 def excluded(request) -> bool:
-    return request.cookies.get(IGNORE_COOKIE) == "1"
+    # the state flag covers the request that sets the cookie (an owner's sign-in), which does not carry it yet
+    return request.cookies.get(IGNORE_COOKIE) == "1" or getattr(request.state, "analytics_excluded", False)
+
+
+def exclude_browser(resp, request) -> None:
+    """Set the cookie that stops this browser being counted (for 400 days, the longest browsers keep one)."""
+    local = request.url.hostname in {"localhost", "127.0.0.1", "::1", "testserver"}
+    resp.set_cookie(IGNORE_COOKIE, "1", max_age=400 * 86400, httponly=True, samesite="lax", secure=not local, path="/")
+
+
+def owner_ids(session: Session) -> set[int]:
+    """Accounts of the site's owner: every browser signed in to one is excluded from the statistics, so the owner's
+    phone and laptop stop counting once they load the site signed in (radar/auth.py)."""
+    from radar.models import Meta
+
+    row = session.get(Meta, OWNERS)
+    return {int(x) for x in (row.value if row else "").split(",") if x.isdigit()}
+
+
+def set_owner(session: Session, user_id: int, on: bool) -> None:
+    from radar.models import Meta
+
+    ids = owner_ids(session)
+    ids = ids | {user_id} if on else ids - {user_id}
+    row = session.get(Meta, OWNERS)
+    value = ",".join(str(i) for i in sorted(ids))
+    if row is None:
+        session.add(Meta(key=OWNERS, value=value))
+    else:
+        row.value = value
+    session.commit()
 
 
 def forget_today(session: Session, visitor: str) -> int:
@@ -554,6 +585,32 @@ def funnel(session: Session, now: datetime | None = None, days: int = FUNNEL_DAY
     for event, label in FUNNEL:
         n = len(users) if event == "active" else len(did[event] & users)
         out.append({"step": label, "event": event, "people": n, "share": round(n / len(users), 3) if users else None})
+    return out
+
+
+def account_list(session: Session) -> list[dict]:
+    """Every account for the admin, newest first: the address and what the account uses. Admin only
+    (/api/admin/accounts); the dashboard itself carries counts, never addresses."""
+    from radar.models import SavedSearch, User, UserData, UserSession
+
+    data = {r.user_id: r for r in session.execute(select(UserData.user_id, UserData.saved, UserData.board,
+                                                         UserData.profile))}
+    searches = Counter(session.scalars(select(SavedSearch.user_id)))
+    seen = dict(session.execute(select(UserSession.user_id, func.max(UserSession.last_seen_at))
+                                .group_by(UserSession.user_id)).all())
+    owners = owner_ids(session)
+    out = []
+    for u in session.scalars(select(User).order_by(User.created_at.desc())):
+        d = data.get(u.id)
+        out.append({
+            "email": u.email, "created": u.created_at.isoformat(timespec="minutes") + "Z",
+            "last_login": u.last_login_at and u.last_login_at.isoformat(timespec="minutes") + "Z",
+            "last_seen": seen.get(u.id) and seen[u.id].isoformat(timespec="minutes") + "Z",
+            "saved_jobs": len(d.saved or []) if d else 0, "tracked": len(d.board or {}) if d else 0,
+            "skills": len((d.profile or {}).get("skills") or []) if d else 0,
+            "searches": searches.get(u.id, 0), "alerts": u.alerts or "off", "password": bool(u.password_hash),
+            "owner": u.id in owners,
+        })
     return out
 
 

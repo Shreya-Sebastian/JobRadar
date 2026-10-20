@@ -246,6 +246,20 @@ def _count(request: Request, event: str) -> None:
         pass
 
 
+def _owner_browser(session: Session, request: Request, user: User, resp: Response) -> bool:
+    """When `user` is one of the owner's accounts (radar/analytics.py owner_ids), stop counting this browser and
+    forget what it did today. Returns whether it is an owner account."""
+    from radar import analytics
+
+    if user.id not in analytics.owner_ids(session):
+        return False
+    if not analytics.excluded(request):
+        analytics.forget_today(session, analytics.request_visitor(request))
+        analytics.exclude_browser(resp, request)
+    request.state.analytics_excluded = True
+    return True
+
+
 def _local(request: Request) -> bool:
     return request.url.hostname in {"localhost", "127.0.0.1", "::1", "testserver"}
 
@@ -260,7 +274,9 @@ def _sign_in(session: Session, request: Request, email: str, remember: bool, res
         session.add(user)
         session.flush()
         _count(request, "signup")
-    _count(request, "login")
+    owner = _owner_browser(session, request, user, resp)
+    if not owner:
+        _count(request, "login")
     user.last_login_at = now
     raw = secrets.token_urlsafe(32)
     # "keep me signed in": a cookie that lasts session_days; otherwise a browser-session cookie that ends when the
@@ -451,9 +467,11 @@ def logout(request: Request, response: Response, session: Session = Depends(_db)
 
 
 @router.get("/api/me")
-def me(request: Request, user: User | None = Depends(current_user), session: Session = Depends(_db)):
+def me(request: Request, response: Response, user: User | None = Depends(current_user),
+       session: Session = Depends(_db)):
     if user is None:
         return {"signed_in": False}
+    _owner_browser(session, request, user, response)  # the owner's devices stop counting on their next page load
     return {"signed_in": True, "email": user.email, "since": user.created_at.date().isoformat(),
             "has_password": bool(user.password_hash), "can_reset_password": _reset_allowed(request, session)}
 

@@ -131,7 +131,7 @@ def test_admin_can_exclude_their_own_browser(client):
     client.get("/", headers=me)  # still in the buffer
     assert client.post("/api/admin/analytics/exclude", headers=me).status_code == 401
     r = client.post("/api/admin/analytics/exclude", headers=auth)
-    assert r.json() == {"excluded": True, "forgotten": 1} and "radar_noanalytics=1" in r.headers["set-cookie"]
+    assert r.json() == {"excluded": True, "forgotten": 1, "account": False} and "radar_noanalytics=1" in r.headers["set-cookie"]
     client.get("/", headers=me)  # the cookie is now sent: not recorded
     analytics.flush()
     with session_scope() as s:
@@ -270,3 +270,65 @@ def test_people_are_visitors_who_used_the_page(client):
     with session_scope() as s:  # people per day survive in the daily totals
         analytics.rollup(s, datetime.utcnow().date())
         assert s.query(DailyStat).filter_by(dim="people").one().uniques == 1
+
+
+def test_the_owner_account_is_not_counted_on_any_device(client):
+    """Excluding a browser that is signed in also excludes the account: another device that signs in to it, or that
+    was already signed in and loads the site, stops being counted, and forgets what it did today."""
+    from urllib.parse import parse_qs, urlparse
+
+    from radar import auth, mailer
+    from radar.api import app
+
+    mailer.OUTBOX.clear()
+    auth._ip_hits.clear()
+
+    def sign_in(c, headers):
+        c.post("/api/auth/request", json={"email": "owner@example.org"}, headers=headers)
+        body = mailer.OUTBOX[-1].get_body(("plain",)).get_content()
+        token = parse_qs(urlparse(next(w for w in body.split() if "token=" in w)).query)["token"][0]
+        return c.get(f"/auth/verify?token={token}", headers=headers, follow_redirects=False)
+
+    admin = {"Authorization": "Bearer secret-token"}
+    laptop = {"user-agent": CHROME, "cf-connecting-ip": "203.0.113.5", "X-Requested-With": "radar"}
+    phone = {"user-agent": IPHONE, "cf-connecting-ip": "198.51.100.7", "X-Requested-With": "radar"}
+    sign_in(client, laptop)
+    with TestClient(app) as tablet:  # already signed in before the owner was excluded
+        sign_in(tablet, {**phone, "user-agent": IPHONE + " tablet"})
+        r = client.post("/api/admin/analytics/exclude", headers={**admin, **laptop})
+        assert r.json()["account"] is True and r.json()["excluded"] is True
+        d = client.get("/api/admin/analytics", headers={**admin, **laptop}).json()
+        assert d["account_excluded"] and d["this_browser_excluded"]
+
+        tablet.get("/", headers={**phone, "user-agent": IPHONE + " tablet"})
+        tablet.get("/api/me", headers={**phone, "user-agent": IPHONE + " tablet"})  # the page loads: excluded now
+        assert tablet.cookies.get(analytics.IGNORE_COOKIE) == "1"
+        tablet.get("/companies", headers={**phone, "user-agent": IPHONE + " tablet"})
+        with TestClient(app) as mobile:
+            assert sign_in(mobile, phone).cookies.get(analytics.IGNORE_COOKIE) == "1"
+            mobile.get("/", headers=phone)
+            mobile.post("/api/e", json={"e": "active", "p": "/"}, headers=phone)
+    analytics.flush()
+    with session_scope() as s:
+        assert not s.query(PageView).filter(PageView.ip.in_(["198.51.100.7"])).count()
+        assert not s.query(PageView).filter_by(event="login", ip="198.51.100.7").count()
+
+    client.delete("/api/admin/analytics/exclude", headers={**admin, **laptop})
+    assert not client.get("/api/admin/analytics", headers={**admin, **laptop}).json()["account_excluded"]
+
+
+def test_the_admin_can_list_accounts_with_their_addresses(client):
+    from radar.models import SavedSearch, User, UserData
+
+    with session_scope() as s:
+        u = User(email="ada@example.org", alerts="weekly")
+        s.add(u)
+        s.flush()
+        s.add(UserData(user_id=u.id, saved=[1, 2], board={"1": {"col": "applied"}}, profile={"skills": ["Go"]}))
+        s.add(SavedSearch(user_id=u.id, name="Go in Utrecht", query="skill=Go"))
+    assert client.get("/api/admin/accounts").status_code == 401
+    r = client.get("/api/admin/accounts", headers={"Authorization": "Bearer secret-token"})
+    assert r.headers["cache-control"] == "no-store"
+    (a,) = r.json()["accounts"]
+    assert a["email"] == "ada@example.org" and a["saved_jobs"] == 2 and a["tracked"] == 1 and a["skills"] == 1
+    assert a["searches"] == 1 and a["alerts"] == "weekly" and a["owner"] is False

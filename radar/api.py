@@ -477,29 +477,50 @@ def admin_analytics(request: Request, who: str = "humans", bots: bool = False, r
 
     _admin(request)
     who = "all" if bots and who == "humans" else who  # ?bots=true: the older switch
+    user = auth.current_user(request, session)
     return {**analytics.dashboard(session, who=who, recent=min(max(recent, 0), 5000)),
-            "this_browser_excluded": analytics.excluded(request)}
+            "this_browser_excluded": analytics.excluded(request), "signed_in": user is not None,
+            "account_excluded": user is not None and user.id in analytics.owner_ids(session)}
+
+
+@app.get("/api/admin/accounts", include_in_schema=False)
+def admin_accounts(request: Request, session: Session = Depends(db)):
+    """Every account with its e-mail address, for the site owner only."""
+    from radar import analytics
+
+    _admin(request)
+    from fastapi.responses import JSONResponse
+
+    return JSONResponse({"accounts": analytics.account_list(session)}, headers={"Cache-Control": "no-store"})
 
 
 @app.post("/api/admin/analytics/exclude", include_in_schema=False)
 def admin_analytics_exclude(request: Request, session: Session = Depends(db)):
-    """Stop counting this browser (a cookie in the admin's own browser only) and forget its visits of today."""
+    """Stop counting this browser (a cookie in the admin's own browser only) and forget its visits of today. When
+    the browser is signed in to an account, that account is excluded on every device it signs in on as well."""
+    import json
+
     from radar import analytics
 
     _admin(request)
+    user = auth.current_user(request, session)
+    if user is not None:
+        analytics.set_owner(session, user.id, True)
     forgotten = analytics.forget_today(session, analytics.request_visitor(request))
-    resp = Response(content=f'{{"excluded": true, "forgotten": {forgotten}}}', media_type="application/json")
-    local = request.url.hostname in {"localhost", "127.0.0.1", "::1", "testserver"}
-    resp.set_cookie(analytics.IGNORE_COOKIE, "1", max_age=400 * 86400, httponly=True, samesite="lax",
-                    secure=not local, path="/")
+    resp = Response(content=json.dumps({"excluded": True, "forgotten": forgotten, "account": user is not None}),
+                    media_type="application/json")
+    analytics.exclude_browser(resp, request)
     return resp
 
 
 @app.delete("/api/admin/analytics/exclude", include_in_schema=False)
-def admin_analytics_include(request: Request):
+def admin_analytics_include(request: Request, session: Session = Depends(db)):
     from radar import analytics
 
     _admin(request)
+    user = auth.current_user(request, session)
+    if user is not None:  # otherwise the account would exclude this browser again on its next page load
+        analytics.set_owner(session, user.id, False)
     resp = Response(content='{"excluded": false}', media_type="application/json")
     resp.delete_cookie(analytics.IGNORE_COOKIE, path="/")
     return resp

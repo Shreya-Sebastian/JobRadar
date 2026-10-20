@@ -47,6 +47,16 @@ def _visible_text(html: str) -> str:
 _MAX_PAGE_BYTES = 512_000
 
 
+def _same_job_address(orig, fin) -> bool:
+    """Whether a redirect target still names the job: its last path segment (a slug or id of six characters or more)
+    or a long number from the original address appears in the new one."""
+    segment = orig.path.rstrip("/").rsplit("/", 1)[-1].lower()
+    target = (fin.path + "?" + fin.query).lower()
+    if len(segment) >= 6 and (segment in target or segment.split("-", 1)[0] in target and segment[:1].isdigit()):
+        return True
+    return any(n in target for n in re.findall(r"\d{6,}", orig.path + "?" + orig.query))
+
+
 def _check_url(url: str, title: str | None = None) -> str:
     """ok | gone | redirected | error"""
     try:
@@ -73,10 +83,12 @@ def _check_url(url: str, title: str | None = None) -> str:
     final = str(r.url)
     orig, fin = urlparse(url), urlparse(final)
     # redirected to a listing or homepage: the job page itself is gone
-    if fin.netloc != orig.netloc or (
-        fin.path.rstrip("/") in ("", "/jobs", "/careers", "/vacatures", "/en", "/nl")
-        and orig.path.rstrip("/") not in ("", "/jobs", "/careers")
-    ):
+    if fin.path.rstrip("/") in ("", "/jobs", "/careers", "/vacatures", "/en", "/nl") and \
+            orig.path.rstrip("/") not in ("", "/jobs", "/careers"):
+        return "redirected"
+    # another address that still carries the job's own id or slug is the same job moved (a Teamtailor page to the
+    # employer's careers domain, Greenhouse to job-boards.greenhouse.io): only a move to somewhere else is gone
+    if fin.netloc != orig.netloc and not _same_job_address(orig, fin):
         return "redirected"
     if r.headers.get("content-type", "").startswith("text/html"):
         html = bytes(body).decode(r.encoding or "utf-8", errors="replace")

@@ -107,3 +107,39 @@ def test_quality_report_and_thresholds(fresh_db):
         rep = quality_report(s)
     assert rep["live_postings"] == 2 and rep["empty_description_share"] == 0.5 and rep["unknown_city_share"] == 0.5
     assert "empty_description_share = 0.5 exceeds 0.1" in violations(rep)
+
+
+
+@respx.mock
+def test_a_job_moved_to_another_address_is_not_dead():
+    page = httpx.Response(200, text="<html><div id=app></div></html>", headers={"content-type": "text/html"})
+    respx.get("https://simac.teamtailor.com/jobs/7286082-domain-lead").mock(
+        return_value=httpx.Response(301, headers={"location": "https://werkenbij.simac.com/jobs/7286082-domain-lead"}))
+    respx.get("https://werkenbij.simac.com/jobs/7286082-domain-lead").mock(return_value=page)
+    respx.get("https://boards.greenhouse.io/awin/jobs/8009279003").mock(
+        return_value=httpx.Response(301, headers={"location": "https://job-boards.greenhouse.io/awin/jobs/8009279003"}))
+    respx.get("https://job-boards.greenhouse.io/awin/jobs/8009279003").mock(return_value=page)
+    respx.get("https://almaviva.example/o/backend-developer").mock(
+        return_value=httpx.Response(301, headers={"location": "https://www.almavivagroup.example/"}))
+    respx.get("https://www.almavivagroup.example/").mock(return_value=page)
+    assert _check_url("https://simac.teamtailor.com/jobs/7286082-domain-lead") == "ok"
+    assert _check_url("https://boards.greenhouse.io/awin/jobs/8009279003") == "ok"
+    assert _check_url("https://almaviva.example/o/backend-developer") == "redirected"
+
+
+def test_a_page_found_gone_stays_closed_while_the_feed_still_lists_it(fresh_db):
+    with session_scope() as s:
+        src = Source(company="Acme", ats="greenhouse", slug="acme")
+        s.add(src)
+        s.flush()
+        ingest(s, src, [_raw("1"), _raw("2")])
+        dead = s.query(Posting).filter_by(external_id="1").one()
+        dead.closed_at, dead.link_status, dead.link_checked_at = datetime.utcnow(), "gone", datetime.utcnow()
+        old = s.query(Posting).filter_by(external_id="2").one()  # found gone three weeks ago: may come back
+        old.closed_at, old.link_status, old.link_checked_at = (datetime.utcnow(), "gone",
+                                                               datetime.utcnow() - timedelta(days=21))
+        s.flush()
+        ingest(s, src, [_raw("1"), _raw("2")])
+        assert dead.closed_at is not None and old.closed_at is None
+        ingest(s, src, [_raw("1", url="https://acme.nl/jobs/1-new"), _raw("2")])  # the page moved: worth showing again
+        assert dead.closed_at is None

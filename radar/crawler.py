@@ -96,6 +96,18 @@ def fetch_source(source: Source, throttle: _DomainThrottle,
         return source, None, f"exception: {type(e).__name__}: {e}"[:500]
 
 
+GONE_HOLD_DAYS = 14
+
+
+def page_gone(p: Posting, url: str | None, now: datetime) -> bool:
+    """Whether the link check found this posting's page gone (404, 410, a "no longer available" page) in the past
+    GONE_HOLD_DAYS and the page has not moved since. Some employers keep closed jobs in their feed or sitemap; a crawl
+    must not reopen those, or the dead link is back on the site the next day. A redirect is weaker evidence (pages
+    move to a new address) and does not hold a posting closed."""
+    return (p.link_status == "gone" and p.link_checked_at is not None
+            and now - p.link_checked_at < timedelta(days=GONE_HOLD_DAYS) and (not url or url == p.url))
+
+
 def is_expired(valid_through: datetime | None, now: datetime) -> bool:
     """Whether an employer's own expiry date has passed. A date without a time ("validThrough": "2026-10-08") means
     the vacancy is open all of that day."""
@@ -199,7 +211,7 @@ def ingest(session: Session, source: Source, raws: list[RawPosting], extractor_n
             if p is not None:
                 seen_ids.add(raw.external_id)
                 p.last_seen = now
-                if p.closed_at is not None:
+                if p.closed_at is not None and not page_gone(p, raw.url, now):
                     p.closed_at = None
             continue
         if not raw.external_id or not raw.title:
@@ -247,7 +259,7 @@ def ingest(session: Session, source: Source, raws: list[RawPosting], extractor_n
             new += 1
         else:
             p.last_seen = now
-            if p.closed_at is not None:
+            if p.closed_at is not None and not page_gone(p, fields["url"], now):
                 p.closed_at = None  # reopened
             if fields["url"] and p.url != fields["url"]:
                 p.url = fields["url"]  # the content hash covers title and text only: a moved page must still update

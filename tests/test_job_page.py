@@ -129,3 +129,28 @@ def test_job_page_keeps_the_employers_formatting(fresh_db):
                      "<ul><li>Kafka</li><li>Airflow</li></ul>"
     html = TestClient(app).get(f"/job/{pid}/data-engineer", headers=BROWSER).text
     assert "<h3>What you do</h3>" in html and "<ul><li>Kafka</li><li>Airflow</li></ul>" in html
+
+
+def test_job_markup_names_the_employers_logo_and_own_site(fresh_db):
+    """Google's job search shows the hiring organisation's logo next to the listing: the logo this site keeps, and
+    the employer's own site when the logo came from it (a hiring-system page is not the employer's site)."""
+    from radar.api import app
+    from radar.models import CompanyLogo
+
+    pid, _ = _setup()
+    with session_scope() as s:
+        s.add(CompanyLogo(company="Adyen", slug="adyen", status="ok", content_type="image/png", data=b"png",
+                          page_url="https://www.adyen.com/careers"))
+    html = TestClient(app).get(f"/job/{pid}/senior-backend-engineer", headers=BROWSER).text
+    job = next(json.loads(m) for m in re.findall(r'<script type="application/ld\+json">(.*?)</script>', html, re.S)
+               if '"JobPosting"' in m)
+    assert job["hiringOrganization"] == {"@type": "Organization", "name": "Adyen",
+                                         "logo": "https://techjobsradar.nl/logo/adyen",
+                                         "sameAs": "https://www.adyen.com"}
+    assert re.search(r"<title>Senior Backend Engineer at Adyen in Amsterdam[^<]*</title>", html)
+    with session_scope() as s:
+        s.get(CompanyLogo, "Adyen").page_url = "https://boards.greenhouse.io/adyen"
+    from radar import pages
+
+    with session_scope() as s:
+        assert pages.job_org(s, "Adyen") == {"logo": "https://techjobsradar.nl/logo/adyen"}

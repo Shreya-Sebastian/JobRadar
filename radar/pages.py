@@ -304,12 +304,35 @@ def employment_type(ex: dict, text: str) -> list[str] | None:
     return kinds or None
 
 
+def job_org(session, company: str) -> dict:
+    """The employer's logo (served from this site) and, when the logo was read from the employer's own site rather
+    than a hiring system, that site's address, for the JobPosting's hiringOrganization."""
+    from urllib.parse import urlparse
+
+    from sqlalchemy import select
+
+    from radar.logos import ATS_HOSTS
+    from radar.models import CompanyLogo
+
+    row = session.execute(select(CompanyLogo.slug, CompanyLogo.page_url)
+                          .where(CompanyLogo.company == company, CompanyLogo.status == "ok")).first()
+    if row is None:
+        return {}
+    out = {"logo": settings.site_url.rstrip("/") + f"/logo/{row.slug}"}
+    site = urlparse(row.page_url or "")
+    if site.scheme in ("http", "https") and site.netloc and not ATS_HOSTS.search(site.netloc):
+        out["sameAs"] = f"{site.scheme}://{site.netloc}"
+    return out
+
+
 def render_job(p, lang: str = "en", sector: str | None = None, related: list[tuple[str, str]] | None = None,
-               history: dict | None = None, similar: list | None = None, ex: dict | None = None) -> str:
+               history: dict | None = None, similar: list | None = None, ex: dict | None = None,
+               org: dict | None = None) -> str:
     """`related`: (path, title) of the landing pages this job appears on, most specific first. `history`: how long
     it has been open and whether the employer listed the same title before (job_history); `similar`: open jobs of
     the same kind elsewhere (similar_jobs); `ex`: the extraction with the review's decisions merged in
-    (radar/review.py), when there are any."""
+    (radar/review.py), when there are any; `org`: the employer's logo URL and website for the structured data
+    (job_org), which Google's job search shows next to the listing."""
     """The listing page: what the radar read from the posting, then the employer's own text with credit and links
     back to the original. `p` is a radar.models.Posting."""
     from urllib.parse import urlparse
@@ -405,7 +428,7 @@ def render_job(p, lang: str = "en", sector: str | None = None, related: list[tup
         if p.remote:
             hooks.insert(0, t["remote"])
     search_title = head if len(head) <= 70 else title
-    for h in hooks:
+    for h in hooks[:2]:
         if len(search_title + " · " + h) > 70:
             break
         search_title += " · " + h
@@ -431,7 +454,8 @@ def render_job(p, lang: str = "en", sector: str | None = None, related: list[tup
         posting = {
             "@context": "https://schema.org", "@type": "JobPosting", "title": p.title,
             "description": _body(p), "datePosted": when.date().isoformat() if when else None,
-            "hiringOrganization": {"@type": "Organization", "name": p.company},
+            "hiringOrganization": {"@type": "Organization", "name": p.company,
+                                   **{k: v for k, v in (org or {}).items() if v}},
             "jobLocation": {"@type": "Place", "address": {"@type": "PostalAddress", "addressCountry": "NL",
                                                           **({"addressLocality": p.city} if p.city else {}),
                                                           **({"addressRegion": PROVINCES[p.city]}

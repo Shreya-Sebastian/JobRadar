@@ -823,7 +823,8 @@ def job_page(posting_id: int, slug: str = "", session: Session = Depends(db), la
         similar = pages.similar_jobs(stats.CACHE.rows(session), p) if p.closed_at is None else []
         ov = review.overrides(session, p.id).get(p.id)
         return pages.render_job(p, lang, sector, _related_pages(session, p.id, lang), pages.job_history(session, p),
-                                similar, ex=review.merge(p.extraction or {}, ov) if ov else None)
+                                similar, ex=review.merge(p.extraction or {}, ov) if ov else None,
+                                org=pages.job_org(session, p.company))
 
     html = cached(f"page:job:{lang}:{p.id}:{p.content_hash}:{p.closed_at is None}:{sector}:{stats.CACHE.loads}",
                   render, ttl=3600)

@@ -154,6 +154,16 @@ def _close(session: Session, ids: list[int], now: datetime) -> None:
     session.flush()
 
 
+def close_gone_pages(session: Session) -> int:
+    """Close live postings whose page the link check found gone in the past GONE_HOLD_DAYS: a crawl reopened them
+    because their source still lists them (before page_gone held them closed, and as a safety net)."""
+    since = datetime.utcnow() - timedelta(days=GONE_HOLD_DAYS)
+    ids = list(session.scalars(select(Posting.id).where(Posting.closed_at.is_(None), Posting.link_status == "gone",
+                                                         Posting.link_checked_at >= since)))
+    _close(session, ids, datetime.utcnow())
+    return len(ids)
+
+
 def close_inactive(session: Session) -> int:
     """Close live postings of sources that are switched off (deactivated before `deactivate` closed them)."""
     inactive = select(Source.id).where(Source.active.is_(False))

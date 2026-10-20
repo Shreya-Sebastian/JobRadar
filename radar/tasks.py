@@ -12,7 +12,15 @@ from sqlalchemy import func, select
 from radar.adapters import get_adapter
 from radar.adapters.base import AdapterError, RawPosting, SourceNotFound
 from radar.config import settings
-from radar.crawler import close_expired, close_inactive, deactivate, ingest, known_urls_for, mark_duplicates
+from radar.crawler import (
+    close_expired,
+    close_gone_pages,
+    close_inactive,
+    deactivate,
+    ingest,
+    known_urls_for,
+    mark_duplicates,
+)
 from radar.db import init_db, session_scope
 from radar.metrics import FETCH_SECONDS, FETCHES, LIVE_POSTINGS, POSTINGS_CLOSED, POSTINGS_NEW, POSTINGS_SEEN, SOURCES
 from radar.models import CrawlRun, Posting, Source
@@ -118,7 +126,7 @@ def finalize() -> dict:
     """Dedup, refresh gauges and bump the data version so API processes reload. Runs as a CronJob."""
     init_db()
     with session_scope() as s:
-        expired = close_expired(s) + close_inactive(s)
+        expired = close_expired(s) + close_inactive(s) + close_gone_pages(s)
         dups = mark_duplicates(s)
         from radar import auth, feedback
 

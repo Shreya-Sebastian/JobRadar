@@ -143,3 +143,22 @@ def test_a_page_found_gone_stays_closed_while_the_feed_still_lists_it(fresh_db):
         assert dead.closed_at is not None and old.closed_at is None
         ingest(s, src, [_raw("1", url="https://acme.nl/jobs/1-new"), _raw("2")])  # the page moved: worth showing again
         assert dead.closed_at is None
+
+
+
+def test_finalize_closes_live_postings_whose_page_was_found_gone(fresh_db):
+    from radar.crawler import close_gone_pages
+
+    with session_scope() as s:
+        src = Source(company="Acme", ats="greenhouse", slug="acme")
+        s.add(src)
+        s.flush()
+        ingest(s, src, [_raw("1"), _raw("2"), _raw("3")])
+        p1, p2, p3 = (s.query(Posting).filter_by(external_id=e).one() for e in ("1", "2", "3"))
+        p1.link_status, p1.link_checked_at = "gone", datetime.utcnow()
+        p2.link_status, p2.link_checked_at = "gone", datetime.utcnow() - timedelta(days=30)
+        p3.link_status, p3.link_checked_at = "ok", datetime.utcnow()
+        s.flush()
+        assert close_gone_pages(s) == 1
+        s.expire_all()
+        assert s.get(Posting, p1.id).closed_at is not None and s.get(Posting, p2.id).closed_at is None

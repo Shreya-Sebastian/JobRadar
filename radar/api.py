@@ -626,6 +626,15 @@ def robots():
                     media_type="text/plain")
 
 
+# after robots.txt, which would otherwise match this route
+@app.get("/{name}.txt", include_in_schema=False)
+def indexnow_key(name: str):
+    """The IndexNow key file (radar/indexnow.py): proves to search engines that the URLs sent come from this site."""
+    if not settings.indexnow_key or name != settings.indexnow_key:
+        raise HTTPException(404)
+    return Response(settings.indexnow_key, media_type="text/plain")
+
+
 def _live_tech_rows(session: Session) -> list[stats.Row]:
     return stats.Filters().apply(stats.CACHE.rows(session))
 

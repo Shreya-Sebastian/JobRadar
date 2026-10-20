@@ -171,12 +171,20 @@ def linkcheck() -> dict:
 
 
 def index_jobs() -> dict:
-    """Hourly: announce new job pages to Google and withdraw closed ones (radar/indexing.py)."""
-    from radar import indexing
+    """Hourly: announce new job pages to Google and withdraw closed ones (radar/indexing.py), and send the same
+    changes to Bing and the other IndexNow engines (radar/indexnow.py)."""
+    import httpx
+
+    from radar import indexing, indexnow
 
     init_db()
     with session_scope() as s:
         out = indexing.notify(s)
+    with session_scope() as s:
+        try:
+            out["indexnow"] = indexnow.notify(s)
+        except httpx.HTTPError as e:  # the engines being away never fails the Google part
+            out["indexnow"] = {"error": str(e)[:200]}
     log.info("index_jobs: %s", {k: v for k, v in out.items() if k != "urls"})
     return out
 

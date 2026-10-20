@@ -85,6 +85,9 @@ class Settings(BaseSettings):
     google_indexing_key: str | None = None
     indexing_daily: int = 190  # Google's default quota is 200 a day
     indexing_per_run: int = 20
+    # IndexNow (radar/indexnow.py): a public key, served at /<key>.txt, that lets Bing and the others accept the
+    # job URLs this site sends. Unset = nothing is sent
+    indexnow_key: str | None = None
     # local development only: with the console backend, show the login link on the page instead of only in the log.
     # Never set this on a server: anyone could then log in as any e-mail address.
     dev_login_links: bool = False

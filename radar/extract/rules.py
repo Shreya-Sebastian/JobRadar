@@ -9,7 +9,7 @@ from radar.extract.schema import Extraction
 from radar.extract.sections import job_text
 from radar.taxonomy import find_skills
 
-RULES_VERSION = "rules-v24"  # bump whenever the taxonomy or the rules change, so `radar extract` re-runs
+RULES_VERSION = "rules-v25"  # bump whenever the taxonomy or the rules change, so `radar extract` re-runs
 
 # words only one of the languages uses: "in", "is", "we", "team", "over" and "of" are both Dutch and English,
 # "die" and "er" are also German
@@ -508,6 +508,16 @@ _SENIORITY = [
                # an "advocaat-stagiair" is a trainee lawyer in a three-year training, not an intern
                r"(?<!advocaat-)(?<!advocaat )stagiai?re?|working student|werkstudent|afstudeer|\bthesis\b|scriptie|"
                r"\bgraduation\b|^student\b"),
+    # before "phd", whose "doctoral researcher" would otherwise take "Post-doctoral Researcher"
+    ("postdoc", r"\bpost[- ]?docs?\b|\bpost[- ]?doctoral\b|\bpostdoc\w*|\bpostdoctora(?:al|le)\b"),
+    # a doctoral position, not a job that asks for a doctorate: "PhD Position in ...", "PhD: Lensless imaging",
+    # "Promovendus Radiologie", but not "Data Scientist (PhD)" or "Research Engineer, PhD required"
+    ("phd", r"\bph\.?\s?d\.?[- ]?(?:positions?|positie|candidates?|kandidaat|students?|researchers?|onderzoeker|"
+            r"projects?|fellow(?:ship)?s?|scholarships?|vacanc(?:y|ies)|plaats(?:en)?)\b|"
+            r"^\W*(?:\d+\s+|two |three |four |fully[- ]funded |funded )?"
+            r"ph\.?\s?d\.?(?!\s*(?:\)|required|level|holder))\b|"
+            r"promovend\w*|promotieplaats\w*|promotieonderzoek\w*|\bdoctoral (?:candidate|researcher|student|position|"
+            r"fellow)s?\b|\b[ao]io\b"),
     ("trainee", r"\btrainee(ship)?s?\b|traineeprogramma|graduate (programme|program|scheme)|young professional|"
                 r"advocaat[- ]stagiai?re?|"
                 # "Graduate Rotational Programme", "Early Careers Programme", "Young Graduate Trainee", "Java Academy"
@@ -525,7 +535,8 @@ _SENIORITY = [
     # "associate" is junior unless the title names another level ("Senior Associate", "Associate Director")
     ("junior", r"\bjunior\b|\bjr\b\.?|\bgraduate\b|\bnew grads?\b|entry[- ]level|\bstarter\b|early career|"
                r"\b(?:pas|net) afgestudeerd\w*|\bcampus hire\b|"
-               r"^(?!.*\b(?:senior|sr|staff|principal|manager|director|head|lead|chief|vp)\b).*\bassociate\b"),
+               # an assistant or associate professor is an academic rank, not a junior job
+               r"^(?!.*\b(?:senior|sr|staff|principal|manager|director|head|lead|chief|vp|professor)\b).*\bassociate\b"),
     ("medior", r"\bmedior\b|\bmid[- ]level\b|\bintermediate\b|\bmiddle\b(?! east)"),
     ("staff", r"\bstaff\b|\bprincipal\b|\bdistinguished\b|\b(?:technical|engineering) fellow\b"),
     (

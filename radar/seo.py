@@ -81,6 +81,13 @@ THEMES = {  # key: (filter kwargs, nl slug, en slug, nl title, en title)
         "ICT traineeships en graduate programma's{in_nl}",
         "Tech traineeships and graduate programmes{in_en}",
     ),
+    "phd": (
+        {"seniority": "phd,postdoc"},
+        "promotieplaats-postdoc",
+        "phd-postdoc",
+        "PhD-plaatsen en postdocs in IT, data en AI{in_nl}",
+        "PhD and postdoc positions in tech, data and AI{in_en}",
+    ),
     "intern": (
         {"seniority": "intern"},
         "stage",
@@ -329,7 +336,7 @@ _T = {
 
 
 def _entry(r: stats.Row) -> bool:
-    return r.ex.get("seniority") in ("intern", "trainee", "junior") or r.experience in ("none", "1")
+    return r.ex.get("seniority") in ("intern", "trainee", "phd", "junior") or r.experience in ("none", "1")
 
 
 def jobs_link(page: Page, lang: str) -> str:
@@ -456,7 +463,7 @@ def render(page: Page, lang: str, rows: list[stats.Row], pages: list[Page]) -> s
             facts.append(f"{pct(no_dutch)} vraagt geen Nederlands")
         if page.theme != "visa" and visa >= 3:
             facts.append(f"{r_(visa)} noemen visumsponsoring")
-        if page.theme not in ("junior", "trainee", "intern") and entry >= 5:
+        if page.theme not in ("junior", "trainee", "phd", "intern") and entry >= 5:
             facts.append(f"{r_(entry)} voor starters")
         tail = "Rechtstreeks van de eigen sites van werkgevers, dagelijks bijgewerkt."
     else:
@@ -467,7 +474,7 @@ def render(page: Page, lang: str, rows: list[stats.Row], pages: list[Page]) -> s
             facts.append(f"{pct(no_dutch)} need no Dutch")
         if page.theme != "visa" and visa >= 3:
             facts.append(f"{r_(visa)} mention visa sponsorship")
-        if page.theme not in ("junior", "trainee", "intern") and entry >= 5:
+        if page.theme not in ("junior", "trainee", "phd", "intern") and entry >= 5:
             facts.append(f"{r_(entry)} open to starters")
         tail = "Straight from employers' own sites, updated daily."
     sentences = [lead + "."]

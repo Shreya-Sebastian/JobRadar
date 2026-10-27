@@ -21,7 +21,7 @@
     if (!/^#[0-9a-f]{6}$/i.test(a) || !/^#[0-9a-f]{6}$/i.test(c)) return Array(n).fill(a);
     return Array.from({ length: n }, (_, i) => mixHex(a, c, 1 - (i * 0.8) / Math.max(n - 1, 1)));
   };
-  const LEVELS = ["intern", "trainee", "junior", "medior", "senior", "lead", "staff", "manager"];
+  const LEVELS = ["intern", "trainee", "phd", "postdoc", "junior", "medior", "senior", "lead", "staff", "manager"];
   const REMOTE = ["remote", "hybrid", "onsite"];
   const EXP = ["none", "1", "2-3", "4-5", "6+", "unspecified"];
   // the languages a visitor speaks, stored as "en", "nl" or "en,nl" (radar/stats.py fits_languages)
@@ -103,7 +103,7 @@
      
       "role.ml": "ML / AI", "role.data": "Data", "role.backend": "Backend", "role.frontend": "Frontend", "role.fullstack": "Full-stack", "role.platform": "Platform / DevOps",
       "role.mobile": "Mobile", "role.embedded": "Embedded / hardware", "role.simulation": "Simulation / computational", "role.security": "Security", "role.qa": "QA / Test", "role.product": "Product", "role.design": "Design", "role.it_support": "IT support", "role.solutions": "Solutions / pre-sales", "role.other": "Other",
-      "level.intern": "Internship", "level.trainee": "Traineeship / graduate programme", "level.junior": "Junior", "level.medior": "Medior", "level.senior": "Senior", "level.lead": "Lead", "level.staff": "Staff / principal", "level.manager": "Manager", "level.unknown": "Not stated",
+      "level.intern": "Internship", "level.trainee": "Traineeship / graduate programme", "level.phd": "PhD position", "level.postdoc": "Postdoc", "level.junior": "Junior", "level.medior": "Medior", "level.senior": "Senior", "level.lead": "Lead", "level.staff": "Staff / principal", "level.manager": "Manager", "level.unknown": "Not stated",
       "fail": "Failed to load: {e}",
       "f.confirmed": "Verified on the employer's site in the past week",
      
@@ -215,7 +215,7 @@
      
       "role.ml": "ML / AI", "role.data": "Data", "role.backend": "Backend", "role.frontend": "Frontend", "role.fullstack": "Full-stack", "role.platform": "Platform / DevOps",
       "role.mobile": "Mobiel", "role.embedded": "Embedded / hardware", "role.simulation": "Simulatie / modellering", "role.security": "Security", "role.qa": "QA / Test", "role.product": "Product", "role.design": "Design", "role.it_support": "IT-support", "role.solutions": "Solutions / pre-sales", "role.other": "Overig",
-      "level.intern": "Stage", "level.trainee": "Traineeship", "level.junior": "Junior", "level.medior": "Medior", "level.senior": "Senior", "level.lead": "Lead", "level.staff": "Staff / principal", "level.manager": "Manager", "level.unknown": "Niet vermeld",
+      "level.intern": "Stage", "level.trainee": "Traineeship", "level.phd": "Promotieplaats (PhD)", "level.postdoc": "Postdoc", "level.junior": "Junior", "level.medior": "Medior", "level.senior": "Senior", "level.lead": "Lead", "level.staff": "Staff / principal", "level.manager": "Manager", "level.unknown": "Niet vermeld",
       "fail": "Laden mislukt: {e}",
       "f.confirmed": "Afgelopen week gecontroleerd op de site van de werkgever",
      

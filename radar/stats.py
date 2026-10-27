@@ -115,11 +115,11 @@ _EARLY_TITLE = re.compile(
 
 def experience_band(ex: dict[str, Any], title: str = "") -> str:
     """Years of experience the posting asks for, in bands. "none" is reserved for entry-level roles (intern,
-    junior, graduate, trainee, starter) that state no years at all; a senior posting that merely omits the
+    junior, graduate, trainee, starter, PhD position) that state no years at all; a senior posting that merely omits the
     number is "unspecified", so the "no experience asked" filter never leaks experienced roles."""
     years = ex.get("years_experience")
     if not years:
-        if ex.get("seniority") in ("intern", "trainee", "junior") or _EARLY_TITLE.search(title or ""):
+        if ex.get("seniority") in ("intern", "trainee", "phd", "junior") or _EARLY_TITLE.search(title or ""):
             return "none"
         return "unspecified"
     if years <= 1:

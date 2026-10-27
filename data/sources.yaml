@@ -108,6 +108,28 @@
   ats: jsonld
   slug: "https://www.nixxes.com/jobs/"
   url: "https://www.nixxes.com/jobs/"
+# Universities and university medical centres: their own sites list PhD and postdoc positions that do not all reach
+# AcademicTransfer. Names as AcademicTransfer gives them, so the same position from both is matched as a duplicate.
+- company: Delft University of Technology (TU Delft)
+  ats: jsonld
+  slug: https://careers.tudelft.nl/sitemap.xml
+  url: https://careers.tudelft.nl/go/All-jobs/9021002/
+  kind: employer
+- company: Vrije Universiteit Amsterdam (VU)
+  ats: jsonld
+  slug: https://werkenbij.vu.nl/sitemap.xml
+  url: https://werkenbij.vu.nl/vacatures
+  kind: employer
+- company: Wageningen University & Research
+  ats: jsonld
+  slug: https://www.wur.nl/vacancies/sitemap.xml
+  url: https://www.wur.nl/en/careers.htm
+  kind: employer
+- company: Amsterdam UMC
+  ats: jsonld
+  slug: https://werkenbij.amsterdamumc.org/sitemap.xml
+  url: https://werkenbij.amsterdamumc.org/
+  kind: employer
 - company: Accenture
   ats: workday
   slug: accenture.wd103/AccentureCareers

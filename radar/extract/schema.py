@@ -9,8 +9,10 @@ RoleFamily = Literal[
     "product", "design", "it_support", "solutions", "other",
 ]
 # "trainee" = paid entry programme (traineeship, graduate programme, young-professional / talent programme);
-# "intern" = internship, graduation project or working-student job.
-Seniority = Literal["intern", "trainee", "junior", "medior", "senior", "lead", "staff", "manager", "unknown"]
+# "intern" = internship, graduation project or working-student job;
+# "phd" = a doctoral position (PhD candidate, promovendus, AIO); "postdoc" = a postdoctoral research position.
+Seniority = Literal["intern", "trainee", "phd", "postdoc", "junior", "medior", "senior", "lead", "staff", "manager",
+                    "unknown"]
 RemotePolicy = Literal["remote", "hybrid", "onsite", "unknown"]
 Degree = Literal["phd", "msc", "bsc", "hbo", "mbo", "none", "unknown"]
 

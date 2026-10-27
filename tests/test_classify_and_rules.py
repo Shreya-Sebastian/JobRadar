@@ -61,7 +61,7 @@ def test_seniority_and_years():
     assert detect_seniority("(Sr) Clinical Research Associate") == "senior"
     assert detect_seniority("Vulnerability Management (Associate) Manager") == "manager"
     assert detect_seniority("Technical Fellow, Compilers") == "staff"
-    assert detect_seniority("Postdoctoral Fellow in Genomics") == "unknown"
+    assert detect_seniority("Postdoctoral Fellow in Genomics") == "postdoc"
     assert detect_seniority("Head of Engineering") == "manager"
     assert detect_seniority("Software Engineer", "At least 5 years of experience") == "senior"
     assert detect_seniority("Software Engineer", "1-2 years of experience") == "junior"
@@ -255,6 +255,28 @@ def test_traineeships_are_a_paid_level_of_their_own():
     assert detect_seniority("Omscholingstraject tot Cloud Engineer") == "trainee"
     assert detect_seniority("Docent Academy Informatica") != "trainee"
     assert detect_seniority("Software Engineer - New Grad 2027") == "junior"
+
+
+def test_phd_and_postdoc_positions_are_levels_of_their_own():
+    from radar.extract.rules import detect_seniority
+
+    phd = ["PhD Position in Cloud-Native and AI-Native 6G Networks", "PhD Candidate in Complex Networks",
+           "PhD: Lensless 3D optical imaging", "PhD in Physics-informed generative AI for dynamic cardiac MRI",
+           "2 PhD positions on Measuring the Future of Power Electronics", "PhD-student in computer vision",
+           "Tilburg University PhD-Researcher and Lecturer Cybersecurity", "D.26.PV.JH.97 Promovendus Radiologie",
+           "Doctoral Researcher in Robotics", "AIO Machine Learning", "Fully funded PhD on federated learning"]
+    for t in phd:
+        assert detect_seniority(t) == "phd", t
+    postdoc = ["Postdoc Protection and Control of DC Microgrid", "Postdoctoral Researcher in Radio Stars",
+               "Post-doc in Large-scale Testing", "Post-doctoral Researcher: Agent-Based Modelling",
+"4-year Postdoc position: 3D-printing of polymer foams"]
+    for t in postdoc:
+        assert detect_seniority(t) == "postdoc", t
+    # jobs that ask for a doctorate, and internships for PhD students, keep their own level
+    assert detect_seniority("Senior Data Scientist (PhD)") == "senior"
+    assert detect_seniority("Research Engineer, PhD required") != "phd"
+    assert detect_seniority("PhD Internship Machine Learning") == "intern"
+    assert detect_seniority("Assistant / Associate Professor Signal Processing for Communication") != "junior"
     assert detect_seniority("Pas afgestudeerde Data Engineer") == "junior"
     assert detect_seniority("Internship Data Engineering") == "intern"
     assert detect_seniority("Afstudeerstage Machine Learning") == "intern"

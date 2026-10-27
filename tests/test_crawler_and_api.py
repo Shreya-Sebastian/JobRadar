@@ -52,6 +52,25 @@ def test_duplicates_across_sources_prefer_ats(fresh_db):
         assert dup.duplicate_of == canonical.id and canonical.duplicate_of is None
 
 
+def test_duplicates_across_sources_without_city_or_with_a_cut_title(fresh_db):
+    with session_scope() as s:
+        own = _source(s, "University of Amsterdam (UvA)", "jsonld", "https://werkenbij.uva.nl/sitemap.xml")
+        board = _source(s, "University of Amsterdam (UvA)", "jsonld", "https://www.academictransfer.com/sitemap.xml")
+        long = "PhD Candidate in Spatial Statistics for Integrating IoT Sensor Data and Remote Sensing Data"
+        ingest(s, own, [_raw("o1", "PhD Position in Responsible AI", "Netherlands"),
+                        _raw("o2", long),
+                        _raw("o3", "Software Engineer", "Netherlands")])
+        ingest(s, board, [_raw("b1", "PhD Position in Responsible AI"),
+                          _raw("b2", long[:75] + "..."),
+                          _raw("b3", "Software Engineer"), _raw("b4", "Software Engineer", "Utrecht, Netherlands")])
+        mark_duplicates(s)
+        by = lambda ext: s.query(Posting).filter_by(external_id=ext).one()  # noqa: E731
+        assert by("o1").city is None and by("o1").duplicate_of == by("b1").id  # the copy with a city is kept
+        assert by("b2").duplicate_of == by("o2").id  # the whole title is kept
+        # a title in two cities there: which one the cityless copy is cannot be told
+        assert by("o3").duplicate_of is None and by("b3").duplicate_of is None
+
+
 def test_duplicates_same_source_identical_text_and_same_url(fresh_db):
     with session_scope() as s:
         src = _source(s)

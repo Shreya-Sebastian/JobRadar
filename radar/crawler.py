@@ -324,6 +324,8 @@ def mark_duplicates(session: Session) -> int:
       7. one board listing one vacancy twice under one title and city: a stub next to the full text, its Dutch and
          English text, a repost with small edits, or the same job under two of the employer's brands (same facts:
          level, years, role and skills). The full, English, most recently posted copy is kept.
+      8. one employer's job on two sources where one copy names no city or cuts the title short, when exactly one
+         copy on the other source fits.
     Same title on the same board with different facts (an agency's clients, several teams hiring the same role) is
     kept apart: that is a separate requisition."""
     rows = session.execute(
@@ -440,6 +442,27 @@ def mark_duplicates(session: Session) -> int:
                 if same_job(detail[g[0].id], detail[other.id]):
                     mark(other, g[0])
 
+    # 8. the same job on another source where one copy names no city or has its title cut short ("... for
+    #    nature-inclusive sol..."): a university's own site next to AcademicTransfer. Only when exactly one copy
+    #    there fits, so a title an employer posts in several cities stays apart. The copy with a city and the whole
+    #    title is kept.
+    from radar.normalize import norm_company
+
+    by_company: dict[str, list] = {}
+    for r in rows:
+        if r.is_tech and r.id not in canonical_of:
+            by_company.setdefault(norm_company(r.company or "").lower(), []).append(r)
+    for members in by_company.values():
+        for r in members:
+            if r.id in canonical_of or (r.city and not _cut_short(r.title)):
+                continue
+            fits = [o for o in members if o.source_id != r.source_id and o.id not in canonical_of
+                    and (not r.city or not o.city or r.city.lower() == o.city.lower())
+                    and _same_title(r.title, o.title)]
+            if len(fits) == 1:
+                keep, dup = sorted([r, fits[0]], key=lambda x: (not x.city, _cut_short(x.title)))
+                mark(dup, keep)
+
     changes = []
     for r in rows:
         target = root(r.id) if r.id in canonical_of else None
@@ -456,6 +479,22 @@ def mark_duplicates(session: Session) -> int:
         session.connection().execute(stmt, changes[i:i + 1000])
     session.expire_all()
     return len(changes)
+
+
+def _cut_short(title: str | None) -> bool:
+    return (title or "").rstrip().endswith(("...", "…"))
+
+
+def _same_title(a: str | None, b: str | None) -> bool:
+    """One title, or one cut short at the start of the other (at least 30 characters of it)."""
+    from radar.normalize import norm_title
+
+    na, nb = (norm_title(re.sub(r"(\.\.\.|…)\s*$", "", t or "")) for t in (a, b))
+    if na == nb:
+        return bool(na)
+    if _cut_short(a) and len(na) >= 30 and nb.startswith(na):
+        return True
+    return _cut_short(b) and len(nb) >= 30 and na.startswith(nb)
 
 
 _STUB = 300  # a description shorter than this is a stub (a link, a title line)

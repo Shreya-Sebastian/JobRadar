@@ -108,6 +108,11 @@
   ats: jsonld
   slug: "https://www.nixxes.com/jobs/"
   url: "https://www.nixxes.com/jobs/"
+- company: Accenture
+  ats: workday
+  slug: accenture.wd103/AccentureCareers
+  url: https://accenture.wd103.myworkdayjobs.com/AccentureCareers
+  kind: employer
 - company: "Airbus"
   ats: workday
   slug: "ag.wd3/Airbus"

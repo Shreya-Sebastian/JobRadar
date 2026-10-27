@@ -1,0 +1,43 @@
+# Employers in the Netherlands with graduate programmes, traineeships, young-professional tracks or IT academies
+# (27 Oct 2026), for `radar discover` and `radar find-sitemaps`. Complements traineeship_providers.txt.
+# Checked 27 Oct 2026: all but Accenture were already read (Accenture added to sources.yaml). No readable feed yet:
+# cmotions.nl, pipple.nl, cqm.nl, ortec.com, squadra.nl, qquest.nl, ictivity.nl, cloudnation.nl, exact.com,
+# werkenbijasr.nl, werkenbijdnb.nl, triodos.nl, werkenbijalliander.com, witteveenbos.com, cpp.canon, waternet.nl,
+# frieslandcampina.com, esa.int, epo.org, ncia.nato.int, europol.europa.eu, eurojust.europa.eu, opcw.org.
+# Data, AI and IT traineeship firms
+xomnia.com
+rockfeather.com
+iodigital.com
+topicus.nl
+yellowtail.nl
+wortell.nl
+intercept.cloud
+# Banks, insurers, financial regulators
+werkenbijnn.nl
+afm.nl
+ohpen.com
+# Consultancy and audit firms with tech graduate intakes
+werkenbijdeloitte.nl
+werkenbijkpmg.nl
+pwc.nl
+werkenbijbdo.nl
+accenture.com
+# Engineering, energy, infrastructure
+werkenbijeneco.nl
+vattenfall.nl
+essent.nl
+arcadis.com
+royalhaskoningdhv.com
+sweco.nl
+movares.nl
+anteagroup.nl
+boskalis.com
+damen.com
+huismanequipment.com
+vanderlande.com
+prodrive-technologies.com
+thalesgroup.com
+nlr.org
+nxp.com
+vitens.nl
+dsm-firmenich.com

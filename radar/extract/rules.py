@@ -9,7 +9,7 @@ from radar.extract.schema import Extraction
 from radar.extract.sections import job_text
 from radar.taxonomy import find_skills
 
-RULES_VERSION = "rules-v23"  # bump whenever the taxonomy or the rules change, so `radar extract` re-runs
+RULES_VERSION = "rules-v24"  # bump whenever the taxonomy or the rules change, so `radar extract` re-runs
 
 # words only one of the languages uses: "in", "is", "we", "team", "over" and "of" are both Dutch and English,
 # "die" and "er" are also German
@@ -510,6 +510,11 @@ _SENIORITY = [
                r"\bgraduation\b|^student\b"),
     ("trainee", r"\btrainee(ship)?s?\b|traineeprogramma|graduate (programme|program|scheme)|young professional|"
                 r"advocaat[- ]stagiai?re?|"
+                # "Graduate Rotational Programme", "Early Careers Programme", "Young Graduate Trainee", "Java Academy"
+                r"rotational (?:programm?e?|track)|early careers? (?:programm?e?|track)|young graduates?\b|"
+                r"\b(?:it|ict|data|cloud|java|\.net|tech|developer|engineer(?:ing)?|cyber|security|devops|ai|sap|"
+                r"salesforce|software|test) academy\b|\bacademy ?(?:programm?[ae]|traject|trainee)|"
+                r"omscholingstraject|omscholing tot\b|omscholen tot\b|"
                 r"talent ?programm?a?\b|development program(me)?\b|starters?functie|starters?programma|"
                 r"\bstarter\b(?! kit)|\bbbl\b|apprentice\w*|\bleerling\b|leerwerk\w*|\bin opleiding\b|"
                 r"betaalde opleiding|opleiding tot\b"),
@@ -518,7 +523,8 @@ _SENIORITY = [
     ("medior", _NO_LEVEL_WORD + r".*[a-z]\s+ii" + _LADDER_END),
     ("senior", _NO_LEVEL_WORD + r".*[a-z]\s+(?:iii|iv)" + _LADDER_END),
     # "associate" is junior unless the title names another level ("Senior Associate", "Associate Director")
-    ("junior", r"\bjunior\b|\bjr\b\.?|\bgraduate\b|entry[- ]level|\bstarter\b|early career|"
+    ("junior", r"\bjunior\b|\bjr\b\.?|\bgraduate\b|\bnew grads?\b|entry[- ]level|\bstarter\b|early career|"
+               r"\b(?:pas|net) afgestudeerd\w*|\bcampus hire\b|"
                r"^(?!.*\b(?:senior|sr|staff|principal|manager|director|head|lead|chief|vp)\b).*\bassociate\b"),
     ("medior", r"\bmedior\b|\bmid[- ]level\b|\bintermediate\b|\bmiddle\b(?! east)"),
     ("staff", r"\bstaff\b|\bprincipal\b|\bdistinguished\b|\b(?:technical|engineering) fellow\b"),

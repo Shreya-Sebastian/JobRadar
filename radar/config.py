@@ -27,9 +27,9 @@ class Settings(BaseSettings):
     # Branding and search: the site name goes into the title, headings and structured data; the aliases are
     # phrases people may search for ("TechJobsNL"); the URL is the canonical public address.
     site_name: str = "Tech Jobs Radar"
-    site_aliases: str = ("TechJobsRadar, Tech Jobs, TechJar, techjobsradar.nl, TechJobsNL, Tech Jobs NL, "
-                         "ICT vacatures, IT vacatures, tech jobs Netherlands")
-    site_url: str = "https://techjobsradar.nl"
+    site_aliases: str = ("TechJobsRadar, Tech Jobs, TechJar, techjobsradar.com, techjobsradar.nl, TechJobsNL, "
+                         "Tech Jobs NL, ICT vacatures, IT vacatures, tech jobs Netherlands")
+    site_url: str = "https://techjobsradar.com"
     # comma-separated former domains: every request for one gets a 301 to the same page under site_url
     redirect_hosts: str = ""
     # Google Search Console verification token (the content of its <meta name="google-site-verification">)
@@ -42,7 +42,7 @@ class Settings(BaseSettings):
                          "Dutch or English, visa sponsorship, years of experience and degree.")
     # The crawler names itself, with a page explaining it and a contact address; robots.txt rules for
     # "TechJobsRadar" apply to it (radar/robots.py). Sites that refuse it are not crawled.
-    user_agent: str = "TechJobsRadar/1.0 (+https://techjobsradar.nl/privacy; contact@techjobsradar.nl)"
+    user_agent: str = "TechJobsRadar/1.0 (+https://techjobsradar.com/privacy; contact@techjobsradar.nl)"
     http_timeout: float = 30.0
     max_workers: int = 8
     per_domain_delay: float = 0.5

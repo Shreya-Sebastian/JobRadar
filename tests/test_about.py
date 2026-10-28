@@ -11,7 +11,7 @@ def test_about_page_in_both_languages_and_in_the_sitemap(fresh_db):
     assert 'lang="en"' in en.text and "Where the jobs come from" in en.text and "For employers" in en.text
     assert 'lang="nl"' in nl.text and "Waar de vacatures vandaan komen" in nl.text and "Voor werkgevers" in nl.text
     assert 'name="robots"' not in en.text  # meant to be found
-    assert 'rel="canonical" href="https://techjobsradar.nl/nl/over-ons"' in nl.text and "{{" not in en.text
+    assert 'rel="canonical" href="https://techjobsradar.com/nl/over-ons"' in nl.text and "{{" not in en.text
     sm = c.get("/sitemap.xml").text
     assert "/about</loc>" in sm and "/nl/over-ons</loc>" in sm
 

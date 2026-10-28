@@ -201,7 +201,7 @@ def test_company_pages_and_sitemap(fresh_db):
     assert page.status_code == 200
     assert "Senior Backend Engineer" in page.text and "Office Manager" not in page.text  # tech only
     assert "Frontend Developer" in page.text  # both spellings on one page
-    assert 'rel="canonical" href="https://techjobsradar.nl/company/acme-robotics"' in page.text
+    assert 'rel="canonical" href="https://techjobsradar.com/company/acme-robotics"' in page.text
     assert '"@type": "CollectionPage"' in page.text and "{{" not in page.text and "noindex" not in page.text
     assert 'content="noindex, follow"' in client.get("/company/tiny-labs").text  # one listing: thin page
     assert client.get("/company/nobody").status_code == 404
@@ -349,7 +349,7 @@ def test_search_landing_pages_bilingual_and_in_sitemap(fresh_db):
     assert "<title>10 tech jobs in Amsterdam, updated daily | Tech Jobs Radar</title>" in en.text
     assert ('<meta name="description" content="10 openings at 1 employer, 10 new this week. 100% need no Dutch. '
             "Straight from employers&#x27; own sites, updated daily.") in en.text
-    assert 'hreflang="nl" href="https://techjobsradar.nl/vacatures/ict-amsterdam"' in en.text
+    assert 'hreflang="nl" href="https://techjobsradar.com/vacatures/ict-amsterdam"' in en.text
     assert "Data Engineer 0" in en.text and "{{" not in en.text
     assert client.get("/jobs/english-speaking").status_code == 200
     assert client.get("/jobs/tech-groningen").status_code == 404  # no postings there: no thin page
@@ -458,10 +458,10 @@ def test_dutch_employer_pages(fresh_db):
     client = TestClient(app)
     nl = client.get("/nl/bedrijf/acme-robotics")
     assert nl.status_code == 200 and '<html lang="nl">' in nl.text and "techvacatures in Nederland" in nl.text
-    assert 'rel="canonical" href="https://techjobsradar.nl/nl/bedrijf/acme-robotics"' in nl.text
-    assert 'hreflang="en" href="https://techjobsradar.nl/company/acme-robotics"' in nl.text
+    assert 'rel="canonical" href="https://techjobsradar.com/nl/bedrijf/acme-robotics"' in nl.text
+    assert 'hreflang="en" href="https://techjobsradar.com/company/acme-robotics"' in nl.text
     en = client.get("/company/acme-robotics").text
-    assert 'hreflang="nl" href="https://techjobsradar.nl/nl/bedrijf/acme-robotics"' in en and "{{" not in en
+    assert 'hreflang="nl" href="https://techjobsradar.com/nl/bedrijf/acme-robotics"' in en and "{{" not in en
     assert "/nl/bedrijf/acme-robotics</loc>" in client.get("/sitemap.xml").text
 
 

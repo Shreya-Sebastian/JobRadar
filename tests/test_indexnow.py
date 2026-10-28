@@ -16,7 +16,7 @@ def test_sends_new_and_closed_job_pages_once(fresh_db, monkeypatch):
     from radar.db import session_scope
     from radar.models import Posting, Source
 
-    monkeypatch.setattr(settings, "site_url", "https://techjobsradar.nl")
+    monkeypatch.setattr(settings, "site_url", "https://techjobsradar.com")
     calls = []
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -36,9 +36,9 @@ def test_sends_new_and_closed_job_pages_once(fresh_db, monkeypatch):
                         for i in range(3)])
         assert indexnow.notify(s, client=client)["sent"] == 3  # the first run: every live job page
         body = calls[0]
-        assert body["host"] == "techjobsradar.nl" and body["key"] == KEY
-        assert body["keyLocation"] == f"https://techjobsradar.nl/{KEY}.txt"
-        assert all(u.startswith("https://techjobsradar.nl/job/") for u in body["urlList"])
+        assert body["host"] == "techjobsradar.com" and body["key"] == KEY
+        assert body["keyLocation"] == f"https://techjobsradar.com/{KEY}.txt"
+        assert all(u.startswith("https://techjobsradar.com/job/") for u in body["urlList"])
         assert indexnow.notify(s, client=client)["sent"] == 0  # nothing twice
         first = s.query(Posting).filter_by(external_id="0").one()
         first.closed_at = datetime.utcnow() + timedelta(seconds=1)

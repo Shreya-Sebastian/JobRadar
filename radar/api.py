@@ -92,6 +92,16 @@ async def _throttle_middleware(request: Request, call_next):
     return await call_next(request)
 
 
+@app.middleware("http")
+async def _old_domain_middleware(request: Request, call_next):
+    # added last, so it runs first: a request for a former domain goes to the same page on the current one
+    old = {h.strip().lower() for h in settings.redirect_hosts.split(",") if h.strip()}
+    if old and (request.headers.get("host") or "").split(":")[0].lower() in old:
+        url = settings.site_url.rstrip("/") + request.url.path + (f"?{request.url.query}" if request.url.query else "")
+        return Response(status_code=301, headers={"Location": url, "Cache-Control": "public, max-age=86400"})
+    return await call_next(request)
+
+
 _NOT_FOUND = {
     "en": ("Page not found", "This page does not exist, or the vacancy has been taken down.", "/", "Back to the jobs"),
     "nl": ("Pagina niet gevonden", "Deze pagina bestaat niet, of de vacature is offline gehaald.", "/nl/",

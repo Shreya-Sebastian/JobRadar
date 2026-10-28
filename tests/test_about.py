@@ -16,6 +16,18 @@ def test_about_page_in_both_languages_and_in_the_sitemap(fresh_db):
     assert "/about</loc>" in sm and "/nl/over-ons</loc>" in sm
 
 
+def test_a_former_domain_redirects_to_the_same_page(fresh_db, monkeypatch):
+    from radar.api import app
+    from radar.config import settings
+
+    monkeypatch.setattr(settings, "site_url", "https://techjobsradar.com")
+    monkeypatch.setattr(settings, "redirect_hosts", "techjobsradar.nl, www.techjobsradar.nl")
+    c = TestClient(app)
+    r = c.get("/jobs/phd-postdoc?city=Delft", headers={"host": "techjobsradar.nl"}, follow_redirects=False)
+    assert r.status_code == 301 and r.headers["location"] == "https://techjobsradar.com/jobs/phd-postdoc?city=Delft"
+    assert c.get("/about", headers={**BROWSER, "host": "techjobsradar.com"}).status_code == 200
+
+
 def test_job_pages_link_about_and_a_report_of_the_job(fresh_db):
     from radar.api import app
 

@@ -104,6 +104,10 @@ ingress:
   enabled: true
   className: traefik          # k3s default; use nginx elsewhere
   host: radar.example.com
+  tlsSecret: ""               # empty = <release>-radar-tls
+  # more hosts served by the same app, each with its own certificate: [{host: example.org, tlsSecret: example-org-tls}]
+  # (a former domain listed here is redirected by the app: RADAR_REDIRECT_HOSTS)
+  extraHosts: []
   tls: true
   clusterIssuer: letsencrypt  # cert-manager ClusterIssuer name
   annotations: {}

@@ -23,17 +23,26 @@ spec:
   {{- if .Values.ingress.tls }}
   tls:
     - hosts: [{{ .Values.ingress.host | quote }}]
-      secretName: {{ include "radar.fullname" . }}-tls
+      secretName: {{ .Values.ingress.tlsSecret | default (printf "%s-tls" (include "radar.fullname" .)) }}
+    {{- /* one certificate per extra host, named in the values, so moving a host between `host` and `extraHosts`
+    reuses its certificate instead of issuing a new one (a gap Cloudflare shows as a 526) */}}
+    {{- range .Values.ingress.extraHosts }}
+    - hosts: [{{ .host | quote }}]
+      secretName: {{ .tlsSecret }}
+    {{- end }}
   {{- end }}
   rules:
-    - host: {{ .Values.ingress.host | quote }}
+    {{- $svc := printf "%s-api" (include "radar.fullname" .) }}
+    {{- range prepend (.Values.ingress.extraHosts | default list) (dict "host" .Values.ingress.host) }}
+    - host: {{ .host | quote }}
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: {{ include "radar.fullname" . }}-api
+                name: {{ $svc }}
                 port:
                   name: http
+    {{- end }}
 {{- end }}

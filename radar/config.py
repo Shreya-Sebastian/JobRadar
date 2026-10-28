@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     site_aliases: str = ("TechJobsRadar, Tech Jobs, TechJar, techjobsradar.nl, TechJobsNL, Tech Jobs NL, "
                          "ICT vacatures, IT vacatures, tech jobs Netherlands")
     site_url: str = "https://techjobsradar.nl"
+    # comma-separated former domains: every request for one gets a 301 to the same page under site_url
+    redirect_hosts: str = ""
     # Google Search Console verification token (the content of its <meta name="google-site-verification">)
     google_site_verification: str | None = None
     # the brand line: page titles, search snippets and the share card (no counts, nothing that dates)

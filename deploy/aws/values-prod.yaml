@@ -80,3 +80,7 @@ redis:
 
 ingress:
   host: techjobsradar.nl
+  # the move to techjobsradar.com (planning/GRAD_PIVOT.md): .com is served next to .nl first, so its certificate
+  # exists before the site switches its address
+  extraHosts:
+    - {host: techjobsradar.com, tlsSecret: techjobsradar-com-tls}

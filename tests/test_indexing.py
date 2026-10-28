@@ -26,7 +26,7 @@ def test_announces_new_jobs_and_withdraws_closed_ones(fresh_db, tmp_path, monkey
     from radar.models import IndexNotice, Posting, Source
 
     monkeypatch.setattr(settings, "google_indexing_key", str(_key(tmp_path)))
-    monkeypatch.setattr(settings, "site_url", "https://techjobsradar.com")
+    monkeypatch.setattr(settings, "site_url", "https://techjobsradar.nl")
     indexing._token_cache.clear()
     calls = []
 
@@ -46,7 +46,7 @@ def test_announces_new_jobs_and_withdraws_closed_ones(fresh_db, tmp_path, monkey
                                    location="Utrecht, Netherlands", description_text="Python, AWS, Docker. " * 20)
                         for i in range(3)])
         assert indexing.notify(s, client=client)["sent"] == 3
-        assert {c["type"] for c in calls} == {"URL_UPDATED"} and calls[0]["url"].startswith("https://techjobsradar.com/job/")
+        assert {c["type"] for c in calls} == {"URL_UPDATED"} and calls[0]["url"].startswith("https://techjobsradar.nl/job/")
         assert indexing.notify(s, client=client)["sent"] == 0  # nothing twice
         first = s.query(Posting).filter_by(external_id="0").one()
         first.closed_at = datetime.utcnow()

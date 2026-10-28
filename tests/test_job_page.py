@@ -145,7 +145,7 @@ def test_job_markup_names_the_employers_logo_and_own_site(fresh_db):
     job = next(json.loads(m) for m in re.findall(r'<script type="application/ld\+json">(.*?)</script>', html, re.S)
                if '"JobPosting"' in m)
     assert job["hiringOrganization"] == {"@type": "Organization", "name": "Adyen",
-                                         "logo": "https://techjobsradar.com/logo/adyen",
+                                         "logo": "https://techjobsradar.nl/logo/adyen",
                                          "sameAs": "https://www.adyen.com"}
     assert re.search(r"<title>Senior Backend Engineer at Adyen in Amsterdam[^<]*</title>", html)
     with session_scope() as s:
@@ -153,4 +153,4 @@ def test_job_markup_names_the_employers_logo_and_own_site(fresh_db):
     from radar import pages
 
     with session_scope() as s:
-        assert pages.job_org(s, "Adyen") == {"logo": "https://techjobsradar.com/logo/adyen"}
+        assert pages.job_org(s, "Adyen") == {"logo": "https://techjobsradar.nl/logo/adyen"}

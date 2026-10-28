@@ -1,4 +1,4 @@
-# Helm values for techjobsradar.com (formerly techjobsradar.nl) on the single AWS server (deploy/aws). Secrets are created separately:
+# Helm values for techjobsradar.nl on the single AWS server (deploy/aws). Secrets are created separately:
 #   radar-db (RADAR_DATABASE_URL), radar-admin (RADAR_ADMIN_TOKEN), radar-smtp (RADAR_SMTP_USER, RADAR_SMTP_PASSWORD),
 #   ghcr (image pull secret for the private GitHub package).
 image:
@@ -27,12 +27,11 @@ google:
   indexingSecret: radar-google-indexing   # created by hand: the Indexing API service account (radar/indexing.py)
 
 config:
-  corsOrigins: "https://techjobsradar.com"
+  corsOrigins: "https://techjobsradar.nl"
   siteName: "Tech Jobs Radar"
-  siteAliases: "Tech Jobs, Tech Jobs Radar, TechJobsRadar, techjobsradar.com, techjobsradar.nl, TechJobsNL, Tech Jobs NL, ICT vacatures, IT vacatures, tech jobs Netherlands"
-  siteUrl: "https://techjobsradar.com"
+  siteAliases: "Tech Jobs, Tech Jobs Radar, TechJobsRadar, techjobsradar.nl, TechJobsNL, Tech Jobs NL, ICT vacatures, IT vacatures, tech jobs Netherlands"
+  siteUrl: "https://techjobsradar.nl"
   extraEnv:
-    RADAR_REDIRECT_HOSTS: "techjobsradar.nl"  # moved to .com on 28 Oct 2026
     RADAR_SOURCE_URL: ""  # the repository is private: no source link in the footer
     RADAR_REVIEW_THRESHOLD: "0.7"
     RADAR_REVIEW_FIELDS: "role_family"
@@ -80,9 +79,8 @@ redis:
     limits: {cpu: 250m, memory: 128Mi}
 
 ingress:
-  host: techjobsradar.com
-  tlsSecret: techjobsradar-com-tls
-  # the former address, on the certificate it always had: the app answers it with a 301 to the same page on .com
-  # (RADAR_REDIRECT_HOSTS)
+  host: techjobsradar.nl
+  # the move to techjobsradar.com (planning/GRAD_PIVOT.md): .com is served next to .nl first, so its certificate
+  # exists before the site switches its address
   extraHosts:
-    - {host: techjobsradar.nl, tlsSecret: radar-radar-tls}
+    - {host: techjobsradar.com, tlsSecret: techjobsradar-com-tls}

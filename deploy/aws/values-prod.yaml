@@ -36,6 +36,9 @@ config:
     RADAR_REVIEW_THRESHOLD: "0.7"
     RADAR_REVIEW_FIELDS: "role_family"
     RADAR_INDEXNOW_KEY: "162fc22f47b0b0cf6d3cfdfd718d14ff"  # public by design: served at /<key>.txt (radar/indexnow.py)
+    # .com is held while a new name is chosen (28 Oct 2026): it sends visitors to the same page on .nl, so search
+    # engines never see the site twice
+    RADAR_REDIRECT_HOSTS: "techjobsradar.com"
 
 # sized for one 2 GB node (t3.small): k3s, Postgres, Traefik and cert-manager use about 1 GB, so the app gets
 # the rest, with a hard cap per pod so one process cannot push the node into swap

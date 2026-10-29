@@ -29,7 +29,9 @@
   const REMOTE = ["remote", "hybrid", "onsite"];
   const EXP = ENTRY ? [] : ["none", "1", "2-3", "4-5", "6+", "unspecified"];
   // the languages a visitor speaks, stored as "en", "nl" or "en,nl" (radar/stats.py fits_languages)
-  const LANGS = ["en", "nl"];
+  // the entry-level site spans countries, so "the local language" means nothing to a visitor: one choice instead,
+  // "English-speaking" (jobs that need no language besides English)
+  const LANGS = ENTRY ? ["en"] : ["en", "nl"];
   const langList = (v) => (v || "").split(",").filter((l) => LANGS.includes(l));
   function langToggles(el, owner, onChange) {
     const sel = langList(owner.language);
@@ -345,9 +347,10 @@
     // meant for starters anywhere in Europe: English only, and no Dutch-specific wording (radar/wording.py does the
     // same for the pages the server writes)
     Object.assign(I18N.en, {
-      "rep.nodutch": "English is enough", "fact.nodutch": "English is enough", "co.kpi.en": "English is enough",
+      "rep.nodutch": "English-speaking", "fact.nodutch": "English-speaking", "co.kpi.en": "English-speaking",
+      "f.language": "Working language", "f.language.en": "English-speaking only",
       "f.language.nl": "The local language", "lang.nl": "Local", "lang.both": "Local + EN",
-      "lang.nl.title": "The local language required, no English needed", "lang.en.title": "English is enough",
+      "lang.nl.title": "The local language required, no English needed", "lang.en.title": "English-speaking",
       "lang.both.title": "The local language and English both required", "lang.chart.nl": "Local language",
       "foot.tag": "Tech jobs for students and graduates, read straight from employers' own career sites and updated every day.",
     });
@@ -1031,7 +1034,8 @@
     const easy = LANG === "nl" ? langKey(i) === "nl" : i.english_only;
     const tags = [
       easy ? `<span class="tag lang" title="${t("lang." + langKey(i) + ".title")}">${t(LANG === "nl" ? "fact.noenglish" : "fact.nodutch")}</span>`
-        : `<span class="tag" title="${t("lang." + langKey(i) + ".title")}">${t("lang." + langKey(i))}</span>`,
+        // the entry-level site tags only English-speaking jobs: "needs the local language" means little across countries
+        : !ENTRY && `<span class="tag" title="${t("lang." + langKey(i) + ".title")}">${t("lang." + langKey(i))}</span>`,
       i.visa === true && `<span class="tag visa">${t("fact.visa")}</span>`,
       i.via_agency && `<span class="tag">${t("agency")}</span>`,
     ].filter(Boolean).join("");
@@ -1478,7 +1482,7 @@
       q5: "Waar wil je werken?", q5hint: "Kies er een of meer, of niets voor heel Nederland.", remote: "Remote" },
   };
   if (ENTRY) Object.assign(QUIZ_TEXT.en, {
-    q1: "Besides English, do you speak the local language?",
+    q1: "Only show English-speaking jobs?", q1en: "Yes", q1all: "No, show all jobs",
     q3: "Where are you in your studies?", q3a: "Still studying (internships)", q3b: "Graduated, or graduating soon",
     q5hint: "Pick one or more, or none for anywhere.",
   });
@@ -1496,7 +1500,8 @@
   function quizSteps() {
     const one = (key, name, opts) => ({ key, multi: false, q: qt(name), opts });
     return [
-      one("dutch", "q1", [["yes", qt("q1a")], ["no", qt("q1c")]]),
+      // "no" (does not speak the language) is the answer that sets the English filter, on both sites
+      one("dutch", "q1", ENTRY ? [["no", qt("q1en")], ["yes", qt("q1all")]] : [["yes", qt("q1a")], ["no", qt("q1c")]]),
       one("visa", "q2", [["yes", qt("q2a")], ["no", qt("q2b")]]),
       one("exp", "q3", [["student", qt("q3a")], ["grad", qt("q3b")],
                         ...(ENTRY ? [] : [["y23", qt("q3c")], ["y45", qt("q3d")], ["y6", qt("q3e")]])]),

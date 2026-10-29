@@ -400,6 +400,12 @@ def load_rows(session: Session, include_closed_days: int = 90) -> list[Row]:
         .where(Posting.is_tech.is_(True), Posting.duplicate_of.is_(None))
         .where((Posting.closed_at.is_(None)) | (Posting.closed_at >= cutoff))
     )
+    from radar.config import allowed_countries, settings
+
+    home = allowed_countries()
+    if home is not None and not settings.entry_level_only:
+        # the Dutch site lists its own countries only; the entry-level jobs kept from abroad are the junior site's
+        stmt = stmt.where(Posting.country.in_(home) | Posting.country.is_(None))
     from radar.review import merge, overrides
     from radar.sectors import load_map
     from radar.sizes import employees
@@ -411,7 +417,6 @@ def load_rows(session: Session, include_closed_days: int = 90) -> list[Row]:
         .where(Posting.closed_at.is_(None), Posting.duplicate_of.is_(None))
         .group_by(Posting.company)
     ).all())
-    from radar.config import settings
     from radar.extract.rules import is_entry_level
 
     rows: list[Row] = []

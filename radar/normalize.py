@@ -220,6 +220,21 @@ def plausible_place(value: str | None) -> str | None:
     )
 
 
+def foreign_city(value: str | None) -> str | None:
+    """The city of a place abroad as the board writes it: "Berlin" of "Berlin, Germany". Unlike plausible_place it
+    accepts a place it knows is abroad, and rejects only a country or region named on its own ("Germany", "EMEA")."""
+    if not value:
+        return None
+    # "CZE - Brno", "MYS - Kuala Lumpur": a country code in front of the city
+    v = re.sub(r"^[A-Z]{2,3}\s*[-–:]\s*", "", value.strip())
+    v = re.split(r"[,;(/|]", v)[0].strip(" -")
+    if not 2 <= len(v) <= 40 or _NOT_A_PLACE.search(v) or not re.fullmatch(r"[A-Za-zÀ-ÿ' .-]+", v):
+        return None
+    if _COUNTRY_ITEM.fullmatch(v) or re.fullmatch(r"[A-Z]{2,3}", v):  # a country named alone, or its code ("US")
+        return None
+    return " ".join(w[:1].upper() + w[1:] for w in v.split())
+
+
 def city_from_text(title: str | None, description: str | None) -> str | None:
     """Fallback when the board gives no city: the title ("Data Engineer Utrecht"), then an explicit location
     phrase in the text ("standplaats Eindhoven", "based in Amsterdam"), then any Dutch city in the opening."""
@@ -361,6 +376,9 @@ def normalize(raw: RawPosting, company: str) -> dict:
         city = city_from_text(raw.title, text)
     if remote and country is None and raw.location and _NL_RX.search(raw.location):
         country = "NL"
+    if city is None and country and country != "NL" and not remote:
+        # abroad (entry-level jobs, RADAR_ENTRY_LEVEL_COUNTRIES): the board's own place, "Berlin" of "Berlin, Germany"
+        city = foreign_city(raw.city) or foreign_city(raw.location)
     return {
         "external_id": raw.external_id,
         "title": _TITLE_LABEL.sub("", raw.title.strip())[:500],

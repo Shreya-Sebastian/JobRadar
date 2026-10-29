@@ -9,7 +9,7 @@ from radar.extract.schema import Extraction
 from radar.extract.sections import job_text
 from radar.taxonomy import find_skills
 
-RULES_VERSION = "rules-v26"  # bump whenever the taxonomy or the rules change, so `radar extract` re-runs
+RULES_VERSION = "rules-v27"  # bump whenever the taxonomy or the rules change, so `radar extract` re-runs
 
 # words only one of the languages uses: "in", "is", "we", "team", "over" and "of" are both Dutch and English,
 # "die" and "er" are also German
@@ -501,15 +501,25 @@ _IC_MANAGER = ["product", "project", "account", "program", "programme", "marketi
                "partnership", "community", "relations", "change", "release", "incident", "problem", "configuration",
                "asset", "escalation", "risk", "application", "success", "sales", "development", "growth", "bid", "cost",
                "delivery"]
-_NO_LEVEL_WORD = r"^(?!.*\b(?:junior|jr|medior|senior|sr|lead|staff|principal|manager|director|head|chief)\b)"
+_NO_LEVEL_WORD = (r"^(?!.*\b(?:junior|jr|medior|senior|sr|lead|staff|principal|manager|director|head|chief|pleno|"
+                  r"semi[- ]?s[ée]nior|ssr)\b)")
 _LADDER_END = r"(?=\s*(?:$|[,(\-–|/:\[]))"
 _SENIORITY = [
     ("intern", r"\binterns?(?:hips?)?\b|\w*(?<!back)(?<!early-)(?<!early )stage(?:s|opdracht\w*|plaats\w*|plek\w*)?\b|"
                # an "advocaat-stagiair" is a trainee lawyer in a three-year training, not an intern
                r"(?<!advocaat-)(?<!advocaat )stagiai?re?|working student|werkstudent|afstudeer|\bthesis\b|scriptie|"
-               r"\bgraduation\b|^student\b"),
+               r"\bgraduation\b|^student\b|"
+               # UK student roles, and the word for internship in other European languages
+               r"(?<!product )(?<!media )(?<!ad )(?<!job )(?<!candidate )\b(?:industrial |summer |sandwich |work )?"
+               r"placements?\b(?! (?:manager|lead|specialist|consultant|officer))|\byear in industry\b|"
+               r"\bsummer analysts?\b|\bco-op\b|\bspring (?:week|insight)\b|\binsight (?:day|week|programm?e)\b|"
+               r"\bpraktik(?:um|ant\w*)\b|\b(?:abschluss|master|bachelor)arbeit\b|\balternan(?:ce|t\w*)\b|"
+               r"\btirocin\w*|\bpr[aá]cticas\b|\bbecari[oa]s?\b|\best[aá]gi(?:o|[aá]ri[oa])s?\b|\bsta[zż]\w*|"
+               r"\bpraktyk\w*"),
     # before "phd", whose "doctoral researcher" would otherwise take "Post-doctoral Researcher"
-    ("postdoc", r"\bpost[- ]?docs?\b|\bpost[- ]?doctoral\b|\bpostdoc\w*|\bpostdoctora(?:al|le)\b"),
+    # a UK "Research Fellow" is a postdoc; a "Senior Research Fellow" is not
+    ("postdoc", r"\bpost[- ]?docs?\b|\bpost[- ]?doctoral\b|\bpostdoc\w*|\bpostdoctora(?:al|le)\b|"
+                r"(?<!senior )(?<!principal )\bresearch fellows?\b(?!ship)"),
     # a doctoral position, not a job that asks for a doctorate: "PhD Position in ...", "PhD: Lensless imaging",
     # "Promovendus Radiologie", but not "Data Scientist (PhD)" or "Research Engineer, PhD required"
     ("phd", r"\bph\.?\s?d\.?[- ]?(?:positions?|positie|candidates?|kandidaat|students?|researchers?|onderzoeker|"
@@ -527,17 +537,33 @@ _SENIORITY = [
                 r"omscholingstraject|omscholing tot\b|omscholen tot\b|"
                 r"talent ?programm?a?\b|development program(me)?\b|starters?functie|starters?programma|"
                 r"\bstarter\b(?! kit)|\bbbl\b|apprentice\w*|\bleerling\b|leerwerk\w*|\bin opleiding\b|"
-                r"betaalde opleiding|opleiding tot\b"),
+                r"betaalde opleiding|opleiding tot\b|"
+                # fellowships and residencies, not a "Technical Fellow" (staff) or "Research Fellow" (postdoc)
+                r"\bfellowships?\b|(?<!technical )(?<!engineering )(?<!distinguished )(?<!senior )(?<!research )"
+                r"(?<!principal )\bfellows?\b(?! of\b)|\bresidency\b|\b(?:ai|ml|aiml|ai/ml|research|software|"
+                r"engineering|tech) residents?\b|"
+                r"\b(?:analyst|associate|graduate|career ?start|young talents?|future talents?|next ?gen\w*) "
+                r"programm?e?s?\b|"
+                r"\b(?:einstiegs|nachwuchs|absolventen|trainee)programm\w*|\bausbildung\b|\bauszubildende\w*|"
+                r"\bazubi\b|\bduales? studium\b|\blehrling\w*|"
+                r"(?-i:\bV\.?I\.?E\b)|\bvolontariat international\b|"
+                r"\bprogram(?:a)? (?:dla absolwent\w*|de (?:graduados|j[oó]venes talentos)|trainee)\b"),
     # US-style ladder numbers when no level word is given: "Software Engineer II", "Clinical Research Associate I - ..."
     ("junior", _NO_LEVEL_WORD + r".*[a-z]\s+i" + _LADDER_END),
     ("medior", _NO_LEVEL_WORD + r".*[a-z]\s+ii" + _LADDER_END),
     ("senior", _NO_LEVEL_WORD + r".*[a-z]\s+(?:iii|iv)" + _LADDER_END),
     # "associate" is junior unless the title names another level ("Senior Associate", "Associate Director")
     ("junior", r"\bjunior\b|\bjr\b\.?|\bgraduate\b|\bnew grads?\b|entry[- ]level|\bstarter\b|early career|"
-               r"\b(?:pas|net) afgestudeerd\w*|\bcampus hire\b|"
+               r"\b(?:pas|net) afgestudeerd\w*|\bcampus hire\b|\brecent graduates?\b|"
+               # the words for a starter or graduate role in German, French, Spanish, Italian, Polish
+               r"\bberufseinst(?:eiger|ieg)\w*|\bdirekteinst(?:ieg|eiger)\w*|\babsolvent(?:in|en)?\b|"
+               r"\bjeunes? dipl[oô]m[ée]e?s?\b|\bd[ée]butant(?:e|s)?\b|\breci[ée]n (?:titulad|graduad|egresad)[oa]s?\b|"
+               r"\bneolaureat[oaie]\b|\babsolwent\w*|"
                # an assistant or associate professor is an academic rank, not a junior job
                r"^(?!.*\b(?:senior|sr|staff|principal|manager|director|head|lead|chief|vp|professor)\b).*\bassociate\b"),
-    ("medior", r"\bmedior\b|\bmid[- ]level\b|\bintermediate\b|\bmiddle\b(?! east)"),
+    # Brazilian "pleno" and Latin American "semi senior" are mid-level
+    ("medior", r"\bmedior\b|\bmid[- ]level\b|\bintermediate\b|\bmiddle\b(?! east)|\bpleno\b|\bsemi[- ]?s[ée]nior\b|"
+               r"\bssr\b"),
     ("staff", r"\bstaff\b|\bprincipal\b|\bdistinguished\b|\b(?:technical|engineering) fellow\b"),
     (
         "manager",
@@ -1515,12 +1541,21 @@ def experience_optional(text: str, m: re.Match) -> bool:
     return False
 
 
+# "0 years", "0-2 years", "0 to 3 years", "0–3 jaar", "0-2 Jahre", "0 à 2 ans": a range that starts at nothing and
+# ends at three years at most is open to graduates (the user's rule, 29 Oct 2026); "0-5 years" is not
+ZERO_YEARS = re.compile(
+    r"\b0\s*\+?\s*(?:(?:-|–|—|to|tot|bis|à|a|al|do)\s*[1-3](?:[.,]\d)?\s*\+?\s*)?"
+    r"(?:years?|yrs?|jaar|jahre?n?|ans?|años|anni|lat)\b", re.I)
+
+
 def requires_work_experience(text: str) -> bool:
     """Whether the text asks for work experience in words, not as a preference and not waived."""
     for m in _WORK_EXPERIENCE.finditer(text or ""):
         before, after = text[max(0, m.start() - 60):m.start()], text[m.end():m.end() + 60]
         if _EXPERIENCE_WAIVED_BEFORE.search(before) or _EXPERIENCE_WAIVED_AFTER.search(after):
             continue
+        if ZERO_YEARS.search(before.rsplit(".", 1)[-1]) or ZERO_YEARS.search(after.split(".", 1)[0]):
+            continue  # "0-3 years of relevant work experience": open to graduates
         if experience_optional(text, m):
             continue
         return True
@@ -1530,12 +1565,15 @@ def requires_work_experience(text: str) -> bool:
 _EXPERIENCED_LEVELS = {"medior", "senior", "lead", "staff", "manager"}
 # entry-level words in a title that name no level of their own ("Graduate Software Engineer", "Young Professional")
 _STARTER_TITLE = re.compile(
-    r"graduate|young professional|\bstarter\b|werkstudent|working student|early[- ]career|entry[- ]level|new grad",
+    r"graduate|young professional|\bstarter\b|werkstudent|working student|early[- ]career|entry[- ]level|new grad|"
+    r"berufseinst|direkteinst|absolvent|absolwent|jeunes? dipl[oô]m|d[ée]butant|reci[ée]n (?:titulad|graduad)|"
+    r"neolaureat",
     re.I)
 
 
 _EXPERIENCED_TITLE = re.compile(
-    r"\b(?:medior|mid[- ]?level|senior|sr\.?|lead|principal|staff|ervaren|experienced|expert|professor|lecturer|"
+    r"\b(?:medior|mid[- ]?level|senior|sr\.?|lead|principal|staff|ervaren|experienced|expert|professor|lecturer|pleno|"
+    r"semi[- ]?s[ée]nior|ssr|"
     r"hoogleraar|universitair\s+(?:hoofd)?docent|associate\s+professor)\b", re.I)
 
 
@@ -1616,5 +1654,5 @@ def extract_rules(title: str, description: str) -> Extraction:
         # only asked of internships and student jobs, so a regular posting that mentions students is never hidden
         enrollment_required=(detect_enrollment(text, title)
                              if seniority == "intern" or _STUDENT_TITLE.search(title) else None),
-        welcomes_starters=bool(_STARTERS_WELCOME.search(text)),
+        welcomes_starters=bool(_STARTERS_WELCOME.search(text) or ZERO_YEARS.search(text)),
     )

@@ -15,12 +15,12 @@ WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 # site ("Eindhoven, the Netherlands", "the Dutch data protection authority") are left as they are
 _PHRASES = [
     (r"\s+in the Netherlands\b", ""),
-    (r"\b(?:need|needs|needed)\s+no Dutch\b", "need no local language"),
-    (r"\bno Dutch needed\b", "English is enough"),
+    (r"\b(?:need|needs|needed)\s+no Dutch\b", "English-speaking"),
+    (r"\bno Dutch needed\b", "English-speaking"),
     (r"\bThe Dutch tech job market\b", "The entry-level tech job market"),
     (r"\bthe Dutch tech job market\b", "the entry-level tech job market"),
-    (r"\bEnglish, no Dutch required\b", "English is enough"),
-    (r"\b[Nn]o Dutch (?:required|needed)\b", "English is enough"),
+    (r"\bEnglish, no Dutch required\b", "English-speaking"),
+    (r"\b[Nn]o Dutch (?:required|needed)\b", "English-speaking"),
     (r"\bDutch required\b", "Local language required"),
     (r"\bDutch-speaking\b", "local-language"),
     (r"\bDutch\b(?!\s+data protection)", "the local language"),

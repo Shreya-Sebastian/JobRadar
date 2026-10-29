@@ -70,10 +70,13 @@
   }
   function ask() {
     if (document.getElementById("consent")) return;
+    // the site's name as the page shows it (RADAR_SITE_NAME), not a fixed one
+    const brand = document.querySelector(".brand");
+    const site = (brand && (brand.getAttribute("title") || brand.textContent.trim())) || document.title.split(" | ").pop();
     const t = nl()
-      ? { title: "Help Tech Jobs Radar verbeteren", yes: "Accepteren", no: "Weigeren", more: "Meer in de privacyverklaring", href: "/nl/privacy#terugkerend",
+      ? { title: `Help ${site} verbeteren`, yes: "Accepteren", no: "Weigeren", more: "Meer in de privacyverklaring", href: "/nl/privacy#terugkerend",
           body: "Bezoeken worden zonder cookies geteld. Met toestemming krijgt deze browser ook een anonieme ID, zodat te zien is of mensen terugkomen. Geen advertenties, geen tracking op andere sites en niets wordt gedeeld." }
-      : { title: "Help improve Tech Jobs Radar", yes: "Accept", no: "Decline", more: "More in the privacy statement", href: "/privacy#returning",
+      : { title: `Help improve ${site}`, yes: "Accept", no: "Decline", more: "More in the privacy statement", href: "/privacy#returning",
           body: "Visits are counted without cookies. With permission, this browser also gets an anonymous ID, so it is possible to see whether people come back. No ads, no tracking on other sites and nothing is shared." };
     const box = document.createElement("div");
     box.id = "consent";

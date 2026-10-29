@@ -52,6 +52,30 @@ def test_duplicates_across_sources_prefer_ats(fresh_db):
         assert dup.duplicate_of == canonical.id and canonical.duplicate_of is None
 
 
+def test_entry_level_jobs_abroad_are_kept_and_only_shown_on_the_junior_site(fresh_db, monkeypatch):
+    from radar import stats
+    from radar.config import settings
+
+    monkeypatch.setattr(settings, "entry_level_countries", "DE,GB")
+    with session_scope() as s:
+        src = _source(s)
+        c = ingest(s, src, [
+            _raw("nl", "Senior Backend Engineer"),                                  # home country: kept as always
+            _raw("de1", "Junior Python Developer", "Berlin, Germany", "Python and Django. Graduates welcome."),
+            _raw("de2", "Senior Python Developer", "Berlin, Germany"),              # abroad and senior: dropped
+            _raw("gb", "Graduate Software Engineer", "London, United Kingdom", "Java and SQL. Recent graduates."),
+            _raw("fr", "Graduate Software Engineer", "Paris, France", "Java and SQL."),  # country not switched on
+            _raw("de3", "Junior Data Engineer", "Munich, Germany", "3 years of experience with Python."),
+        ])
+        assert c["new"] == 3 and c["foreign"] == 3
+        by = {p.external_id: p for p in s.query(Posting)}
+        assert by["de1"].country == "DE" and by["de1"].city == "Berlin" and by["gb"].city == "London"
+        monkeypatch.setattr(settings, "entry_level_only", False)
+        assert {r.title for r in stats.load_rows(s)} == {"Senior Backend Engineer"}  # the Dutch site: home only
+        monkeypatch.setattr(settings, "entry_level_only", True)
+        assert {r.title for r in stats.load_rows(s)} == {"Junior Python Developer", "Graduate Software Engineer"}
+
+
 def test_duplicates_across_sources_without_city_or_with_a_cut_title(fresh_db):
     with session_scope() as s:
         own = _source(s, "University of Amsterdam (UvA)", "jsonld", "https://werkenbij.uva.nl/sitemap.xml")

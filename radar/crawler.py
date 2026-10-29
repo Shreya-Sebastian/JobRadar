@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 from radar.adapters import get_adapter
 from radar.adapters.base import AdapterError, RawPosting, SourceNotFound
 from radar.classify import is_tech, tech_score
-from radar.config import allowed_countries, settings
+from radar.config import allowed_countries, entry_level_countries, settings
 from radar.db import new_session
 from radar.extract import get_extractor
 from radar.models import CrawlRun, Posting, Source
@@ -184,6 +184,22 @@ def deactivate(session: Session, source: Source) -> int:
     return closed
 
 
+_EXPERIENCED_TITLE_LEVELS = {"medior", "senior", "lead", "staff", "manager"}
+
+
+def entry_level_abroad(fields: dict, extract) -> bool:
+    """Whether a job abroad is kept: a tech job open to students and graduates. The title is checked first, so the
+    many senior jobs of a global board cost no text extraction."""
+    from radar.extract.rules import detect_seniority, is_entry_level
+
+    title = fields["title"]
+    if detect_seniority(title) in _EXPERIENCED_TITLE_LEVELS:
+        return False
+    if not is_tech(title, fields["description"]):
+        return False
+    return is_entry_level(extract(title, fields["description"]).model_dump(), title)
+
+
 def ingest(session: Session, source: Source, raws: list[RawPosting], extractor_name: str = "rules") -> dict:
     """Upsert one source's postings. Returns counters."""
     now = datetime.utcnow()
@@ -196,6 +212,11 @@ def ingest(session: Session, source: Source, raws: list[RawPosting], extractor_n
     seen_ids: set[str] = set()
     new = updated = skipped_foreign = expired = 0
     keep = allowed_countries()
+    abroad = entry_level_countries()
+
+    def kept_abroad(country: str | None) -> bool:
+        """A country outside `keep` whose entry-level jobs are kept (RADAR_ENTRY_LEVEL_COUNTRIES)."""
+        return bool(country) and country != "XX" and (abroad is None or country in abroad)
     # An employer's own expiry date (validThrough) in the past means the vacancy is over, even while the page is
     # still listed. Guard: when nearly every posting of a source looks expired, the field is a broken template
     # value, not information, and is ignored for that source.
@@ -212,7 +233,7 @@ def ingest(session: Session, source: Source, raws: list[RawPosting], extractor_n
             p = existing.get(raw.external_id)
             # the page was not re-read, so check what is stored: a posting abroad (a country fixed after it was
             # first read) or past its expiry date is closed below like any posting that disappeared
-            if p is not None and keep is not None and p.country not in keep:
+            if p is not None and keep is not None and p.country not in keep and not kept_abroad(p.country):
                 skipped_foreign += 1
                 continue
             if p is not None and trust_expiry and is_expired(p.valid_through, now):
@@ -234,7 +255,8 @@ def ingest(session: Session, source: Source, raws: list[RawPosting], extractor_n
             fields["country"] = source.default_country
         country = fields["country"]
         if keep is not None:
-            if country not in keep:
+            # abroad, only entry-level tech jobs are kept (radar/extract/rules.py, is_entry_level)
+            if country not in keep and not (kept_abroad(country) and entry_level_abroad(fields, extract)):
                 skipped_foreign += 1
                 continue
         elif not country or country == "XX":

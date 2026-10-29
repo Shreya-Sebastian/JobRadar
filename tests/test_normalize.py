@@ -52,10 +52,18 @@ def test_a_place_abroad_given_only_as_the_city_is_abroad():
     raw = RawPosting(external_id="1", title="QA Engineer", url="https://x/1", location=None, city="Hyderabad",
                      country="NL", description_text="Test our web shop.")
     n = normalize(raw, "vidaXL")
-    assert n["country"] == "IN" and n["city"] is None
+    assert n["country"] == "IN" and n["city"] == "Hyderabad"  # abroad, the board's own place (foreign_city)
     region = RawPosting(external_id="2", title="Data Engineer", url="https://x/2", location="Randstad", country="NL",
                         description_text="Build pipelines.")
     assert normalize(region, "Xebia")["city"] is None
+
+
+def test_cities_abroad_as_the_board_names_them():
+    from radar.normalize import foreign_city
+
+    assert foreign_city("Berlin, Germany") == "Berlin"
+    assert foreign_city("CZE - Brno") == "Brno" and foreign_city("MYS - Kuala Lumpur") == "Kuala Lumpur"
+    assert foreign_city("US") is None and foreign_city("Germany") is None and foreign_city("Remote") is None
 
 
 def test_remote_and_title_normalisation():

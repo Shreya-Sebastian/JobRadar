@@ -3,6 +3,48 @@ from radar.extract.rules import detect_language, detect_seniority, extract_rules
 from radar.taxonomy import find_skills
 
 
+def test_graduate_job_titles_in_several_languages():
+    cases = {
+        "intern": ["Software Engineering Placement (Year in Industry)", "Summer Analyst - Technology",
+                   "Co-op Software Developer", "Praktikum Softwareentwicklung", "Masterarbeit Machine Learning",
+                   "Alternance - Développeur Full Stack", "Tirocinio Data Analyst", "Prácticas Desarrollo Web",
+                   "Becario Data Science", "Estágio em Engenharia de Dados", "Staż w dziale IT", "Praktyki IT"],
+        "trainee": ["Technology Fellowship 2027", "Graduate Fellow - Software", "AI Residency Program",
+                    "Software Engineering Resident", "Technology Analyst Programme", "Einstiegsprogramm IT",
+                    "Traineeprogramm Data & Analytics", "Ausbildung Fachinformatiker Anwendungsentwicklung",
+                    "Duales Studium Informatik", "VIE - Ingénieur Logiciel", "Program dla absolwentów IT",
+                    "Programa de Graduados Tecnología", "Young Talent Programme Technology"],
+        "junior": ["Berufseinsteiger Softwareentwicklung", "Direkteinstieg Data Engineer", "Absolvent Informatik",
+                   "Ingénieur logiciel jeune diplômé", "Développeur débutant", "Recién titulado Ingeniería Informática",
+                   "Neolaureato Ingegneria Informatica", "Absolwent - Programista Java",
+                   "Software Engineer (Recent Graduate)"],
+        "postdoc": ["Research Fellow in Machine Learning"],
+    }
+    for level, titles in cases.items():
+        for title in titles:
+            assert detect_seniority(title) == level, (title, detect_seniority(title))
+    # not graduate roles
+    assert detect_seniority("Technical Fellow, Distributed Systems") == "staff"
+    assert detect_seniority("Senior Research Fellow in AI") != "postdoc"
+    assert detect_seniority("Product Placement Manager") != "intern"
+    assert detect_seniority("Coop IT Developer") != "intern"
+    assert detect_seniority("Resident Engineer") != "trainee"
+    assert detect_seniority("Analista de Martech Pleno I") == "medior"
+    assert detect_seniority("Desarrollador Semi Senior Java") == "medior"
+
+
+def test_zero_based_year_ranges_are_open_to_graduates():
+    def entry(title, text):
+        return is_entry_level(extract_rules(title, text).model_dump(), title)
+
+    for text in ("You have 0-3 years of relevant work experience in software.", "0 to 2 years of professional experience.",
+                 "0–3 jaar werkervaring.", "0-2 Jahre Berufserfahrung.", "0 years experience required, we train you."):
+        assert entry("Junior Software Engineer", text), text
+    assert entry("Software Engineer", "We welcome candidates with 0-2 years of experience.")
+    for text in ("0-5 years of relevant work experience.", "1-3 years of relevant work experience."):
+        assert not entry("Junior Software Engineer", text), text
+
+
 def test_entry_level_is_open_to_people_without_work_experience():
     def entry(title, text="We build software."):
         return is_entry_level(extract_rules(title, text).model_dump(), title)

@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     site_url: str = "https://techjobsradar.nl"
     # the site shows only jobs open to people without work experience (radar/extract/rules.py, is_entry_level)
     entry_level_only: bool = False
+    # countries beyond `countries` whose tech jobs are kept when they are entry-level only (comma-separated ISO codes,
+    # or ALL); empty keeps none. Abroad, only those are stored, so the database stays small
+    entry_level_countries: str = ""
     # comma-separated former domains: every request for one gets a 301 to the same page under site_url
     redirect_hosts: str = ""
     # Google Search Console verification token (the content of its <meta name="google-site-verification">)
@@ -103,6 +106,14 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+def entry_level_countries() -> set[str] | None:
+    """Countries whose entry-level tech jobs are kept as well: None for every country, an empty set for none."""
+    value = settings.entry_level_countries.strip().upper()
+    if value == "ALL":
+        return None
+    return {c.strip() for c in value.split(",") if c.strip()}
 
 
 def allowed_countries() -> set[str] | None:

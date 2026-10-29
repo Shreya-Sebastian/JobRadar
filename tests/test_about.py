@@ -42,7 +42,7 @@ def test_the_entry_level_site_is_english_only_and_names_no_country(fresh_db, mon
     home = c.get("/", headers=BROWSER).text
     assert 'data-entry="1"' in home and "Netherlands" not in home.split("<body")[0]
     assert neutral("Tech internships in the Netherlands") == "Tech internships"
-    assert neutral("English, no Dutch required") == "English is enough"
+    assert neutral("English, no Dutch required") == "English-speaking"
     assert neutral("Dutch required") == "Local language required"
     assert "Dutch data protection authority" in neutral("complain to the Dutch data protection authority")
     for page in ("/about", "/privacy"):

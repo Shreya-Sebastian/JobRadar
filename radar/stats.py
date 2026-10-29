@@ -411,9 +411,15 @@ def load_rows(session: Session, include_closed_days: int = 90) -> list[Row]:
         .where(Posting.closed_at.is_(None), Posting.duplicate_of.is_(None))
         .group_by(Posting.company)
     ).all())
+    from radar.config import settings
+    from radar.extract.rules import is_entry_level
+
     rows: list[Row] = []
     for p in session.execute(stmt):
         ats, kind = p.ats, p.kind
+        ex = merge(p.extraction or {}, reviewed.get(p.id))
+        if settings.entry_level_only and not is_entry_level(ex, p.title):
+            continue
         rows.append(
             Row(
                 p.id,
@@ -426,7 +432,7 @@ def load_rows(session: Session, include_closed_days: int = 90) -> list[Row]:
                 p.first_seen,
                 p.closed_at,
                 ats,
-                merge(p.extraction or {}, reviewed.get(p.id)),
+                ex,
                 # recruiters and staffing firms count as agencies wherever they were found (sector list or source)
                 "agency" if sector_of.get(p.company) == "staffing" else (kind or "employer"),
                 open_roles.get(p.company, 0),

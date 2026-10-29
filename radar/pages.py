@@ -19,6 +19,7 @@ from urllib.parse import quote
 from radar.config import settings
 from radar.distance import PROVINCES
 from radar.stats import Row
+from radar.wording import country_suffix, neutralize, tagline
 
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 _SLUG_RX = re.compile(r"[^a-z0-9]+")
@@ -66,7 +67,9 @@ def company_rows(rows: list[Row], slug: str) -> list[Row]:
 
 
 def _template(name: str) -> str:
-    return (WEB_DIR / name).read_text(encoding="utf-8")
+    from radar.wording import template
+
+    return template(name)
 
 
 def brand_html() -> str:
@@ -78,7 +81,7 @@ def brand_html() -> str:
 def _brand(html: str, lang: str = "en") -> str:
     return (html.replace("{{BRAND}}", brand_html()).replace("{{SITE_NAME}}", escape(settings.site_name))
                 .replace("{{SITE_URL}}", settings.site_url.rstrip("/"))
-                .replace("{{SITE_TAGLINE}}", escape(settings.site_tagline))
+                .replace("{{SITE_TAGLINE}}", escape(tagline()))
                 .replace("{{FOOT_LINKS}}", foot_links(lang)))
 
 
@@ -172,7 +175,7 @@ def render_company(name: str, rows: list[Row], lang: str = "en") -> str:
     n = len(mine)
     search_title = with_brand(
         f"{name} vacatures: {rounded(n, lang)} open {'techvacature' if n == 1 else 'techvacatures'}" if lang == "nl"
-        else f"{name} jobs in the Netherlands: {rounded(n, lang)} open tech {'role' if n == 1 else 'roles'}")
+        else f"{name} jobs{country_suffix()}: {rounded(n, lang)} open tech {'role' if n == 1 else 'roles'}")
     ld = {
         "@context": "https://schema.org", "@type": "CollectionPage", "inLanguage": lang,
         "name": t["title"].format(c=name), "url": base + self_path, "description": desc,
@@ -193,7 +196,7 @@ def render_company(name: str, rows: list[Row], lang: str = "en") -> str:
     return _brand(html, lang).replace("{{LANG}}", "nl" if lang == "nl" else "en") \
         .replace("{{DOC_TITLE}}", escape(search_title)) \
         .replace("{{TITLE}}", escape(t["title"].format(c=name))) \
-        .replace("{{TAGLINE}}", escape(TAGLINE_NL if lang == "nl" else settings.site_tagline)) \
+        .replace("{{TAGLINE}}", escape(TAGLINE_NL if lang == "nl" else tagline())) \
         .replace("{{HOME}}", "/nl/" if lang == "nl" else "/") \
         .replace("{{COMPANIES}}", "/companies") \
         .replace("{{SELF_PATH}}", self_path) \
@@ -730,11 +733,15 @@ def render_companies(rows: list[Row]) -> str:
     base = settings.site_url.rstrip("/")
     lis = "".join(f"<li><a href=\"/company/{slug}\">{escape(name)}</a> <span class=\"muted\">{n}</span></li>"
                   for name, slug, n in items)
-    desc = ("Employers with open tech jobs in the Netherlands, read from their own career sites and "
+    desc = (f"Employers with open tech jobs{country_suffix()}, read from their own career sites and "
             "updated daily.")
     ld = {"@context": "https://schema.org", "@type": "CollectionPage",
-          "name": "Employers hiring for tech in the Netherlands", "url": f"{base}/companies", "description": desc,
+          "name": f"Employers hiring for tech{country_suffix()}", "url": f"{base}/companies", "description": desc,
           "isPartOf": {"@type": "WebSite", "name": settings.site_name, "url": base}}
     return _brand(_template("companies.html")).replace("{{COUNT}}", str(len(items))) \
         .replace("{{ITEMS}}", lis).replace("{{DESCRIPTION}}", escape(desc)) \
         .replace("{{JSONLD}}", json.dumps(ld, ensure_ascii=False))
+
+
+for _table in (_TEXT["en"], _JOB_TEXT["en"], REPORT_TEXT["en"]):
+    neutralize(_table)  # the entry-level site names no country (radar/wording.py)

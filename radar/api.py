@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import mimetypes
+import re
 import threading
 import time
 from collections.abc import Iterator
@@ -18,7 +19,7 @@ from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from radar import auth, feedback, stats
+from radar import auth, feedback, stats, wording
 from radar.cache import cached
 from radar.config import settings
 from radar.db import get_engine, init_db, new_session
@@ -89,6 +90,25 @@ async def _throttle_middleware(request: Request, call_next):
         status, reason = refused
         return Response(reason + "\n", status_code=status, media_type="text/plain",
                         headers={"Retry-After": "60"} if status == 429 else None)
+    return await call_next(request)
+
+
+# the entry-level site is English only: a Dutch page sends visitors to the same page in English
+_NL_TO_EN = [(re.compile(rx), en) for rx, en in (
+    (r"^/nl/?$", "/"), (r"^/nl/vacature/(\d+)(/[^/]*)?$", r"/job/\1\2"), (r"^/nl/bedrijf/([^/]+)$", r"/company/\1"),
+    (r"^/nl/over-ons$", "/about"), (r"^/nl/privacy$", "/privacy"), (r"^/nl/feedback$", "/feedback"),
+    (r"^/nl/marktrapport$", "/market-report"), (r"^/nl/feed\.xml$", "/feed.xml"), (r"^/nl/.*$", "/"),
+    (r"^/vacatures(?:/.*)?$", "/"))]
+
+
+@app.middleware("http")
+async def _english_only_middleware(request: Request, call_next):
+    path = request.url.path
+    if settings.entry_level_only and (path == "/nl" or path.startswith(("/nl/", "/vacatures"))):
+        for rx, en in _NL_TO_EN:
+            if rx.match(path):
+                url = rx.sub(en, path) + (f"?{request.url.query}" if request.url.query else "")
+                return Response(status_code=301, headers={"Location": url})
     return await call_next(request)
 
 
@@ -185,7 +205,19 @@ def _key(request: Request) -> str:
 
 
 def _overview_data(session: Session) -> dict:
-    return {**stats.overview(session), "new": stats.new_jobs(session)}  # the "new in the last 7 days" figure
+    out = {**stats.overview(session), "new": stats.new_jobs(session)}  # the "new in the last 7 days" figure
+    if settings.entry_level_only:
+        # the counts the site shows are of the jobs it lists: the entry-level ones, not every tech job
+        from datetime import datetime, timedelta
+
+        live = [r for r in stats.CACHE.rows(session) if r.closed_at is None]
+        now = datetime.utcnow()
+        posted = [r.posted_at or r.first_seen for r in live]
+        out.update(live_tech_postings=len(live), companies=len({r.company for r in live}),
+                   new={"recent": sum(d >= now - timedelta(days=7) for d in posted),
+                        "before": sum(now - timedelta(days=14) <= d < now - timedelta(days=7) for d in posted),
+                        "days": 7})
+    return out
 
 
 OVERVIEW_TTL = 120  # it names the last crawl, which moves without a data change
@@ -819,6 +851,12 @@ def job_page(posting_id: int, slug: str = "", session: Session = Depends(db), la
         raise HTTPException(404, "no such listing")
     if not p.is_tech:  # read again and found not to be a tech job: gone for good, so search engines drop it at once
         raise HTTPException(410, "listing removed")
+    if settings.entry_level_only:
+        from radar.extract.rules import is_entry_level
+        from radar.review import merge, overrides
+
+        if not is_entry_level(merge(p.extraction or {}, overrides(session, p.id).get(p.id)), p.title):
+            raise HTTPException(410, "listing removed")  # asks for work experience: not on this site
     path = pages.job_path(p.id, p.title, lang)
     if path != (f"/nl/vacature/{posting_id}/{slug}" if lang == "nl" else f"/job/{posting_id}/{slug}"):
         return RedirectResponse(path, status_code=301)  # the title changed, or a merged copy: one address per job
@@ -903,25 +941,37 @@ def _render_index(session: Session | None = None, lang: str = "en") -> str:
 
     from radar import seo
 
-    html = (WEB_DIR / "index.html").read_text(encoding="utf-8")
-    aliases = [a.strip() for a in settings.site_aliases.split(",") if a.strip()]
+    html = wording.template("index.html")
+    aliases = wording.aliases()
     links = ""
     if session is not None:
         _rows, pages = _pages_objects(session)
         links = seo.popular_links(pages, lang)
     # what the site does, not a running count: a count dates within hours and reads like an advert
-    if lang == "nl":
+    entry = settings.entry_level_only
+    if lang == "nl" and entry:
+        title = "Techbanen voor studenten en afgestudeerden: stages, traineeships, junior en PhD"
+        desc = ("Techbanen voor studenten en pas afgestudeerden: stages, traineeships, junior functies en "
+                "promotieplaatsen, van de eigen vacaturesites van werkgevers. Dagelijks bijgewerkt.")
+    elif lang == "nl":
         title = settings.site_headline_nl
         desc = ("Techvacatures in Nederland van de eigen vacaturesites van werkgevers. Filter op Engelstalig, "
                 "visumsponsoring en jaren ervaring. Dagelijks bijgewerkt.")
+    elif entry:
+        title = "Tech jobs for students and graduates: internships, graduate programmes, junior roles and PhDs"
+        desc = ("Tech jobs for students and recent graduates: internships, graduate programmes, junior roles and PhD "
+                "positions, from employers' own career sites. Updated daily.")
     else:
         title = settings.site_headline
         desc = ("Tech jobs in the Netherlands from employers' own career sites. Filter by English-speaking, "
                 "visa sponsorship and years of experience. Updated daily.")
+    h1 = {("nl", True): ": techbanen voor studenten en afgestudeerden", ("nl", False): ": techvacatures in Nederland",
+          ("en", True): ": tech jobs for students and graduates",
+          ("en", False): ": tech jobs in the Netherlands"}[(lang, entry)]
     base = settings.site_url.rstrip("/")
     ld = {"@context": "https://schema.org", "@graph": [
         {"@type": "WebSite", "@id": f"{base}/#website", "name": settings.site_name, "alternateName": aliases,
-         "url": settings.site_url, "description": settings.site_tagline, "inLanguage": ["en", "nl"],
+         "url": settings.site_url, "description": wording.tagline(), "inLanguage": ["en"] if entry else ["en", "nl"],
          "publisher": {"@id": f"{base}/#organization"}},
         {"@type": "Organization", "@id": f"{base}/#organization", "name": settings.site_name, "url": settings.site_url,
          "logo": {"@type": "ImageObject", "url": f"{base}/static/icon-512.png", "width": 512, "height": 512},
@@ -929,15 +979,16 @@ def _render_index(session: Session | None = None, lang: str = "en") -> str:
     ]}
     return (html.replace("{{BRAND}}", brand_html()).replace("{{SITE_NAME}}", settings.site_name)
                 .replace("{{SITE_URL}}", settings.site_url.rstrip("/"))
-                .replace("{{SITE_TAGLINE}}", settings.site_tagline)
+                .replace("{{SITE_TAGLINE}}", wording.tagline())
                 .replace("{{SITE_ALIASES}}", ", ".join(aliases))
                 .replace("{{SITE_JSONLD}}", _json.dumps(ld))
+                .replace('<html lang="{{HTML_LANG}}">',
+                         f'<html lang="{lang}"' + (' data-entry="1"' if entry else "") + ">")
                 .replace("{{HTML_LANG}}", lang)
                 .replace("{{HOME_PATH}}", "/nl/" if lang == "nl" else "/")
                 .replace("{{FEED_PATH}}", "/nl/feed.xml" if lang == "nl" else "/feed.xml")
                 # the header's name, then for search engines and screen readers what the site is
-                .replace("{{H1_SUFFIX}}",
-                         ": techvacatures in Nederland" if lang == "nl" else ": tech jobs in the Netherlands")
+                .replace("{{H1_SUFFIX}}", h1)
                 .replace("{{PAGE_TITLE}}", seo.doc_title(title))
                 .replace("{{META_DESCRIPTION}}", desc)
                 .replace("{{VERIFY}}", seo.verification_meta())
@@ -975,7 +1026,7 @@ if WEB_DIR.exists():
     @app.get("/nl/inloggen", include_in_schema=False)
     def login_page(request: Request):
         lang = "nl" if request.url.path.startswith("/nl") else "en"
-        html = (WEB_DIR / "login.html").read_text(encoding="utf-8").replace("{{BRAND}}", brand_html())
+        html = wording.template("login.html").replace("{{BRAND}}", brand_html())
         return Response(html.replace("{{HTML_LANG}}", lang).replace("{{SITE_NAME}}", settings.site_name),
                         media_type="text/html", headers={"X-Robots-Tag": "noindex"})
 
@@ -983,7 +1034,7 @@ if WEB_DIR.exists():
     @app.get("/nl/feedback", include_in_schema=False)
     def feedback_page(request: Request):
         lang = "nl" if request.url.path.startswith("/nl") else "en"
-        html = (WEB_DIR / "feedback.html").read_text(encoding="utf-8").replace("{{BRAND}}", brand_html())
+        html = wording.template("feedback.html").replace("{{BRAND}}", brand_html())
         return Response(html.replace("{{HTML_LANG}}", lang).replace("{{SITE_NAME}}", settings.site_name),
                         media_type="text/html", headers={"X-Robots-Tag": "noindex"})
 
@@ -1003,7 +1054,7 @@ if WEB_DIR.exists():
     @app.get("/nl/privacy", include_in_schema=False)
     def privacy(request: Request):
         lang = "nl" if request.url.path.startswith("/nl") else "en"
-        html = (WEB_DIR / "privacy.html").read_text(encoding="utf-8").replace("{{BRAND}}", brand_html())
+        html = wording.template("privacy.html").replace("{{BRAND}}", brand_html())
         return Response(html.replace("{{HTML_LANG}}", lang).replace("{{SITE_NAME}}", settings.site_name)
                         .replace("{{SOURCE_EN}}", _source_link("en", sentence=True))
                         .replace("{{SOURCE_NL}}", _source_link("nl", sentence=True)), media_type="text/html")
@@ -1017,7 +1068,7 @@ if WEB_DIR.exists():
         from radar.seo import doc_title
 
         nl = request.url.path.startswith("/nl")
-        html = (WEB_DIR / "about.html").read_text(encoding="utf-8")
+        html = wording.template("about.html")
         desc = (f"Hoe {settings.site_name} werkt: vacatures van de eigen carrièresites van werkgevers, hoe de filters "
                 "werken, informatie voor werkgevers, voorwaarden en contact." if nl else
                 f"How {settings.site_name} works: jobs from employers' own career sites, how the filters work, "

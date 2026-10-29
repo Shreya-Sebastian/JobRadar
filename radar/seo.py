@@ -22,6 +22,7 @@ from pathlib import Path
 
 from radar import stats
 from radar.config import settings
+from radar.wording import country_suffix, neutral, neutralize
 
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 MIN_POSTINGS = 8
@@ -220,7 +221,7 @@ def build_pages(rows: list[stats.Row]) -> list[Page]:
                 f"/vacatures/{key}",
                 f"/jobs/{key}",
                 f"{nl} vacatures",
-                f"{en} jobs in the Netherlands",
+                f"{en} jobs{country_suffix()}",
                 {"role": families},
                 role=key,
             ),
@@ -247,7 +248,7 @@ def build_pages(rows: list[stats.Row]) -> list[Page]:
                 f"/vacatures/{nl_slug}",
                 f"/jobs/{en_slug}",
                 nl_t.format(in_nl=""),
-                en_t.format(in_en=" in the Netherlands"),
+                en_t.format(in_en=country_suffix()),
                 filters,
                 theme=key,
             ),
@@ -471,7 +472,7 @@ def render(page: Page, lang: str, rows: list[stats.Row], pages: list[Page]) -> s
         lead = f"{r_(n)} {'opening' if n == 1 else 'openings'} at {r_(e)} {'employer' if e == 1 else 'employers'}"
         lead += f", {r_(week)} new this week" if week >= 5 else ""
         if page.theme != "english" and n and no_dutch / n >= 0.1:
-            facts.append(f"{pct(no_dutch)} need no Dutch")
+            facts.append(neutral(f"{pct(no_dutch)} need no Dutch"))
         if page.theme != "visa" and visa >= 3:
             facts.append(f"{r_(visa)} mention visa sponsorship")
         if page.theme not in ("junior", "trainee", "phd", "intern") and entry >= 5:
@@ -516,8 +517,9 @@ def render(page: Page, lang: str, rows: list[stats.Row], pages: list[Page]) -> s
         ],
     }
     from radar.pages import brand_html, foot_links
+    from radar.wording import template
 
-    html = (WEB_DIR / "landing.html").read_text(encoding="utf-8")
+    html = template("landing.html")
     reps = {
         "{{LANG}}": lang,
         "{{TITLE}}": escape(title),
@@ -593,3 +595,6 @@ def popular_links(pages: list[Page], lang: str, per_column: int = 6) -> str:
                         for p in items[:per_column])
         html.append(f'<div class="foot-col"><h3>{head}</h3><ul>{links}</ul></div>')
     return "".join(html)
+
+
+neutralize(_T["en"])  # the entry-level site names no country (radar/wording.py)

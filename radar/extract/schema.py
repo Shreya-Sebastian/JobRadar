@@ -30,6 +30,9 @@ class Extraction(BaseModel):
     english_required: bool = True  # posted in English or asks for English; False = Dutch is enough
     years_experience: int | None = None
     years_experience_text: str | None = None  # as worded: "1-3", "5+", "1.5", "3"
+    years_preferred: bool = False  # the years are a preference ("ideally 1 year", "is a plus"), not a requirement
+    # work experience required without a number: "proven experience as a developer", "werkervaring", "Berufserfahrung"
+    work_experience_required: bool = False
     salary_min_eur: int | None = None
     salary_max_eur: int | None = None
     visa_sponsorship: bool | None = None
@@ -38,6 +41,9 @@ class Extraction(BaseModel):
     # Internships: True when the posting requires being enrolled at a university or school for the duration,
     # False when it says graduates are welcome or enrolment is not needed, None when it does not say.
     enrollment_required: bool | None = None
+    # the text welcomes people without work experience: "recent graduates", "entry-level", "no experience required",
+    # "starters op de arbeidsmarkt" (radar/extract/rules.py, is_entry_level)
+    welcomes_starters: bool = False
 
     def all_skills(self) -> list[str]:
         seen: dict[str, None] = {}

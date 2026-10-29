@@ -1,6 +1,65 @@
 from radar.classify import is_tech
-from radar.extract.rules import detect_language, detect_seniority, extract_rules, parse_salary
+from radar.extract.rules import detect_language, detect_seniority, extract_rules, is_entry_level, parse_salary
 from radar.taxonomy import find_skills
+
+
+def test_entry_level_is_open_to_people_without_work_experience():
+    def entry(title, text="We build software."):
+        return is_entry_level(extract_rules(title, text).model_dump(), title)
+
+    for title in ("Data Science Intern", "Graduate Programme Technology 2027", "PhD Position in Responsible AI",
+                  "Postdoc in Quantum Computing", "Junior Backend Developer", "Young Professional IT",
+                  "Software Engineer - Early Career (Fall 2026)", "Werkstudent Softwareentwicklung"):
+        assert entry(title), title
+    assert not entry("Junior Data Engineer", "You have 1 year of experience with Python.")
+    assert not entry("Junior Data Engineer", "You have 2 years of experience with Python.")
+    assert not entry("Graduate Trainee IT", "Requirements: 2 years of work experience in IT.")
+    # work experience asked in words, without a number
+    for text in ("You have proven experience as a software developer.", "Requirements: relevant work experience.",
+                 "Je hebt werkervaring als ontwikkelaar.", "Aantoonbare ervaring met Java in een productieomgeving.",
+                 "Erste Berufserfahrung in der Softwareentwicklung.", "A track record of shipping features.",
+                 "Experience in a similar role is required.",
+                 "- Experience working in a cloud based development and production environment",
+                 "A fantastic opportunity if you are an experienced automotive technical engineer.",
+                 "Ben jij een ervaren netwerkbeheerder?",
+                 "- Previous hands-on experience in a SOC or similar environment",
+                 "Praktische ervaring met Huawei apparatuur of vergelijkbare oplossingen is vereist.",
+                 "You have 1–2 years of relevant work experience, preferably in consulting or fintech.",
+                 "Multiple years of external consulting experience", "Experience (Essential) of maintaining systems",
+                 "Ervaring binnen de automotive sector", "Ervaring in de fiscale praktijk;",
+                 "Relevant practical, research, advisory or field experience in animal nutrition",
+                 "Je bent iemand die al ervaring hebt als data analist.",
+                 "Minimum of 6 months of independent, on-site monitoring experience within a CRO",
+                 "- Experience in technical support or customer-facing technical roles",
+                 "- Experience deploying or supporting software in an industrial, manufacturing environment",
+                 "- Experience in a startup or scale-up where roles are broad",
+                 "Benefits: a laptop and a bonus.\n\nRequirements:\nMultiple years of external consulting experience",
+                 "We're looking for someone with 1–3 years of experience, ideally from a software-heavy environment."):
+        assert not entry("Junior Developer", text), text
+    # ... unless waived or only a preference; skill experience from studies is fine
+    for text in ("No prior experience required: we train you.", "Geen werkervaring nodig, wel motivatie.",
+                 "You will gain work experience in a top team.", "Work experience is a plus.",
+                 "You have experience with Python and SQL from your studies.",
+                 "Nice to have:\n- professional experience with Docker",
+                 "Ervaring met tools zoals Excel of SQL is een pré, maar geen vereiste.",
+                 "Je hebt liefst een eerste ervaring in de financiële sector.",
+                 "Ervaring in een technische of commerciële functie is mooi meegenomen."):
+        assert entry("Junior Developer", text), text
+    # experience asked only as a preference
+    assert entry("Junior Data Engineer", "Python and SQL. 1 year of experience is a plus.")
+    assert entry("Junior Developer", "Nice to have:\n- 1-2 years of experience with React\n- Docker")
+    assert entry("Software Engineer", "An entry-level role: recent graduates are welcome. Python, AWS.")
+    assert entry("ICT Medewerker", "Ben je pas afgestudeerd? Geen werkervaring nodig.")
+    # experienced, or junior only because of the years asked, or nothing said
+    for title, text in (("Senior Backend Engineer", "Recent graduates welcome."), ("Medior Developer", ""),
+                        ("Software Engineer", "You have 2 years of experience with Java."),
+                        ("Software Engineer", "We build software."),
+                        ("Data Engineer", "Entry-level SQL is not enough: 4 years of experience required."),
+                        ("Junior Developer", "You have 4 years of experience."),
+                        ("Junior/medior Business Consultant", "We build software."),
+                        ("Graduate or Experienced Engineer", "We build software."),
+                        ("Assistant Professor Radar Remote Sensing", "Early-career researchers welcome.")):
+        assert not entry(title, text), (title, text)
 
 
 def test_is_tech_titles():

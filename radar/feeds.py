@@ -8,6 +8,7 @@ from email.utils import format_datetime
 from xml.sax.saxutils import escape
 
 from radar.config import settings
+from radar.wording import neutral, tagline
 
 # the query parameters a feed title mentions, in this order
 _TITLE_PARTS = ("q", "position", "role", "city", "language", "sponsorship", "experience", "remote")
@@ -23,7 +24,7 @@ def title_for(params: dict[str, str], lang: str) -> str:
         if key == "q":
             parts.append(f'"{v}"')
         elif key == "language" and v == "en":
-            parts.append("geen Nederlands nodig" if nl else "no Dutch needed")
+            parts.append("geen Nederlands nodig" if nl else neutral("no Dutch needed"))
         elif key == "sponsorship" and v == "true":
             parts.append("visumsponsoring" if nl else "visa sponsorship")
         elif key == "experience":
@@ -54,7 +55,7 @@ def render(items: list[dict], params: dict[str, str], lang: str) -> str:
            f"<link>{escape(home + ('#discover?' + query if query else '#discover'))}</link>",
            f'<atom:link href="{escape(base + ("/nl" if nl else "") + "/feed.xml" + ("?" + query if query else ""))}" '
            'rel="self" type="application/rss+xml"/>',
-           f"<description>{escape(settings.site_tagline)}</description>",
+           f"<description>{escape(tagline())}</description>",
            f"<language>{'nl' if nl else 'en'}</language>", "<ttl>60</ttl>"]
     for i in items:
         url = base + job_path(i["id"], i["title"], lang)
@@ -62,7 +63,7 @@ def render(items: list[dict], params: dict[str, str], lang: str) -> str:
         if i.get("city"):
             bits.append(i["city"])
         if i.get("english_only"):
-            bits.append("geen Nederlands nodig" if nl else "no Dutch needed")
+            bits.append("geen Nederlands nodig" if nl else neutral("no Dutch needed"))
         if i.get("visa") is True:
             bits.append("visumsponsoring" if nl else "visa sponsorship")
         if i.get("years_text") or i.get("years") is not None:

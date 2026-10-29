@@ -21,9 +21,13 @@
     if (!/^#[0-9a-f]{6}$/i.test(a) || !/^#[0-9a-f]{6}$/i.test(c)) return Array(n).fill(a);
     return Array.from({ length: n }, (_, i) => mixHex(a, c, 1 - (i * 0.8) / Math.max(n - 1, 1)));
   };
-  const LEVELS = ["intern", "trainee", "phd", "postdoc", "junior", "medior", "senior", "lead", "staff", "manager"];
+  // entry-level mode (RADAR_ENTRY_LEVEL_ONLY): the site lists only jobs that need no work experience, so the
+  // experienced levels and the years filter have nothing to choose from
+  const ENTRY = document.documentElement.dataset.entry === "1";
+  const LEVELS = ENTRY ? ["intern", "trainee", "junior", "phd", "postdoc"]
+    : ["intern", "trainee", "phd", "postdoc", "junior", "medior", "senior", "lead", "staff", "manager"];
   const REMOTE = ["remote", "hybrid", "onsite"];
-  const EXP = ["none", "1", "2-3", "4-5", "6+", "unspecified"];
+  const EXP = ENTRY ? [] : ["none", "1", "2-3", "4-5", "6+", "unspecified"];
   // the languages a visitor speaks, stored as "en", "nl" or "en,nl" (radar/stats.py fits_languages)
   const LANGS = ["en", "nl"];
   const langList = (v) => (v || "").split(",").filter((l) => LANGS.includes(l));
@@ -337,9 +341,34 @@
     jobFilters = null;
     if (state.tab === "profile") renderProfile();
   });
+  if (ENTRY) {
+    // meant for starters anywhere in Europe: English only, and no Dutch-specific wording (radar/wording.py does the
+    // same for the pages the server writes)
+    Object.assign(I18N.en, {
+      "rep.nodutch": "English is enough", "fact.nodutch": "English is enough", "co.kpi.en": "English is enough",
+      "f.language.nl": "The local language", "lang.nl": "Local", "lang.both": "Local + EN",
+      "lang.nl.title": "The local language required, no English needed", "lang.en.title": "English is enough",
+      "lang.both.title": "The local language and English both required", "lang.chart.nl": "Local language",
+      "foot.tag": "Tech jobs for students and graduates, read straight from employers' own career sites and updated every day.",
+    });
+    Object.assign(I18N.en, {
+      "title": "Tech jobs for students and graduates: internships, graduate programmes, junior roles and PhDs",
+      "hero.title": "Tech jobs for students and graduates",
+      "hero.sub": "{n} internships, graduate programmes, junior roles and PhDs at {c} employers · updated {d}",
+      "f.level": "Type of job",
+    });
+    Object.assign(I18N.nl, {
+      "title": "Techbanen voor studenten en afgestudeerden: stages, traineeships, junior functies en promotieplaatsen",
+      "hero.title": "Techbanen voor studenten en afgestudeerden",
+      "hero.sub": "{n} stages, traineeships, junior functies en promotieplaatsen bij {c} werkgevers · bijgewerkt {d}",
+      "f.level": "Soort baan",
+    });
+  }
   // stored choice first; then the page itself (/nl/ is served in Dutch); then the browser
   const pageLang = location.pathname.startsWith("/nl") ? "nl" : null;
-  let LANG = store.get("lang", null) || pageLang || ((navigator.language || "").toLowerCase().startsWith("nl") ? "nl" : "en");
+  let LANG = ENTRY ? "en"
+    : store.get("lang", null) || pageLang || ((navigator.language || "").toLowerCase().startsWith("nl") ? "nl" : "en");
+  if (ENTRY) $("#langswitch").hidden = true;
   const t = (key, vars = {}) => {
     let s = (I18N[LANG] && I18N[LANG][key]) || I18N.en[key] || key;
     Object.entries(vars).forEach(([k, v]) => { s = s.replace(new RegExp(`\\{${k}\\}`, "g"), v); });
@@ -854,6 +883,7 @@
     chipInput($("#f-position"), f.positions, state.options.positions, () => refreshJobs(true), t("ph.position"), positionPick, positionLabel);
     toggles($("#f-levels"), LEVELS, f.levels, levelLabel, () => refreshJobs(true));
     toggles($("#f-exp"), EXP, f.exp, expLabel, () => refreshJobs(true));
+    if (ENTRY) $("#f-exp").closest(".field").hidden = true;
     toggles($("#f-degree"), DEGREES, f.degrees, degreeLabel, () => refreshJobs(true));
     toggles($("#f-sector"), state.options.sectors, f.sectors, sectorLabel, () => refreshJobs(true));
     toggles($("#f-emp"), EMPS, f.emps, empLabel, () => refreshJobs(true));
@@ -991,7 +1021,8 @@
     const exp = expCell(i), salary = salaryText(i);
     const asks = [
       levelCell(i) && `<span class="tag">${cap(levelCell(i))}</span>`,
-      i.experience === "none" && !i.years_text && i.years == null ? `<span class="tag">${t("fact.noexp")}</span>` : !exp.includes('class="muted"') && `<span class="tag">${exp}</span>`,
+      // on the entry-level site every job qualifies: the level tag (Internship, Junior, ...) says what kind it is
+      ENTRY ? "" : i.experience === "none" && !i.years_text && i.years == null ? `<span class="tag">${t("fact.noexp")}</span>` : !exp.includes('class="muted"') && `<span class="tag">${exp}</span>`,
       policy && `<span class="tag">${esc(policy)}</span>`,
       salary && `<span class="tag sal" title="${t("sal.title")}">${esc(salary)}</span>`,
     ].filter(Boolean).join("");
@@ -1172,6 +1203,7 @@
     chipInput($("#p-position"), p.positions, state.options.positions, null, t("ph.position"), positionPick, positionLabel);
     toggles($("#p-levels"), LEVELS, p.levels, levelLabel);
     toggles($("#p-exp"), EXP, p.exp, expLabel);
+    if (ENTRY) $("#p-exp").closest(".field").hidden = true;
     toggles($("#p-degree"), DEGREES, p.degrees, degreeLabel);
     if (!p.sectors) p.sectors = [];
     toggles($("#p-sector"), state.options.sectors, p.sectors, sectorLabel);
@@ -1445,6 +1477,11 @@
       q4: "Waar wil je aan werken?", q4hint: "Kies er een of meer, of niets voor alle vakgebieden.",
       q5: "Waar wil je werken?", q5hint: "Kies er een of meer, of niets voor heel Nederland.", remote: "Remote" },
   };
+  if (ENTRY) Object.assign(QUIZ_TEXT.en, {
+    q1: "Besides English, do you speak the local language?",
+    q3: "Where are you in your studies?", q3a: "Still studying (internships)", q3b: "Graduated, or graduating soon",
+    q5hint: "Pick one or more, or none for anywhere.",
+  });
   const qt = (k, vars) => {
     let s = (QUIZ_TEXT[LANG] || QUIZ_TEXT.en)[k] || k;
     for (const [a, b] of Object.entries(vars || {})) s = s.replace(`{${a}}`, b);
@@ -1461,9 +1498,12 @@
     return [
       one("dutch", "q1", [["yes", qt("q1a")], ["no", qt("q1c")]]),
       one("visa", "q2", [["yes", qt("q2a")], ["no", qt("q2b")]]),
-      one("exp", "q3", [["student", qt("q3a")], ["grad", qt("q3b")], ["y23", qt("q3c")], ["y45", qt("q3d")], ["y6", qt("q3e")]]),
+      one("exp", "q3", [["student", qt("q3a")], ["grad", qt("q3b")],
+                        ...(ENTRY ? [] : [["y23", qt("q3c")], ["y45", qt("q3d")], ["y6", qt("q3e")]])]),
       { key: "roles", multi: true, q: qt("q4"), hint: qt("q4hint"), opts: QUIZ_ROLES.map((r) => [r, roleLabel(r)]) },
-      { key: "places", multi: true, q: qt("q5"), hint: qt("q5hint"), opts: [...QUIZ_CITIES.map((c) => [c, cityLabel(c)]), ["remote", qt("remote")]] },
+      // the entry-level site offers the cities with the most jobs, wherever they are, not a fixed Dutch list
+      { key: "places", multi: true, q: qt("q5"), hint: qt("q5hint"),
+        opts: [...(ENTRY ? state.options.cities.slice(0, 8) : QUIZ_CITIES).map((c) => [c, cityLabel(c)]), ["remote", qt("remote")]] },
     ];
   }
   function quizFilters() {

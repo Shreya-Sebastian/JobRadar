@@ -28,6 +28,30 @@ def test_a_former_domain_redirects_to_the_same_page(fresh_db, monkeypatch):
     assert c.get("/about", headers={**BROWSER, "host": "techjobsradar.com"}).status_code == 200
 
 
+def test_the_entry_level_site_is_english_only_and_names_no_country(fresh_db, monkeypatch):
+    from radar.api import app
+    from radar.config import settings
+    from radar.wording import neutral
+
+    monkeypatch.setattr(settings, "entry_level_only", True)
+    c = TestClient(app)
+    for nl, en in (("/nl/", "/"), ("/nl/over-ons", "/about"), ("/nl/vacature/12/data-engineer", "/job/12/data-engineer"),
+                   ("/nl/bedrijf/acme", "/company/acme")):
+        r = c.get(nl, follow_redirects=False)
+        assert r.status_code == 301 and r.headers["location"] == en, nl
+    home = c.get("/", headers=BROWSER).text
+    assert 'data-entry="1"' in home and "Netherlands" not in home.split("<body")[0]
+    assert neutral("Tech internships in the Netherlands") == "Tech internships"
+    assert neutral("English, no Dutch required") == "English is enough"
+    assert neutral("Dutch required") == "Local language required"
+    assert "Dutch data protection authority" in neutral("complain to the Dutch data protection authority")
+    for page in ("/about", "/privacy"):
+        html = c.get(page, headers=BROWSER).text
+        assert 'class="nl"' not in html and 'hreflang="nl"' not in html and "in the Netherlands" not in html, page
+    monkeypatch.setattr(settings, "entry_level_only", False)
+    assert neutral("no Dutch needed") == "no Dutch needed"  # the Dutch site is unchanged
+
+
 def test_job_pages_link_about_and_a_report_of_the_job(fresh_db):
     from radar.api import app
 

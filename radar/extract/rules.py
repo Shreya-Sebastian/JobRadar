@@ -9,7 +9,7 @@ from radar.extract.schema import Extraction
 from radar.extract.sections import job_text
 from radar.taxonomy import find_skills
 
-RULES_VERSION = "rules-v25"  # bump whenever the taxonomy or the rules change, so `radar extract` re-runs
+RULES_VERSION = "rules-v26"  # bump whenever the taxonomy or the rules change, so `radar extract` re-runs
 
 # words only one of the languages uses: "in", "is", "we", "team", "over" and "of" are both Dutch and English,
 # "die" and "er" are also German
@@ -1432,6 +1432,133 @@ def _to_int(s: str | None) -> int | None:
 _ODD_SPACES = re.compile(r"[     ]")
 
 
+_STARTERS_WELCOME = re.compile(
+    r"\b(?:recent|new|fresh|young)\s+(?:university\s+|college\s+)?grad(?:uate)?s?\b|\bgraduates?\s+(?:are\s+)?welcome|"
+    r"\bno\s+(?:prior\s+|previous\s+|professional\s+|work\s+|relevant\s+|industry\s+)?(?:work\s+)?experience\s+"
+    r"(?:is\s+)?(?:required|needed|necessary)\b|\bentry[- ]level\b|\bearly[- ]careers?\b|\b0\s*\+?\s*years\b|"
+    r"\b(?:pas|net|recent)\s+afgestudeerd\w*|\bgeen\s+(?:werk)?ervaring\s+(?:nodig|vereist)|"
+    r"\bstarters?\s+(?:op\s+de\s+arbeidsmarkt|welkom)|\bschoolverlaters?\b",
+    re.I)
+# work experience asked without a number of years. Skill experience ("experience with Python") is not on the list:
+# a graduate has that from their studies
+_WORK_EXPERIENCE = re.compile(
+    # "previous hands-on experience", "relevant practical, research or field experience", "multiple years of
+    # consulting experience": the qualifier, up to five words, then "experience"
+    r"\b(?:proven|professional|commercial|industry|industrial|prior|previous|demonstrated|solid|significant|strong|"
+    r"extensive|substantial|considerable|relevant|real[- ]world|production|(?:several|multiple|many|a\s+few)\s+years?"
+    r"(?:'|\s+of)?)\s+(?:[\w,/-]+\s+){0,5}?experience\b|\bwork(?:ing)?\s+experience\b|"
+    r"\bexperience\s+(?:as\s+an?|working\s+as|in\s+a\s+(?:similar|comparable|related)\s+(?:role|position|function))\b|"
+    r"\bexperience\s+(?:owning|leading|managing|running|delivering)\b|"
+    # "6 months of monitoring experience", "minimaal 6 maanden ervaring"
+    r"\b\d+\s*\+?\s*(?:months?|maanden)\s+(?:of\s+)?(?:[\w,/-]+\s+){0,4}?(?:experience|ervaring)\b|"
+    # "experience in technical support or customer-facing roles", "ervaring in een vergelijkbare functie"
+    r"\bexperience\s+(?:in|as|from)\s+(?:an?\s+)?(?:[\w-]+\s+){0,5}?(?:roles?|positions?|functions?|jobs?)\b|"
+    r"\bervaring\s+in\s+(?:een\s+)?(?:[\w-]+\s+){0,3}?(?:functie|rol|baan)\b|"
+    # "experience in a startup", "experience deploying software in an industrial environment"
+    r"\bexperience\s+(?:in|at|within)\s+an?\s+(?:[\w-]+\s+){0,2}?(?:startup|start-up|scale-?up|company|consultancy|"
+    r"agency|firm|corporate|enterprise)\b|"
+    r"\bexperience\s+\w+ing\b[^.;\n]{0,60}?\b(?:in|at|within|for)\s+(?:an?\s+|the\s+)?(?:[\w,/-]+\s+){0,3}?"
+    r"(?:environment|organi[sz]ations?|compan(?:y|ies)|clients?|customers?)\b|"
+    r"\bexperience\s+(?:in|within)\s+(?:the\s+)?[\w-]+\s+(?:sector|industry|branche)\b|"
+    r"\bexperience\b[^.;\n]{0,80}?\b(?:is|are)\s+(?:required|essential|a\s+must|mandatory)\b|"
+    r"\bexperience\s*\(\s*(?:essential|required|must)\s*\)|"
+    r"\bervaring\b[^.;\n]{0,80}?\b(?:is\s+)?(?:vereist|noodzakelijk|een\s+must)\b|"
+    r"\bervaring\s+(?:in|binnen)\s+(?:de\s+)?(?:[\w-]+\s+)?[\w-]*(?:sector|branche|industrie|praktijk)\b|"
+    r"\bexperience\s+working\s+(?:in|at|for|within|on)\b|\bcustomer[- ]facing\s+experience\b|"
+    r"\b(?:you\s+are|you're|as|an?)\s+(?:an?\s+)?experienced\s+(?:[\w-]+\s+){0,3}(?:engineer|developer|professional|"
+    r"consultant|specialist|analyst|technician|architect|administrator|programmer)s?\b|"
+    r"\b(?:je\s+bent|ben\s+jij|als)\s+(?:een\s+)?ervaren\b|"
+    r"\btrack\s+record\b|\bwerkervaring\b|\b(?:relevante|aantoonbare|ruime|enkele\s+jaren|meerdere\s+jaren|"
+    r"jarenlange|praktijk)\s*ervaring\b|\bervaring\s+(?:\w+\s+)?(?:hebt|heeft|hebben|opgedaan)?\s*als\b|"
+    r"\bwerkzaam\s+(?:bent\s+|was\s+|bent\s+geweest\s+)?als\b|\bberufserfahrung\b|\bexp[ée]rience\s+professionnelle\b|"
+    r"\bexperiencia\s+(?:laboral|profesional)\b|\besperienza\s+(?:lavorativa|professionale)\b",
+    re.I)
+# "no work experience needed", "you will gain experience", "geen werkervaring nodig": not a requirement
+_EXPERIENCE_WAIVED_BEFORE = re.compile(
+    r"\b(?:no|not|without|zonder|geen|gain|gaining|build|building|develop|get|acquire|opdoen|op\s+te\s+doen|"
+    r"krijg\w*|regardless\s+of|whether|with\s+or\s+without|or\s+no)\b[^.;:\n]{0,40}$", re.I)
+_EXPERIENCE_WAIVED_AFTER = re.compile(
+    r"^[^.;:\n]{0,30}\b(?:is\s+|are\s+)?(?:not|niet|no\s+longer)\s+(?:required|needed|necessary|vereist|nodig|"
+    r"a\s+must|essential)|^[^.;:\n]{0,30}\b(?:not\s+required|optional|is\s+a\s+plus|een\s+pr[ée]|pluspunt|"
+    r"preferred|welcome\s+but|nice\s+to\s+have|an\s+advantage|een\s+voordeel)\b|^\s*\w*\s*(?:opdoen|op\s+te\s+doen)",
+    re.I)
+
+
+# "preferably in consulting", "bij voorkeur in de zorg": the preference is the field, the experience still required
+_FIELD_PREFERENCE = re.compile(
+    r"[,(]?\s*\b(?:preferably|ideally|bij\s+voorkeur|liefst|bij\s+voorkeur)\s+(?:in|within|at|as|with|from|on|"
+    r"bij|binnen|met|uit|op|als)\b[^.;\n]*", re.I)
+_PREFERENCE_BEFORE = re.compile(
+    r"\b(?:ideally|preferably|optionally|bonus|nice\s+to\s+have|a\s+plus|desirable|bij\s+voorkeur|liefst|"
+    r"pluspunt|wenselijk)\b", re.I)
+_PREFERENCE_AFTER = re.compile(
+    r"\b(?:is\s+|are\s+|would\s+be\s+|will\s+be\s+)?(?:a\s+(?:big\s+|great\s+|strong\s+)?plus|an?\s+(?:big\s+)?"
+    r"advantage|advantageous|desirable|preferred|nice\s+to\s+have|a\s+bonus|een\s+(?:grote\s+)?pr[ée]|"
+    r"pluspunt|mooi\s+meegenomen|wenselijk|strekt\s+tot\s+aanbeveling|een\s+voordeel|not\s+essential|"
+    r"geen\s+vereiste|niet\s+vereist|not\s+required)\b", re.I)
+
+
+def experience_optional(text: str, m: re.Match) -> bool:
+    """Whether experience asked at `m` is only a preference: said so in its own clause ("is a plus", "ideally"), or
+    listed under a "nice to have" header. A preference for the field ("preferably in consulting") is not one."""
+    a = max(0, m.start() - 120)
+    cut = [x.end() for x in _CLAUSE_END.finditer(text, a, m.start())]
+    head = text[cut[-1] if cut else a:m.start()]
+    e = _CLAUSE_END.search(text, m.end(), m.end() + 160)
+    tail = _FIELD_PREFERENCE.sub("", text[m.end():e.start() if e else m.end() + 160])
+    if _PREFERENCE_BEFORE.search(head.rsplit(",", 1)[-1]) or _PREFERENCE_AFTER.search(tail):
+        return True
+    for line in reversed(text[:cut[-1] if cut else a].splitlines()[-12:]):  # the nearest header above
+        h = _is_opt_header(line)
+        if h is not None:
+            return h
+    return False
+
+
+def requires_work_experience(text: str) -> bool:
+    """Whether the text asks for work experience in words, not as a preference and not waived."""
+    for m in _WORK_EXPERIENCE.finditer(text or ""):
+        before, after = text[max(0, m.start() - 60):m.start()], text[m.end():m.end() + 60]
+        if _EXPERIENCE_WAIVED_BEFORE.search(before) or _EXPERIENCE_WAIVED_AFTER.search(after):
+            continue
+        if experience_optional(text, m):
+            continue
+        return True
+    return False
+
+
+_EXPERIENCED_LEVELS = {"medior", "senior", "lead", "staff", "manager"}
+# entry-level words in a title that name no level of their own ("Graduate Software Engineer", "Young Professional")
+_STARTER_TITLE = re.compile(
+    r"graduate|young professional|\bstarter\b|werkstudent|working student|early[- ]career|entry[- ]level|new grad",
+    re.I)
+
+
+_EXPERIENCED_TITLE = re.compile(
+    r"\b(?:medior|mid[- ]?level|senior|sr\.?|lead|principal|staff|ervaren|experienced|expert|professor|lecturer|"
+    r"hoogleraar|universitair\s+(?:hoofd)?docent|associate\s+professor)\b", re.I)
+
+
+def is_entry_level(ex: dict, title: str) -> bool:
+    """Whether a job is open to someone with no work experience: an internship, PhD or postdoc; or a traineeship,
+    graduate programme, junior title, or a job with no level whose text welcomes graduates or starters, as long as it
+    requires no years of experience (not even one). Years asked only as a preference ("ideally a year", "is a plus")
+    do not count against it."""
+    level = ex.get("seniority") or "unknown"
+    if level in ("phd", "postdoc"):
+        return True  # what a research position asks is research experience, from a degree or a PhD
+    if level in _EXPERIENCED_LEVELS or _EXPERIENCED_TITLE.search(title or ""):
+        return False  # "Junior/medior Consultant", "(Junior) Senior Developer": experience is expected of most
+    # any work experience required rules a job out, even one year: this is the site's promise
+    if (ex.get("years_experience") and not ex.get("years_preferred")) or ex.get("work_experience_required"):
+        return False
+    if level in ("intern", "trainee"):
+        return True
+    if level == "junior":
+        return bool(detect_seniority(title) == "junior" or _STARTER_TITLE.search(title or ""))
+    return bool(_STARTER_TITLE.search(title or "") or ex.get("welcomes_starters"))
+
+
 def extract_rules(title: str, description: str) -> Extraction:
     text = _ODD_SPACES.sub(" ", description or "")
     title = _ODD_SPACES.sub(" ", title or "")
@@ -1449,9 +1576,11 @@ def extract_rules(title: str, description: str) -> Extraction:
     visa = detect_visa(text)
 
     # requirements usually sit before the benefits section, but not always: fall back to the whole text
-    years, years_label = find_years(core), years_text(core)
+    years, years_label, src = find_years(core), years_text(core), core
     if years is None:
-        years, years_label = find_years(text), years_text(text)
+        years, years_label, src = find_years(text), years_text(text), text
+    m = _years_match(src) if years is not None else None
+    years_preferred = bool(m and experience_optional(src, m))
     seniority = detect_seniority(title, text if years is None else f"{years} years of experience")
     if seniority == "unknown":
         # "We are looking for a Senior Information Security Officer ..." in the first lines
@@ -1475,6 +1604,10 @@ def extract_rules(title: str, description: str) -> Extraction:
         english_required=english_required,
         years_experience=years,
         years_experience_text=years_label,
+        years_preferred=years_preferred,
+        # in the job's own part when the posting has one: an "about us" saying "our team's extensive experience" is
+        # not a requirement. Without one, the whole text: requirements after the benefits must not slip through
+        work_experience_required=requires_work_experience(focus if focus is not None else text),
         salary_min_eur=lo,
         salary_max_eur=hi,
         visa_sponsorship=visa,
@@ -1483,4 +1616,5 @@ def extract_rules(title: str, description: str) -> Extraction:
         # only asked of internships and student jobs, so a regular posting that mentions students is never hidden
         enrollment_required=(detect_enrollment(text, title)
                              if seniority == "intern" or _STUDENT_TITLE.search(title) else None),
+        welcomes_starters=bool(_STARTERS_WELCOME.search(text)),
     )

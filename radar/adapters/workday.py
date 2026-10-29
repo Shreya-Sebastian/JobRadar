@@ -119,34 +119,76 @@ class WorkdayAdapter(Adapter):
 
         out: list[RawPosting] = []
         for job in listings[: self.MAX_DETAILS]:
-            path = job.get("externalPath") or ""
-            ext_id = (job.get("bulletFields") or [path])[0] or path
-            description = None
-            country = "NL"
-            posted = None
-            try:
-                detail = self.client.get(f"{api}{path}", headers={"Accept": "application/json"})
-                if detail.status_code == 200:
-                    info = detail.json().get("jobPostingInfo") or {}
-                    description = info.get("jobDescription")
-                    posted = parse_dt(info.get("startDate"))
-                    c = (info.get("country") or {}).get("descriptor") or ""
-                    if c and not _is_dutch_place(c):
-                        country = None
-            except Exception:
-                pass
-            out.append(
-                RawPosting(
-                    external_id=str(ext_id),
-                    title=job.get("title") or "",
-                    url=f"{host}/{slug.split('/', 1)[1]}{path}",
-                    location=job.get("locationsText"),
-                    country=country,
-                    description_html=description,
-                    posted_at=posted,
-                    raw={"posted_on": job.get("postedOn")},
-                )
-            )
+            description, posted, c = self._detail(api, job.get("externalPath") or "")
+            out.append(self._raw(host, slug, job, description, posted, None if c and not _is_dutch_place(c) else "NL"))
+        from radar.config import entry_level_countries, settings
+
+        if settings.entry_level_countries.strip():
+            out.extend(self._graduates_abroad(host, api, slug, {r.url for r in out}, entry_level_countries()))
+        return out
+
+    def _detail(self, api: str, path: str) -> tuple[str | None, object, str]:
+        """(description html, posting date, the country as the board names it) of one job; empty when unreadable."""
+        try:
+            detail = self.client.get(f"{api}{path}", headers={"Accept": "application/json"})
+            if detail.status_code == 200:
+                info = detail.json().get("jobPostingInfo") or {}
+                return (info.get("jobDescription"), parse_dt(info.get("startDate")),
+                        (info.get("country") or {}).get("descriptor") or "")
+        except Exception:
+            pass
+        return None, None, ""
+
+    def _raw(self, host: str, slug: str, job: dict, description, posted, country: str | None) -> RawPosting:
+        path = job.get("externalPath") or ""
+        return RawPosting(
+            external_id=str((job.get("bulletFields") or [path])[0] or path),
+            title=job.get("title") or "",
+            url=f"{host}/{slug.split('/', 1)[1]}{path}",
+            location=job.get("locationsText"),
+            country=country,
+            description_html=description,
+            posted_at=posted,
+            raw={"posted_on": job.get("postedOn")},
+        )
+
+    # what graduate roles are called: the board's own search finds them among thousands of jobs worldwide
+    GRADUATE_SEARCHES = ("intern", "internship", "graduate", "trainee", "junior", "new grad", "entry level",
+                         "early career", "working student", "werkstudent", "praktikant", "apprentice", "phd",
+                         "postdoc", "fellowship", "stage")
+    PAGES_PER_SEARCH = 5
+    MAX_ABROAD_DETAILS = 150
+
+    def _graduates_abroad(self, host: str, api: str, slug: str, seen: set[str], countries: set[str] | None):
+        """Jobs for students and graduates outside the Netherlands (RADAR_ENTRY_LEVEL_COUNTRIES): found with the
+        board's search, kept by title before their text is fetched. The crawler decides what is stored."""
+        from radar.extract.rules import entry_level_title
+        from radar.normalize import place_country
+
+        found: dict[str, dict] = {}
+        for word in self.GRADUATE_SEARCHES:
+            offset, total = 0, 1
+            while offset < total and offset < self.PAGE * self.PAGES_PER_SEARCH:
+                try:
+                    page = self._list(api, {}, offset, word)
+                except AdapterError:
+                    break
+                total = int(page.get("total") or 0)
+                for job in page.get("jobPostings") or []:
+                    path = job.get("externalPath") or ""
+                    if path and path not in found and entry_level_title(job.get("title") or "") \
+                            and not _is_dutch_place(job.get("locationsText") or ""):
+                        found[path] = job
+                offset += self.PAGE
+        out: list[RawPosting] = []
+        for path, job in list(found.items())[: self.MAX_ABROAD_DETAILS]:
+            if f"{host}/{slug.split('/', 1)[1]}{path}" in seen:
+                continue
+            description, posted, c = self._detail(api, path)
+            code = place_country(c) or place_country(job.get("locationsText") or "")
+            if not code or (countries is not None and code not in countries):
+                continue
+            out.append(self._raw(host, slug, job, description, posted, code))
         return out
 
     def count_nl(self, slug: str) -> tuple[int, int]:

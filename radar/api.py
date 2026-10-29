@@ -189,11 +189,12 @@ def filters(
     distance_from: str | None = Query(None, max_length=60),
     distance_km: int | None = Query(None, ge=1, le=300),
     distance_remote: bool = True,
+    country: str | None = Query(None, max_length=400),
 ) -> stats.Filters:
     return stats.Filters(role, seniority, city, company, english_only, sponsorship, remote, days, q, skill,
                          include_closed, exclude_agencies, exclude_companies, since, skills_any, ids, language,
                          experience, enrollment, org_size, confirmed_days, degree, employees, sector, position,
-                         exclude_ids, distance_from, distance_km, distance_remote)
+                         exclude_ids, distance_from, distance_km, distance_remote, country)
 
 
 def _rows(session: Session, f: stats.Filters) -> list[stats.Row]:
@@ -252,7 +253,7 @@ def cooccurrence(request: Request, top: int = Query(30, le=80), f: stats.Filters
 def breakdown(request: Request, key: str, top: int = Query(20, le=100), f: stats.Filters = Depends(filters),
               session: Session = Depends(db)):
     allowed = {"city", "company", "ats", "seniority", "role_family", "remote_policy", "degree_required",
-               "posting_language", "experience", "org_size", "degree", "employees", "sector", "position"}
+               "posting_language", "experience", "org_size", "degree", "employees", "sector", "position", "country"}
     if key not in allowed:
         raise HTTPException(400, f"key must be one of {sorted(allowed)}")
 
@@ -405,6 +406,8 @@ def _filter_data(session: Session) -> dict:
     rows = [r for r in stats.CACHE.rows(session) if r.closed_at is None]
     return {
         "cities": [d["key"] for d in stats.breakdown(rows, "city", 40)],
+        # the entry-level site lists jobs from many countries; most jobs first
+        "countries": [d["key"] for d in stats.breakdown(rows, "country", 250) if d["key"] != "unknown"],
         "companies": [d["key"] for d in stats.breakdown(rows, "company", 300)],
         "roles": [d["key"] for d in stats.breakdown(rows, "role_family", 20)],
         "seniorities": [d["key"] for d in stats.breakdown(rows, "seniority", 10)],

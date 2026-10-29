@@ -102,7 +102,7 @@
       "p.extracted": "{n} skills found; press Save profile to keep them.", "p.add.skills": "Add some skills first.", "p.analysing": "Analysing…",
       "p.considered": "{n} postings considered", "p.coverage": "Your skills cover {p}% of all skill mentions in these postings. The most demanded skills you do not list:",
       "skill.tracked": "“{v}” is tracked as “{c}”.", "skill.unknown": "“{v}” is not one of the tracked skills, so it will not affect matches.",
-      "ph.city": "city…", "ph.employer": "employer name…", "ph.skill": "skill…",
+      "ph.city": "city…", "ph.country": "any country…", "pill.country": "Country", "ph.employer": "employer name…", "ph.skill": "skill…",
      
      
      
@@ -214,7 +214,7 @@
       "p.extracted": "{n} skills gevonden; klik op Profiel opslaan om ze te bewaren.", "p.add.skills": "Voeg eerst wat skills toe.", "p.analysing": "Bezig met analyseren…",
       "p.considered": "{n} vacatures bekeken", "p.coverage": "Je skills dekken {p}% van alle skillvermeldingen in deze vacatures. De meest gevraagde skills die je niet noemt:",
       "skill.tracked": "“{v}” wordt bijgehouden als “{c}”.", "skill.unknown": "“{v}” is geen bijgehouden skill en telt niet mee voor matches.",
-      "ph.city": "stad…", "ph.employer": "naam werkgever…", "ph.skill": "skill…",
+      "ph.city": "stad…", "ph.country": "elk land…", "pill.country": "Land", "ph.employer": "naam werkgever…", "ph.skill": "skill…",
      
      
      
@@ -383,6 +383,9 @@
   const roleLabel = (r) => t("role." + r) === "role." + r ? r : t("role." + r);
   const levelLabel = (l) => t("level." + l) === "level." + l ? l : t("level." + l);
   const remoteLabel = (r) => t("remote." + r);
+  // a country's name from its ISO code ("DE" -> "Germany"), in the interface language
+  const regionNames = (() => { try { return new Intl.DisplayNames([LANG], { type: "region" }); } catch { return null; } })();
+  const countryLabel = (c) => { try { return (regionNames && regionNames.of(c)) || c; } catch { return c; } };
   const expLabel = (e) => t("exp." + e);
   const degreeLabel = (d) => t("deg." + d);
   const empLabel = (e) => t("emp." + e);
@@ -665,7 +668,7 @@
   async function loadHeader() {
     const [o, f] = await Promise.all([api("/api/overview"), api("/api/filters")]);
     state.overview = o;
-    state.options.roles = [...f.roles.filter((r) => r !== "other"), ...f.roles.filter((r) => r === "other")]; state.options.cities = f.cities.filter((c) => c !== "Unknown"); state.options.skills = f.skills;
+    state.options.roles = [...f.roles.filter((r) => r !== "other"), ...f.roles.filter((r) => r === "other")]; state.options.cities = f.cities.filter((c) => c !== "Unknown"); state.options.countries = f.countries || []; state.options.skills = f.skills;
     state.options.sectors = [...(f.sectors || []).filter((s) => s !== "other"), ...(f.sectors || []).filter((s) => s === "other")];
     state.options.positions = [...(f.positions || []).filter((s) => s !== "other"), ...(f.positions || []).filter((s) => s === "other")];
     renderHeader();
@@ -775,7 +778,7 @@
     store.set("seen", state.seen);
     const li = document.querySelector(`#postings a[data-pid="${id}"]`); if (li) li.closest(".job")?.classList.add("seen");
   }
-  const emptyJobFilters = () => ({ roles: [], positions: [], levels: [], exp: [], degrees: [], emps: [], sectors: [], remote: [], cities: [], language: "", visa: false, agencies: false, noenrol: false, confirmed: false, q: "", days: "", savedOnly: false, exclude: [] });
+  const emptyJobFilters = () => ({ roles: [], positions: [], levels: [], exp: [], degrees: [], emps: [], sectors: [], remote: [], cities: [], countries: [], language: "", visa: false, agencies: false, noenrol: false, confirmed: false, q: "", days: "", savedOnly: false, exclude: [] });
   // the Jobs tab opens with the saved profile's filters. "Reset filters" turns that off for this browser (it is
   // remembered, so a reload does not bring them back); "Use my profile" and saving the profile turn it on again.
   function currentJobFilters() {
@@ -786,7 +789,7 @@
     const list = (k) => (q.get(k) || "").split(",").map((s) => s.trim()).filter(Boolean);
     return Object.assign(emptyJobFilters(), {
       roles: list("role"), positions: list("position"), levels: list("seniority"), exp: list("experience"), degrees: list("degree"),
-      emps: list("employees"), sectors: list("sector"), remote: list("remote"), cities: list("city"),
+      emps: list("employees"), sectors: list("sector"), remote: list("remote"), cities: list("city"), countries: list("country"),
       exclude: list("exclude_companies"), language: q.get("language") || "", visa: q.get("sponsorship") === "true",
       agencies: q.get("exclude_agencies") === "true", noenrol: q.get("enrollment") === "open", confirmed: !!q.get("confirmed_days"),
       q: q.get("q") || "", days: q.get("days") || "", savedOnly: q.get("saved") === "1",
@@ -824,6 +827,7 @@
     if (f.positions && f.positions.length) q.set("position", f.positions.join(","));
     if (f.remote.length) q.set("remote", f.remote.join(","));
     if (f.cities.length) q.set("city", f.cities.join(","));
+    if (f.countries && f.countries.length) q.set("country", f.countries.join(","));
     if (f.exclude && f.exclude.length) q.set("exclude_companies", f.exclude.join(","));
     if (f.language) q.set("language", f.language);
     if (f.visa) q.set("sponsorship", "true");
@@ -846,7 +850,7 @@
   }
   // how many choices each filter group holds (its heading shows the number; on a phone the Filters button shows the sum)
   const PILL_COUNTS = {
-    visa: (f) => (f.visa ? 1 : 0), lang: (f) => langList(f.language).length, exp: (f) => f.exp.length + f.levels.length,
+    country: (f) => (f.countries || []).length, visa: (f) => (f.visa ? 1 : 0), lang: (f) => langList(f.language).length, exp: (f) => f.exp.length + f.levels.length,
     role: (f) => f.roles.length + (f.positions || []).length, degree: (f) => f.degrees.length, distance: (f) => (f.distanceFrom ? 1 : 0), remote: (f) => f.remote.length,
     company: (f) => f.emps.length + f.sectors.length + (f.agencies ? 1 : 0),
     posted: (f) => (f.days ? 1 : 0) + (f.confirmed ? 1 : 0), more: (f) => (f.noenrol ? 1 : 0) + (f.savedOnly ? 1 : 0) + (f.hideSeen ? 1 : 0) + (f.hideApplied ? 1 : 0),
@@ -892,6 +896,11 @@
     toggles($("#f-emp"), EMPS, f.emps, empLabel, () => refreshJobs(true));
     toggles($("#f-remote"), REMOTE, f.remote, remoteLabel, () => refreshJobs(true));
     chipInput($("#f-cities"), f.cities, [...state.options.cities, "Remote"], () => refreshJobs(true), t("ph.city"), null, cityLabel);
+    if (ENTRY) {  // jobs from many countries: pick any number of them, most jobs first
+      if (!f.countries) f.countries = [];
+      $("#fg-country").hidden = false;
+      chipInput($("#f-countries"), f.countries, state.options.countries, () => refreshJobs(true), t("ph.country"), null, countryLabel);
+    }
     langToggles($("#f-language"), f, () => refreshJobs(true)); $("#f-visa").checked = f.visa; $("#f-agencies").checked = f.agencies; $("#f-noenrol").checked = !!f.noenrol; $("#f-confirmed").checked = !!f.confirmed;
     $("#f-saved").checked = f.savedOnly; $("#f-q").value = f.q; $("#f-days").value = f.days;
     $("#f-hideseen").checked = !!f.hideSeen; $("#f-hideapplied").checked = !!f.hideApplied;
@@ -1018,7 +1027,8 @@
     const have = state.profile.skills, saved = state.saved.includes(i.id);
     const away = distances.from && currentJobFilters().distanceFrom ? distances.km[i.city] : null;
     const travel = away ? ` · ${t("distance.km", { k: away })}` : "";  // nothing for the chosen city itself
-    const place = (i.city ? cityLabel(i.city) : (i.remote ? t("remote.label") : "")) + travel;
+    const place = (i.city ? cityLabel(i.city) : (i.remote ? t("remote.label") : "")) + travel
+      + (ENTRY && i.country ? (i.city || i.remote ? ", " : "") + countryLabel(i.country) : "");
     const more = i.also_in && i.also_in.length ? ` <span class="more-cities" title="${esc(t("also.in", { c: i.also_in.map(cityLabel).join(", ") }))}">+${i.also_in.length}</span>` : "";
     const policy = i.remote_policy && i.remote_policy !== "onsite" && i.remote_policy !== "unknown" ? remoteLabel(i.remote_policy) : "";
     const exp = expCell(i), salary = salaryText(i);

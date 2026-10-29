@@ -45,6 +45,7 @@ class Row:
     also_in: list[str] = field(default_factory=list)  # other cities of the same vacancy
     employees: int | None = None  # headcount where known (radar/sizes.py), else None
     sector: str = "other"  # the employer's sector (radar/sectors.py)
+    country: str | None = None  # ISO code; the entry-level site lists jobs from many (RADAR_ENTRY_LEVEL_COUNTRIES)
 
     @property
     def confirmed_at(self) -> datetime | None:
@@ -212,11 +213,15 @@ class Filters:
     distance_from: str | None = None  # a job city: keep jobs within distance_km of it (radar/distance.py)
     distance_km: int | None = None
     distance_remote: bool = True  # with a distance filter, keep remote jobs too
+    country: str | None = None  # comma list of ISO codes ("DE,GB")
 
     def apply(self, rows: list[Row]) -> list[Row]:
         out = rows
         if not self.include_closed:
             out = [r for r in out if r.closed_at is None]
+        countries = {c.upper() for c in _csv(self.country)}
+        if countries:
+            out = [r for r in out if (r.country or "") in countries]
         if self.ids:
             wanted = {int(i) for i in self.ids.split(",") if i.strip().isdigit()}
             out = [r for r in out if r.id in wanted]
@@ -393,7 +398,7 @@ def load_rows(session: Session, include_closed_days: int = 90) -> list[Row]:
     # 100 MB through the API process, enough to push it past its memory limit
     cols = (Posting.id, Posting.title, Posting.company, Posting.city, Posting.remote, Posting.url, Posting.posted_at,
             Posting.first_seen, Posting.closed_at, Posting.extraction, Posting.last_seen, Posting.link_checked_at,
-            Posting.link_status, Posting.valid_through, Posting.also_in)
+            Posting.link_status, Posting.valid_through, Posting.also_in, Posting.country)
     stmt = (
         select(*cols, Source.ats, Source.kind)
         .join(Source, Source.id == Posting.source_id)
@@ -448,6 +453,7 @@ def load_rows(session: Session, include_closed_days: int = 90) -> list[Row]:
                 p.also_in or [],
                 employees(p.company),
                 sector_of.get(p.company, "other"),
+                p.country,
             )
         )
     return rows
@@ -666,6 +672,8 @@ def breakdown(rows: list[Row], key: str, top: int = 20) -> list[dict[str, Any]]:
             v = r.sector
         elif key == "position":
             v = r.position
+        elif key == "country":
+            v = r.country or "unknown"
         else:
             v = str(r.ex.get(key, "unknown"))
         c[v] += 1
@@ -769,6 +777,7 @@ def posting_dicts(
             "title": r.title,
             "company": r.company,
             "city": r.city,
+            "country": r.country,
             "also_in": r.also_in,
             "remote": r.remote,
             "url": r.url,

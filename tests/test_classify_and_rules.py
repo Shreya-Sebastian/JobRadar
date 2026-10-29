@@ -33,6 +33,16 @@ def test_graduate_job_titles_in_several_languages():
     assert detect_seniority("Desarrollador Semi Senior Java") == "medior"
 
 
+def test_a_title_alone_can_look_like_a_graduate_role():
+    from radar.extract.rules import entry_level_title
+
+    for title in ("2027 Intern - Customer Quality Engineer Intern", "Shell Graduate Programme 2026 - Qatar",
+                  "Technical Emerging Talent Program 2027", "Werkstudent Softwareentwicklung", "PhD Position in AI"):
+        assert entry_level_title(title), title
+    for title in ("Senior Software Engineer", "Software Engineer", "Junior/Medior Developer", "Engineering Manager"):
+        assert not entry_level_title(title), title
+
+
 def test_zero_based_year_ranges_are_open_to_graduates():
     def entry(title, text):
         return is_entry_level(extract_rules(title, text).model_dump(), title)

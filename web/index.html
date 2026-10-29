@@ -93,6 +93,8 @@
   <aside class="side" id="filters" aria-labelledby="side-title">
    <div class="side-head"><h2 id="side-title" data-i18n="side.title">Filters</h2><button class="link" id="f-reset" data-i18n="f.reset">Clear filters</button><button type="button" class="side-close" id="side-close"><span aria-hidden="true">×</span><span class="sr-only" data-i18n="side.close">Close filters</span></button></div>
    <div class="side-body">
+    <details class="fgroup" data-pop="country" id="fg-country" open hidden><summary><span data-i18n="pill.country">Country</span><b class="n"></b></summary>
+      <div class="fbody"><div class="field"><div class="chipinput" id="f-countries"></div></div></div></details>
     <details class="fgroup" data-pop="lang" open><summary><span data-i18n="pill.lang">Language</span><b class="n"></b></summary>
       <div class="fbody"><div class="field"><label data-i18n="f.language">Languages you speak</label><div class="chips toggles" id="f-language"></div></div></div></details>
     <details class="fgroup" data-pop="visa" open><summary><span data-i18n="pill.visa">Visa sponsorship</span><b class="n"></b></summary>
@@ -334,6 +336,6 @@
   <p class="foot-bottom"><a href="{{ABOUT_PATH}}" data-i18n="about">About</a> · <a href="{{PRIVACY_PATH}}" data-i18n="privacy">Privacy</a> · <a href="{{FEEDBACK_PATH}}" data-i18n="feedback">Feedback</a>{{SOURCE_LINK}}</p>
  </div>
 </footer>
-<script src="/static/app.js?v=163"></script>
+<script src="/static/app.js?v=164"></script>
 </body>
 </html>

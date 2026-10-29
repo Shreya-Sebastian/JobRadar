@@ -73,7 +73,10 @@ def test_entry_level_jobs_abroad_are_kept_and_only_shown_on_the_junior_site(fres
         monkeypatch.setattr(settings, "entry_level_only", False)
         assert {r.title for r in stats.load_rows(s)} == {"Senior Backend Engineer"}  # the Dutch site: home only
         monkeypatch.setattr(settings, "entry_level_only", True)
-        assert {r.title for r in stats.load_rows(s)} == {"Junior Python Developer", "Graduate Software Engineer"}
+        rows = stats.load_rows(s)
+        assert {r.title for r in rows} == {"Junior Python Developer", "Graduate Software Engineer"}
+        assert [r.title for r in stats.Filters(country="de").apply(rows)] == ["Junior Python Developer"]
+        assert {d["key"] for d in stats.breakdown(rows, "country")} == {"DE", "GB"}
 
 
 def test_duplicates_across_sources_without_city_or_with_a_cut_title(fresh_db):

@@ -1577,6 +1577,15 @@ _EXPERIENCED_TITLE = re.compile(
     r"hoogleraar|universitair\s+(?:hoofd)?docent|associate\s+professor)\b", re.I)
 
 
+def entry_level_title(title: str) -> bool:
+    """Whether a title alone looks like a role for students or graduates. A cheap first check before a job's text is
+    fetched (the Workday adapter's pass abroad); is_entry_level decides."""
+    if _EXPERIENCED_TITLE.search(title or ""):
+        return False
+    return detect_seniority(title) in ("intern", "trainee", "phd", "postdoc", "junior") or \
+        bool(_STARTER_TITLE.search(title or ""))
+
+
 def is_entry_level(ex: dict, title: str) -> bool:
     """Whether a job is open to someone with no work experience: an internship, PhD or postdoc; or a traineeship,
     graduate programme, junior title, or a job with no level whose text welcomes graduates or starters, as long as it

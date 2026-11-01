@@ -76,6 +76,32 @@ class Adapter(ABC):
         except SourceNotFound:
             return False
 
+    # what graduate roles are called: a board's own search finds them among thousands of jobs worldwide
+    GRADUATE_SEARCHES = ("intern", "internship", "graduate", "trainee", "junior", "new grad", "entry level",
+                         "early career", "working student", "werkstudent", "praktikant", "apprentice", "phd",
+                         "postdoc", "fellowship", "stage")
+    ABROAD_EVERY_HOURS = 20
+
+    @staticmethod
+    def abroad_countries() -> tuple[bool, set[str] | None]:
+        """(whether graduate jobs abroad are read at all, the countries: None for every one) per
+        RADAR_ENTRY_LEVEL_COUNTRIES."""
+        from radar.config import entry_level_countries
+
+        return bool(settings.entry_level_countries.strip()), entry_level_countries()
+
+    def abroad_due(self, slug: str) -> bool:
+        """Whether a board's slow pass for graduate jobs abroad runs on this crawl: once a day. Remembered in Redis;
+        without it (a local run) every crawl runs it. When it does not, the adapter sets `abroad_kept` so the crawler
+        keeps the jobs abroad it stored (radar/crawler.py)."""
+        try:
+            from radar.queue import get_redis
+
+            return bool(get_redis().set(f"{self.ats}-abroad:{slug}", "1", nx=True,
+                                        ex=self.ABROAD_EVERY_HOURS * 3600))
+        except Exception:
+            return True
+
     def _get_json(self, url: str, **params: Any) -> Any:
         resp = self.client.get(url, params=params or None)
         if resp.status_code == 404:

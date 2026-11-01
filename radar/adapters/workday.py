@@ -121,10 +121,14 @@ class WorkdayAdapter(Adapter):
         for job in listings[: self.MAX_DETAILS]:
             description, posted, c = self._detail(api, job.get("externalPath") or "")
             out.append(self._raw(host, slug, job, description, posted, None if c and not _is_dutch_place(c) else "NL"))
-        from radar.config import entry_level_countries, settings
-
-        if settings.entry_level_countries.strip():
-            out.extend(self._graduates_abroad(host, api, slug, {r.url for r in out}, entry_level_countries()))
+        self.abroad_kept = False
+        on, countries = self.abroad_countries()
+        if on:
+            # once a day: the search costs a minute or two per large board
+            if self.abroad_due(slug):
+                out.extend(self._graduates_abroad(host, api, slug, {r.url for r in out}, countries))
+            else:
+                self.abroad_kept = True  # read today already: the crawler keeps the stored ones (radar/crawler.py)
         return out
 
     def _detail(self, api: str, path: str) -> tuple[str | None, object, str]:
@@ -152,10 +156,6 @@ class WorkdayAdapter(Adapter):
             raw={"posted_on": job.get("postedOn")},
         )
 
-    # what graduate roles are called: the board's own search finds them among thousands of jobs worldwide
-    GRADUATE_SEARCHES = ("intern", "internship", "graduate", "trainee", "junior", "new grad", "entry level",
-                         "early career", "working student", "werkstudent", "praktikant", "apprentice", "phd",
-                         "postdoc", "fellowship", "stage")
     PAGES_PER_SEARCH = 5
     MAX_ABROAD_DETAILS = 150
 

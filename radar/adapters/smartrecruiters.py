@@ -7,7 +7,8 @@ from radar.adapters.base import Adapter, RawPosting, parse_dt
 class SmartRecruitersAdapter(Adapter):
     """SmartRecruiters public Posting API: https://api.smartrecruiters.com/v1/companies/{slug}/postings
     Listing is paged (100 per page) and carries the location; the job ad text needs one detail request per
-    posting, so details are fetched only for postings located in the Netherlands.
+    posting, so details are fetched only for postings located in the Netherlands, and abroad for those whose title
+    looks like a role for students and graduates (when RADAR_ENTRY_LEVEL_COUNTRIES is set).
 
     Incremental like the JSON-LD adapter: the crawler may set `known_urls` (external id -> external id of live
     postings already stored with their text). Those are not fetched again, apart from one in twenty each crawl so
@@ -17,6 +18,7 @@ class SmartRecruitersAdapter(Adapter):
     BASE = "https://api.smartrecruiters.com/v1/companies/{slug}/postings"
     PAGE = 100
     MAX_DETAILS = 1500
+    MAX_ABROAD_DETAILS = 300
     REFRESH_EVERY = 20
 
     def __init__(self, client=None):
@@ -39,11 +41,19 @@ class SmartRecruitersAdapter(Adapter):
         salt = datetime.utcnow().timetuple().tm_yday
         out: list[RawPosting] = []
         details_left = self.MAX_DETAILS
+        abroad_left = self.MAX_ABROAD_DETAILS
+        from radar.extract.rules import entry_level_title
+
+        abroad_on, abroad = self.abroad_countries()
         for job in listings:
             loc = job.get("location") or {}
             country = (loc.get("country") or "").upper() or None
             job_id = str(job.get("id"))
-            if (country == "NL" and job_id in self.known_urls
+            # abroad, a role for students and graduates is read in full too (RADAR_ENTRY_LEVEL_COUNTRIES): its text
+            # says whether it asks for experience
+            graduate_abroad = (abroad_on and country not in (None, "NL") and (abroad is None or country in abroad)
+                               and entry_level_title(job.get("name") or ""))
+            if ((country == "NL" or graduate_abroad) and job_id in self.known_urls
                     and (zlib.crc32(job_id.encode()) + salt) % self.REFRESH_EVERY):
                 self.still_listed.add(job_id)  # stored with its text already; not due for a refresh
                 continue
@@ -51,8 +61,13 @@ class SmartRecruitersAdapter(Adapter):
             parts = [p for p in (city, loc.get("region"), loc.get("country")) if p]
             description = None
             posting_url = f"https://jobs.smartrecruiters.com/{slug}/{job_id}"
-            if country == "NL" and details_left > 0:
-                details_left -= 1
+            if graduate_abroad and abroad_left > 0:
+                abroad_left -= 1
+                read = True
+            else:
+                read = country == "NL" and details_left > 0
+                details_left -= read
+            if read:
                 try:
                     detail = self._get_json(f"{url}/{job_id}")
                     sections = (detail.get("jobAd") or {}).get("sections") or {}

@@ -40,13 +40,13 @@ class AvatureAdapter(Adapter):
             raise AdapterError(f"{resp.status_code} for {url}")
         return resp.text
 
-    def listings(self, slug: str) -> list[dict]:
-        """The jobs a Netherlands search lists: {id, title, url, location}, in page order."""
+    def listings(self, slug: str, search: str = "Netherlands", pages: int | None = None) -> list[dict]:
+        """The jobs a search lists (by default for the Netherlands): {id, title, url, location}, in page order."""
         base = self._base(slug)
         seen: dict[str, dict] = {}
         offset = 0
-        for _ in range(self.MAX_PAGES):
-            html = self._page(f"{base}/SearchJobs/", search="Netherlands", folderOffset=offset)
+        for _ in range(pages or self.MAX_PAGES):
+            html = self._page(f"{base}/SearchJobs/", search=search, folderOffset=offset)
             soup = BeautifulSoup(html, "lxml")
             found = 0
             for a in soup.find_all("a", href=self._DETAIL):
@@ -143,6 +143,46 @@ class AvatureAdapter(Adapter):
                 external_id=job_id, title=job["title"], url=job["url"], location=location,
                 country="NL", description_html=html, posted_at=posted,
             ))
+        self.abroad_kept = False
+        on, countries = self.abroad_countries()
+        if on:
+            # once a day: job pages are large (RADAR_ENTRY_LEVEL_COUNTRIES)
+            if self.abroad_due(slug):
+                out += self._graduates_abroad(slug, {r.external_id for r in out} | self.still_listed, countries)
+            else:
+                self.abroad_kept = True  # read today already: the crawler keeps the stored ones (radar/crawler.py)
+        return out
+
+    MAX_ABROAD_DETAILS = 100
+
+    def _graduates_abroad(self, slug: str, have: set[str], countries: set[str] | None) -> list[RawPosting]:
+        """Roles for students and graduates outside the Netherlands: found with the portal's search for graduate
+        terms, kept by title before their (large) page is read. The crawler decides what is stored."""
+        from radar.extract.rules import entry_level_title
+        from radar.normalize import place_country
+
+        found: dict[str, dict] = {}
+        for word in self.GRADUATE_SEARCHES:
+            try:
+                jobs = self.listings(slug, search=word, pages=5)
+            except Exception:
+                continue
+            for job in jobs:
+                if job["id"] not in have and job["id"] not in found and not self._NL.search(job["location"]) \
+                        and entry_level_title(job["title"]):
+                    found[job["id"]] = job
+        out: list[RawPosting] = []
+        for job in list(found.values())[: self.MAX_ABROAD_DETAILS]:
+            try:
+                html, posted, locations = self._detail(job["url"])
+            except Exception:
+                continue
+            location = locations.split(" | ")[0] if job["location"].lower() == "multiple locations" else job["location"]
+            code = place_country(location) or place_country(locations)
+            if not code or code == "NL" or (countries is not None and code not in countries):
+                continue
+            out.append(RawPosting(external_id=job["id"], title=job["title"], url=job["url"], location=location,
+                                  country=code, description_html=html, posted_at=posted))
         return out
 
     def probe(self, slug: str) -> bool:

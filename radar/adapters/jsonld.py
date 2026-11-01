@@ -30,6 +30,13 @@ _JOB_LINK = re.compile(
 
 
 _APPLY_PAGE = re.compile(r"/(?:[a-z]{2}/)?(?:apply|solliciteer|solliciteren|application(?:-form)?)/?(?:\?.*)?$", re.I)
+# a job page address that names a role for students or graduates ("/job/graduate-software-engineer-berlin/123"),
+# word by word: "intern" but not "international"
+_GRADUATE_URL = re.compile(
+    r"(?:^|[-_/.+])(?:interns?|internships?|graduates?|trainees?|traineeships?|junior|jr|werkstudent\w*|working-student|"
+    r"praktik\w*|stage|stagiai\w*|apprentice\w*|alternan\w*|phd|postdoc\w*|new-grads?|newgrad\w*|early-careers?|"
+    r"entry-level|fellowships?|absolvent\w*|berufseinst\w*|placements?|tirocin\w*|practicas|becari\w*|estagi\w*)"
+    r"(?:$|[-_/.+?])", re.I)
 _NL_URL_CACHE: re.Pattern | None = None
 
 
@@ -72,6 +79,7 @@ class JsonLdAdapter(Adapter):
     ats = "jsonld"
     MAX_PAGES = 150
     MAX_SITEMAP_PAGES = 4000
+    MAX_ABROAD_PAGES = 200
     NL_PREFILTER_ABOVE = 2500
     REFRESH_EVERY = 20
     TIME_BUDGET_SECONDS = 900  # one oversized site must not stall a whole crawl run
@@ -112,7 +120,12 @@ class JsonLdAdapter(Adapter):
                 # A global employer's sitemap (Capgemini lists ~10k jobs worldwide): only fetch pages whose URL
                 # names a Dutch city or the country. Postings without a location in the URL are missed, which
                 # is the price of not fetching ten thousand pages per crawl.
-                urls = [u for u in urls if _nl_url().search(u)]
+                dutch = [u for u in urls if _nl_url().search(u)]
+                if self.abroad_countries()[0]:
+                    # and abroad, pages whose URL names a role for students or graduates (RADAR_ENTRY_LEVEL_COUNTRIES)
+                    have = set(dutch)
+                    dutch += [u for u in urls if u not in have and _GRADUATE_URL.search(u)][: self.MAX_ABROAD_PAGES]
+                urls = dutch
             queue = [u for u in urls if not self._skip_known(u, salt)][:limit]
             if not queue and self.still_listed:
                 return []  # everything still listed, nothing new to read

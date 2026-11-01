@@ -39,8 +39,25 @@ def test_a_title_alone_can_look_like_a_graduate_role():
     for title in ("2027 Intern - Customer Quality Engineer Intern", "Shell Graduate Programme 2026 - Qatar",
                   "Technical Emerging Talent Program 2027", "Werkstudent Softwareentwicklung", "PhD Position in AI"):
         assert entry_level_title(title), title
-    for title in ("Senior Software Engineer", "Software Engineer", "Junior/Medior Developer", "Engineering Manager"):
+    for title in ("Senior Software Engineer", "Software Engineer", "Junior/Medior Developer", "Engineering Manager",
+                  "Early Careers Program Specialist", "Campus Recruiter", "Graduate Programme Manager",
+                  "University Relations Lead", "Talent Acquisition Partner - Early Careers", "Internship Coordinator"):
         assert not entry_level_title(title), title
+    # still graduate roles, though they name a role word
+    for title in ("Graduate Software Engineer", "Intern - Data Analyst", "Graduate Data Consultant",
+                  "Working Student Marketing Analytics", "Junior Software Engineer II - Graduate Programme 2027"):
+        assert entry_level_title(title), title
+
+
+def test_job_page_addresses_that_name_a_graduate_role():
+    from radar.adapters.jsonld import _GRADUATE_URL
+
+    for url in ("https://x.com/job/graduate-software-engineer-berlin/123", "https://x.com/job/werkstudent-it-muenchen-1",
+                "https://x.com/en/job/stage-data-analyst-lyon/77", "https://x.com/jobs/new-grad-swe-2027"):
+        assert _GRADUATE_URL.search(url), url
+    for url in ("https://x.com/jobs/international-sales-manager/9", "https://x.com/job/internal-audit-lead/5",
+                "https://x.com/job/senior-engineer-paris/1"):
+        assert not _GRADUATE_URL.search(url), url
 
 
 def test_zero_based_year_ranges_are_open_to_graduates():

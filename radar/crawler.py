@@ -87,6 +87,9 @@ def fetch_source(source: Source, throttle: _DomainThrottle,
         postings = adapter.fetch(source.slug)
         for ext in getattr(adapter, "still_listed", None) or ():
             postings.append(RawPosting(external_id=ext, title="", url="", raw={"still_listed": True}))
+        if getattr(adapter, "abroad_kept", False):
+            # the adapter did not read its jobs abroad this time (radar/adapters/workday.py, once a day)
+            postings.append(RawPosting(external_id="", title="", url="", raw={"abroad_kept": True}))
         return source, postings, None
     except SourceNotFound:
         return source, None, "not_found"
@@ -195,6 +198,9 @@ def entry_level_abroad(fields: dict, extract) -> bool:
     title = fields["title"]
     if detect_seniority(title) in _EXPERIENCED_TITLE_LEVELS:
         return False
+    if len((fields["description"] or "").strip()) < 200:
+        return False  # without the text it cannot be told whether it asks for experience: not on the site
+
     if not is_tech(title, fields["description"]):
         return False
     return is_entry_level(extract(title, fields["description"]).model_dump(), title)
@@ -312,6 +318,11 @@ def ingest(session: Session, source: Source, raws: list[RawPosting], extractor_n
                 updated += 1
     # Completeness guard: a board that suddenly returns far fewer postings than last time is more likely a
     # partial or broken response than a mass closure. Keep its postings open and flag it instead.
+    # A board that did not read its jobs abroad this time keeps the ones stored: they are neither closed nor missing
+    if any(r.raw.get("abroad_kept") for r in raws):
+        for ext_id, p in existing.items():
+            if ext_id not in seen_ids and p.closed_at is None and keep is not None and p.country not in keep:
+                seen_ids.add(ext_id)
     previous = source.last_nl_count or 0
     partial = previous >= 10 and len(seen_ids) < 0.5 * previous
     closed = 0

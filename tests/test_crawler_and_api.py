@@ -12,6 +12,10 @@ def _raw(ext, title, loc="Amsterdam, Netherlands", desc="Python, AWS and Docker.
     return RawPosting(external_id=ext, title=title, url=f"https://x/{ext}", location=loc, description_text=desc)
 
 
+# a job text of realistic length: abroad, a job is only kept when its text could be read
+_TEXT = " You join a small team that builds data platforms and web services for customers across Europe." * 3
+
+
 def _source(session, company="Acme", ats="greenhouse", slug="acme"):
     s = Source(company=company, ats=ats, slug=slug)
     session.add(s)
@@ -61,11 +65,11 @@ def test_entry_level_jobs_abroad_are_kept_and_only_shown_on_the_junior_site(fres
         src = _source(s)
         c = ingest(s, src, [
             _raw("nl", "Senior Backend Engineer"),                                  # home country: kept as always
-            _raw("de1", "Junior Python Developer", "Berlin, Germany", "Python and Django. Graduates welcome."),
-            _raw("de2", "Senior Python Developer", "Berlin, Germany"),              # abroad and senior: dropped
-            _raw("gb", "Graduate Software Engineer", "London, United Kingdom", "Java and SQL. Recent graduates."),
-            _raw("fr", "Graduate Software Engineer", "Paris, France", "Java and SQL."),  # country not switched on
-            _raw("de3", "Junior Data Engineer", "Munich, Germany", "3 years of experience with Python."),
+            _raw("de1", "Junior Python Developer", "Berlin, Germany", "Python and Django. Graduates welcome." + _TEXT),
+            _raw("de2", "Senior Python Developer", "Berlin, Germany", "Python." + _TEXT),              # abroad and senior: dropped
+            _raw("gb", "Graduate Software Engineer", "London, United Kingdom", "Java and SQL. Recent graduates." + _TEXT),
+            _raw("fr", "Graduate Software Engineer", "Paris, France", "Java and SQL." + _TEXT),  # country not switched on
+            _raw("de3", "Junior Data Engineer", "Munich, Germany", "3 years of experience with Python." + _TEXT),
         ])
         assert c["new"] == 3 and c["foreign"] == 3
         by = {p.external_id: p for p in s.query(Posting)}
@@ -77,6 +81,22 @@ def test_entry_level_jobs_abroad_are_kept_and_only_shown_on_the_junior_site(fres
         assert {r.title for r in rows} == {"Junior Python Developer", "Graduate Software Engineer"}
         assert [r.title for r in stats.Filters(country="de").apply(rows)] == ["Junior Python Developer"]
         assert {d["key"] for d in stats.breakdown(rows, "country")} == {"DE", "GB"}
+
+
+def test_jobs_abroad_stay_open_when_a_board_skips_them_for_the_day(fresh_db, monkeypatch):
+    from radar.config import settings
+
+    monkeypatch.setattr(settings, "entry_level_countries", "ALL")
+    kept = RawPosting(external_id="", title="", url="", raw={"abroad_kept": True})
+    with session_scope() as s:
+        src = _source(s)
+        ingest(s, src, [_raw("nl", "Backend Engineer"),
+                        _raw("de", "Junior Python Developer", "Berlin, Germany", "Python. Graduates welcome." + _TEXT)])
+        c = ingest(s, src, [_raw("nl", "Backend Engineer"), kept])   # abroad not read this time
+        assert c["closed"] == 0 and c["partial"] is False
+        assert s.query(Posting).filter_by(external_id="de").one().closed_at is None
+        c = ingest(s, src, [_raw("nl", "Backend Engineer")])         # read, and the job is gone
+        assert c["closed"] == 1 and s.query(Posting).filter_by(external_id="de").one().closed_at is not None
 
 
 def test_duplicates_across_sources_without_city_or_with_a_cut_title(fresh_db):

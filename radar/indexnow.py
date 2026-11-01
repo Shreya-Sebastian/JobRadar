@@ -29,8 +29,9 @@ URLS_PER_RUN = 10000  # the protocol's limit for one request
 def changed(session: Session, since: datetime | None) -> list:
     """Tech postings first seen or closed after `since` (every live one when `since` is None), newest first."""
     from radar.models import Posting
+    from radar.stats import site_postings
 
-    q = select(Posting).where(Posting.is_tech.is_(True), Posting.duplicate_of.is_(None))
+    q = select(Posting).where(Posting.is_tech.is_(True), Posting.duplicate_of.is_(None), site_postings())
     if since is None:
         q = q.where(Posting.closed_at.is_(None))
     else:

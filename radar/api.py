@@ -854,6 +854,11 @@ def job_page(posting_id: int, slug: str = "", session: Session = Depends(db), la
         raise HTTPException(404, "no such listing")
     if not p.is_tech:  # read again and found not to be a tech job: gone for good, so search engines drop it at once
         raise HTTPException(410, "listing removed")
+    from radar.config import allowed_countries
+
+    home = allowed_countries()
+    if not settings.entry_level_only and home is not None and p.country and p.country not in home:
+        raise HTTPException(404, "no such listing")  # a graduate job abroad: the entry-level site's, not this one's
     if settings.entry_level_only:
         from radar.extract.rules import is_entry_level
         from radar.review import merge, overrides

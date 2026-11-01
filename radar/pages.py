@@ -18,7 +18,7 @@ from urllib.parse import quote
 
 from radar.config import settings
 from radar.distance import PROVINCES
-from radar.stats import Row
+from radar.stats import Row, site_postings
 from radar.wording import country_suffix, neutralize, tagline
 
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
@@ -566,7 +566,7 @@ def job_history(session, p) -> dict:
         select(func.count(), func.min(func.coalesce(Posting.posted_at, Posting.first_seen)))
         .where(Posting.company == p.company, Posting.id != p.id, Posting.duplicate_of.is_(None),
                func.lower(Posting.title).startswith(norm, autoescape=True), Posting.first_seen < p.first_seen,
-               Posting.closed_at.is_not(None))).one()
+               Posting.closed_at.is_not(None), site_postings())).one()
     return {"open_days": max(0, (end - start).days), "earlier": earlier[0] or 0, "first": earlier[1]}
 
 

@@ -67,6 +67,7 @@ def job_url(posting) -> str:
 def pending(session: Session, budget: int) -> list[tuple[str, object]]:
     """What to send now, within `budget`: (kind, posting). Closed postings that were announced come first."""
     from radar.models import IndexNotice, Posting
+    from radar.stats import site_postings
 
     out: list[tuple[str, object]] = []
     gone = session.execute(
@@ -80,7 +81,7 @@ def pending(session: Session, budget: int) -> list[tuple[str, object]]:
         fresh = session.execute(
             select(Posting).outerjoin(IndexNotice, IndexNotice.posting_id == Posting.id)
             .where(IndexNotice.posting_id.is_(None), Posting.closed_at.is_(None), Posting.duplicate_of.is_(None),
-                   Posting.is_tech.is_(True))
+                   Posting.is_tech.is_(True), site_postings())  # this site's jobs only: none abroad on the Dutch site
             .order_by(Posting.first_seen.desc()).limit(budget - len(out))
         ).scalars().all()
         out += [("URL_UPDATED", p) for p in fresh]

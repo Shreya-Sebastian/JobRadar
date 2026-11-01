@@ -83,6 +83,30 @@ def test_entry_level_jobs_abroad_are_kept_and_only_shown_on_the_junior_site(fres
         assert {d["key"] for d in stats.breakdown(rows, "country")} == {"DE", "GB"}
 
 
+def test_the_dutch_site_never_counts_or_shows_a_job_abroad(fresh_db, monkeypatch):
+    from radar import stats
+    from radar.api import app
+    from radar.config import settings
+    from radar.indexing import pending
+    from radar.indexnow import changed
+
+    monkeypatch.setattr(settings, "entry_level_countries", "ALL")
+    with session_scope() as s:
+        src = _source(s)
+        ingest(s, src, [_raw("nl", "Backend Engineer"),
+                        _raw("de", "Junior Python Developer", "Berlin, Germany", "Python. Graduates welcome." + _TEXT)])
+        de = s.query(Posting).filter_by(external_id="de").one()
+        assert de.country == "DE"
+        de_id = de.id
+        assert stats.overview(s)["live_tech_postings"] == 1 and stats.new_jobs(s)["recent"] == 1
+        assert {p.external_id for _, p in pending(s, 10)} == {"nl"} and {p.external_id for p in changed(s, None)} == {"nl"}
+        monkeypatch.setattr(settings, "entry_level_only", True)  # the graduate site counts both
+        assert stats.overview(s)["live_tech_postings"] == 2
+        monkeypatch.setattr(settings, "entry_level_only", False)
+    c = TestClient(app)
+    assert c.get(f"/job/{de_id}", headers={"accept": "text/html"}, follow_redirects=False).status_code == 404
+
+
 def test_jobs_abroad_stay_open_when_a_board_skips_them_for_the_day(fresh_db, monkeypatch):
     from radar.config import settings
 

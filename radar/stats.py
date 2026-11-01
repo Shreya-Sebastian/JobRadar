@@ -391,6 +391,21 @@ class _Cache:
 CACHE = _Cache()
 
 
+def site_postings():
+    """The SQL condition for the postings this site lists. The Dutch site lists its home countries only
+    (RADAR_COUNTRIES); the graduate jobs kept from abroad (RADAR_ENTRY_LEVEL_COUNTRIES) are the entry-level site's.
+    Every count or list the Dutch site takes straight from the database goes through this, so a job abroad never
+    shows there."""
+    from sqlalchemy import true
+
+    from radar.config import allowed_countries, settings
+
+    home = allowed_countries()
+    if home is None or settings.entry_level_only:
+        return true()
+    return Posting.country.in_(home) | Posting.country.is_(None)
+
+
 def load_rows(session: Session, include_closed_days: int = 90) -> list[Row]:
     """Tech, non-duplicate postings: all live ones plus those closed in the last N days (for trends)."""
     cutoff = datetime.utcnow() - timedelta(days=include_closed_days)
@@ -402,15 +417,10 @@ def load_rows(session: Session, include_closed_days: int = 90) -> list[Row]:
     stmt = (
         select(*cols, Source.ats, Source.kind)
         .join(Source, Source.id == Posting.source_id)
-        .where(Posting.is_tech.is_(True), Posting.duplicate_of.is_(None))
+        .where(Posting.is_tech.is_(True), Posting.duplicate_of.is_(None), site_postings())
         .where((Posting.closed_at.is_(None)) | (Posting.closed_at >= cutoff))
     )
-    from radar.config import allowed_countries, settings
-
-    home = allowed_countries()
-    if home is not None and not settings.entry_level_only:
-        # the Dutch site lists its own countries only; the entry-level jobs kept from abroad are the junior site's
-        stmt = stmt.where(Posting.country.in_(home) | Posting.country.is_(None))
+    from radar.config import settings
     from radar.review import merge, overrides
     from radar.sectors import load_map
     from radar.sizes import employees
@@ -419,7 +429,7 @@ def load_rows(session: Session, include_closed_days: int = 90) -> list[Row]:
     sector_of = load_map(session)
     open_roles = dict(session.execute(
         select(Posting.company, func.count())
-        .where(Posting.closed_at.is_(None), Posting.duplicate_of.is_(None))
+        .where(Posting.closed_at.is_(None), Posting.duplicate_of.is_(None), site_postings())
         .group_by(Posting.company)
     ).all())
     from radar.extract.rules import is_entry_level
@@ -510,7 +520,8 @@ def new_jobs(session: Session, now: datetime | None = None, days: int = 7) -> di
     now = now or datetime.utcnow()
     start = session.scalar(select(func.min(Posting.first_seen)))
     when = func.coalesce(Posting.posted_at, Posting.first_seen)
-    base = select(func.count()).select_from(Posting).where(Posting.is_tech.is_(True), Posting.duplicate_of.is_(None))
+    base = select(func.count()).select_from(Posting).where(Posting.is_tech.is_(True), Posting.duplicate_of.is_(None),
+                                                          site_postings())
     recent = session.scalar(base.where(when > now - timedelta(days=days), when <= now)) or 0
     covered = start is not None and start <= now - timedelta(days=2 * days)
     before = session.scalar(base.where(when > now - timedelta(days=2 * days), when <= now - timedelta(days=days)))
@@ -533,7 +544,7 @@ def weekly_new(session: Session, now: datetime | None = None, weeks: int = 12) -
     first = max(first, monday(now) - timedelta(weeks=weeks - 1))
     when = func.coalesce(Posting.posted_at, Posting.first_seen)
     dates = session.scalars(select(when).where(Posting.is_tech.is_(True), Posting.duplicate_of.is_(None),
-                                               when >= first, when <= now)).all()
+                                               site_postings(), when >= first, when <= now)).all()
     counts = Counter(monday(d) for d in dates)
     this = monday(now)
     out = []
@@ -549,15 +560,17 @@ def weekly_new(session: Session, now: datetime | None = None, weeks: int = 12) -
 
 def overview(session: Session) -> dict[str, Any]:
     live = session.scalar(
-        select(func.count()).select_from(Posting).where(Posting.closed_at.is_(None), Posting.duplicate_of.is_(None))
+        select(func.count()).select_from(Posting).where(Posting.closed_at.is_(None), Posting.duplicate_of.is_(None),
+                                                        site_postings())
     )
     live_tech = session.scalar(
         select(func.count())
         .select_from(Posting)
-        .where(Posting.closed_at.is_(None), Posting.duplicate_of.is_(None), Posting.is_tech.is_(True))
+        .where(Posting.closed_at.is_(None), Posting.duplicate_of.is_(None), Posting.is_tech.is_(True), site_postings())
     )
     companies = session.scalar(
-        select(func.count(func.distinct(Posting.company))).where(Posting.closed_at.is_(None), Posting.is_tech.is_(True))
+        select(func.count(func.distinct(Posting.company))).where(Posting.closed_at.is_(None), Posting.is_tech.is_(True),
+                                                                 site_postings())
     )
     sources_total = session.scalar(select(func.count()).select_from(Source))
     sources_active = session.scalar(select(func.count()).select_from(Source).where(Source.active.is_(True)))
@@ -589,7 +602,7 @@ def overview(session: Session) -> dict[str, Any]:
         select(func.count())
         .select_from(Posting)
         .join(Source, Source.id == Posting.source_id)
-        .where(Posting.is_tech.is_(True), Posting.closed_at.is_(None), Posting.duplicate_of.is_(None))
+        .where(Posting.is_tech.is_(True), Posting.closed_at.is_(None), Posting.duplicate_of.is_(None), site_postings())
         .where(
             (Posting.posted_at >= week)
             | (Posting.posted_at.is_(None) & (Posting.first_seen >= week)
@@ -599,7 +612,7 @@ def overview(session: Session) -> dict[str, Any]:
     closed_7d = session.scalar(
         select(func.count())
         .select_from(Posting)
-        .where(Posting.is_tech.is_(True), Posting.closed_at >= datetime.utcnow() - timedelta(days=7))
+        .where(Posting.is_tech.is_(True), Posting.closed_at >= datetime.utcnow() - timedelta(days=7), site_postings())
     )
     return {
         "live_postings": live,

@@ -191,6 +191,27 @@ class WorkdayAdapter(Adapter):
             out.append(self._raw(host, slug, job, description, posted, code))
         return out
 
+    PROBE_SEARCHES = ("intern", "graduate", "junior", "trainee", "new grad", "entry level")
+
+    def count_graduates(self, slug: str) -> int:
+        """Graduate tech titles outside the Netherlands among the first page of a few graduate searches: a cheap
+        lower bound of what the pass abroad would find (radar/enumerate.py ranks boards with it)."""
+        from radar.classify import is_tech
+        from radar.extract.rules import entry_level_title
+
+        _, api = self._base(slug)
+        found: set[str] = set()
+        for word in self.PROBE_SEARCHES:
+            try:
+                page = self._list(api, {}, 0, word)
+            except AdapterError:
+                continue
+            for job in page.get("jobPostings") or []:
+                title = job.get("title") or ""
+                if entry_level_title(title) and is_tech(title) and not _is_dutch_place(job.get("locationsText") or ""):
+                    found.add(job.get("externalPath") or title)
+        return len(found)
+
     def count_nl(self, slug: str) -> tuple[int, int]:
         """(nl_postings, total_postings) from the first listing page's country facet: one request per board."""
         _, api = self._base(slug)

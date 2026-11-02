@@ -479,12 +479,17 @@ def cmd_enumerate(args: argparse.Namespace) -> None:
             slugs = slugs_from_text(ats, raw.read_text(encoding="utf-8", errors="ignore"))
         else:
             slugs = enumerate_slugs(ats)
-        (out_dir / f"{ats}.txt").write_text("\n".join(slugs) + "\n", encoding="utf-8")
-        print(f"{ats}: {len(slugs)} board slugs")
+        # added to the list already there: the index can answer with less than before, and probed boards stay listed
+        path = out_dir / f"{ats}.txt"
+        before = path.read_text(encoding="utf-8").split() if path.exists() else []
+        merged = list(dict.fromkeys(before + slugs))
+        path.write_text("\n".join(merged) + "\n", encoding="utf-8")
+        print(f"{ats}: {len(slugs)} board slugs found, {len(merged) - len(before)} new, {len(merged)} listed")
 
 
 def cmd_probe_boards(args: argparse.Namespace) -> None:
-    """Probe every enumerated board for NL postings (state file only; run `radar register-probed` after)."""
+    """Probe every enumerated board for NL postings and graduate roles abroad (state file only; run
+    `radar register-probed` after). --graduates re-probes boards probed before graduate counts existed."""
     from pathlib import Path
 
     from radar.enumerate import PATTERNS, probe_slugs
@@ -497,7 +502,7 @@ def cmd_probe_boards(args: argparse.Namespace) -> None:
         slugs = [line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
         if args.limit:
             slugs = slugs[: args.limit]
-        summary = probe_slugs(ats, slugs, workers=args.workers)
+        summary = probe_slugs(ats, slugs, workers=args.workers, graduates=args.graduates, min_total=args.min_total)
         print(f"{ats}: {summary}", flush=True)
 
 
@@ -509,7 +514,7 @@ def cmd_register_probed(args: argparse.Namespace) -> None:
     init_db()
     for ats in args.ats or list(PATTERNS):
         with session_scope() as s:
-            added = register_probed(s, ats, min_nl=args.min_nl)
+            added = register_probed(s, ats, min_nl=args.min_nl, min_grad=args.min_grad)
         print(f"{ats}: {summarize_state(ats)} -> {added} new sources")
 
 
@@ -778,15 +783,20 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--from-raw", action="store_true", help="parse an existing data/enumerated/raw_{ats}.txt")
     p.set_defaults(fn=cmd_enumerate)
 
-    p = sub.add_parser("probe-boards", help="probe enumerated boards and register those with NL postings")
+    p = sub.add_parser("probe-boards", help="probe enumerated boards for NL postings and graduate roles abroad")
     p.add_argument("--ats", nargs="*")
     p.add_argument("--workers", type=int, default=12)
     p.add_argument("--limit", type=int)
+    p.add_argument("--graduates", action="store_true",
+                   help="also re-probe live boards without a graduate count (Workday: a few searches each)")
+    p.add_argument("--min-total", type=int, default=10, help="with --graduates: skip boards with fewer jobs")
     p.set_defaults(fn=cmd_probe_boards)
 
     p = sub.add_parser("register-probed", help="create sources from probe state files")
     p.add_argument("--ats", nargs="*")
     p.add_argument("--min-nl", type=int, default=1)
+    p.add_argument("--min-grad", type=int, default=None,
+                   help="also register boards with this many graduate tech titles abroad (entry-level site)")
     p.set_defaults(fn=cmd_register_probed)
 
     sub.add_parser("sectors", help="recompute every employer's sector").set_defaults(fn=cmd_sectors)

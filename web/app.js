@@ -450,7 +450,7 @@
   const emptyProfile = () => ({ roles: [], positions: [], levels: [], exp: [], degrees: [], emps: [], sectors: [], remote: [], cities: [], exclude: [], skills: [],
     language: "", visa: false, agencies: false, noenrol: false });
   const state = {
-    tab: "jobs", page: 1, size: 40, sort: "size_large", skill: null,  // larger organisations first, by default
+    tab: "jobs", page: 1, size: 40, sort: "newest", skill: null,  // the newest jobs first, so each visit starts with what came in since the last
     profile: Object.assign(emptyProfile(), store.get("profile", {})),
     saved: store.get("saved", []),
     board: store.get("board", {}),  // the application tracker: {job id: {col, at}}; no entry = "saved"
@@ -804,7 +804,7 @@
     if (currentJobFilters().savedOnly) q.set("saved", "1");
     const hide = [currentJobFilters().hideSeen && "seen", currentJobFilters().hideApplied && "applied"].filter(Boolean);
     if (hide.length) q.set("hide", hide.join(","));
-    if (state.sort !== "size_large") q.set("sort", state.sort);
+    if (state.sort !== "newest") q.set("sort", state.sort);
     const s = q.toString().replace(/%2C/g, ",");
     const want = "#discover" + (s ? "?" + s : "");
     paintFeedLink();
@@ -920,7 +920,7 @@
       $("#f-sort").addEventListener("change", (e) => { state.sort = e.target.value; refreshJobs(true); });
       let tm; $("#f-q").addEventListener("input", (e) => { clearTimeout(tm); tm = setTimeout(() => { currentJobFilters().q = e.target.value.trim(); refreshJobs(true); }, 350); });
       $("#clear-skill").addEventListener("click", () => { state.skill = null; refreshJobs(true); });
-      $("#f-reset").addEventListener("click", () => { store.set("jobsUseProfile", false); jobFilters = emptyJobFilters(); state.skill = null; state.sort = "size_large"; buildJobsFilters(); refreshJobs(true); });
+      $("#f-reset").addEventListener("click", () => { store.set("jobsUseProfile", false); jobFilters = emptyJobFilters(); state.skill = null; state.sort = "newest"; buildJobsFilters(); refreshJobs(true); });
       $("#f-profile").addEventListener("click", () => { store.set("jobsUseProfile", true); jobFilters = profileJobFilters(); state.skill = null; buildJobsFilters(); refreshJobs(true); });
       // another page: back to the top of the results, so the list starts where the eye is
       const toPage = (n) => { state.page = n; $(".results-head").scrollIntoView({ block: "start" }); refreshJobs(); };

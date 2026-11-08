@@ -760,6 +760,28 @@ def _largest_first(newest: list[Row]) -> list[Row]:
     return out
 
 
+def _when(r: Row) -> datetime:
+    """When a job was posted, for sorting: the posting's own date, unless it lies in the future (a misread date
+    would otherwise stay at the top of "most recent" for ever); then when the radar first saw it."""
+    if r.posted_at and r.posted_at <= datetime.utcnow() + timedelta(days=1):
+        return r.posted_at
+    return r.first_seen
+
+
+def _newest_taking_turns(newest: list[Row]) -> list[Row]:
+    """Newest day first; within a day the employers take turns (larger ones first, as in _largest_first), so one
+    employer or agency that posts ten jobs at once does not fill the top of the list."""
+    out: list[Row] = []
+    day: list[Row] = []
+    for r in newest:
+        if day and _when(r).date() != _when(day[0]).date():
+            out.extend(_largest_first(day))
+            day = []
+        day.append(r)
+    out.extend(_largest_first(day))
+    return out
+
+
 LONG_RUNNING_DAYS = 180  # a vacancy open longer than this is shown as ongoing and sorted after the rest
 
 
@@ -767,7 +789,7 @@ def posting_dicts(
     rows: list[Row], page: int = 1, size: int = 50, sort: str = "newest", have_skills: set[str] | None = None
 ) -> dict[str, Any]:
     have = have_skills or set()
-    newest = sorted(rows, key=lambda r: r.posted_at or r.first_seen, reverse=True)
+    newest = sorted(rows, key=_when, reverse=True)
     if sort == "match" and have:
         rows = sorted(rows, key=lambda r: (match_score(r, have), r.posted_at or r.first_seen), reverse=True)
     elif sort == "size_small":
@@ -776,7 +798,7 @@ def posting_dicts(
     elif sort == "size_large":
         rows = _largest_first(newest)
     else:
-        rows = newest
+        rows = _newest_taking_turns(newest)
     # vacancies open for more than six months (consultancies' standing roles, often still listed) after the rest, in
     # every order: they stay findable, but the jobs posted recently lead
     cutoff = datetime.utcnow() - timedelta(days=LONG_RUNNING_DAYS)

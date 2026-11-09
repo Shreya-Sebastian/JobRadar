@@ -156,17 +156,21 @@ class WorkdayAdapter(Adapter):
             raw={"posted_on": job.get("postedOn")},
         )
 
+    # searches by field: the generic graduate searches stop after PAGES_PER_SEARCH pages, and a board's search for
+    # "intern" can rank its data science internships past them
+    FIELD_SEARCHES = ("data scientist", "data science", "machine learning", "data analyst", "ai engineer")
     PAGES_PER_SEARCH = 5
     MAX_ABROAD_DETAILS = 150
 
     def _graduates_abroad(self, host: str, api: str, slug: str, seen: set[str], countries: set[str] | None):
         """Jobs for students and graduates outside the Netherlands (RADAR_ENTRY_LEVEL_COUNTRIES): found with the
         board's search, kept by title before their text is fetched. The crawler decides what is stored."""
+        from radar.classify import is_tech
         from radar.extract.rules import entry_level_title
         from radar.normalize import place_country
 
         found: dict[str, dict] = {}
-        for word in self.GRADUATE_SEARCHES:
+        for word in self.GRADUATE_SEARCHES + self.FIELD_SEARCHES:
             offset, total = 0, 1
             while offset < total and offset < self.PAGE * self.PAGES_PER_SEARCH:
                 try:
@@ -181,7 +185,10 @@ class WorkdayAdapter(Adapter):
                         found[path] = job
                 offset += self.PAGE
         out: list[RawPosting] = []
-        for path, job in list(found.items())[: self.MAX_ABROAD_DETAILS]:
+        # tech titles first: on a board with hundreds of graduate roles, the finance and HR ones must not use up the
+        # budget of texts read (the crawler keeps tech jobs only)
+        ranked = sorted(found.items(), key=lambda kv: not is_tech(kv[1].get("title") or ""))
+        for path, job in ranked[: self.MAX_ABROAD_DETAILS]:
             if f"{host}/{slug.split('/', 1)[1]}{path}" in seen:
                 continue
             description, posted, c = self._detail(api, path)

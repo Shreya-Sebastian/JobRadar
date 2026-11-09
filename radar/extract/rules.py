@@ -482,7 +482,7 @@ _TITLE_REQ = re.compile(
 
 
 # titles of student jobs whose level is not "intern": "Onderzoeksstage", "Bijbaan IT", "Internships / Graduation"
-_STUDENT_TITLE = re.compile(r"stage|stagiair|intern|bijbaan|werkstudent|working student|student|afstudeer|"
+_STUDENT_TITLE = re.compile(r"stage\b|stagiair|\bintern|bijbaan|werkstudent|working student|\bstudent|afstudeer|"
                             r"graduation (?:internship|project|assignment)|thesis", re.I)
 
 
@@ -552,6 +552,10 @@ _SENIORITY = [
     ("junior", _NO_LEVEL_WORD + r".*[a-z]\s+i" + _LADDER_END),
     ("medior", _NO_LEVEL_WORD + r".*[a-z]\s+ii" + _LADDER_END),
     ("senior", _NO_LEVEL_WORD + r".*[a-z]\s+(?:iii|iv)" + _LADDER_END),
+    # the same ladder in digits: "Data Scientist 1", "Software Engineer 2 - Payments" (a lone digit after a word)
+    ("junior", _NO_LEVEL_WORD + r".*[a-z]\s+1" + _LADDER_END),
+    ("medior", _NO_LEVEL_WORD + r".*[a-z]\s+2" + _LADDER_END),
+    ("senior", _NO_LEVEL_WORD + r".*[a-z]\s+[34]" + _LADDER_END),
     # "associate" is junior unless the title names another level ("Senior Associate", "Associate Director")
     ("junior", r"\bjunior\b|\bjr\b\.?|\bgraduate\b|\bnew grads?\b|entry[- ]level|\bstarter\b|early career|"
                r"\b(?:pas|net) afgestudeerd\w*|\bcampus hire\b|\brecent graduates?\b|"
@@ -1567,7 +1571,9 @@ _EXPERIENCED_LEVELS = {"medior", "senior", "lead", "staff", "manager"}
 _STARTER_TITLE = re.compile(
     r"graduate|young professional|\bstarter\b|werkstudent|working student|early[- ]career|entry[- ]level|new grad|"
     r"berufseinst|direkteinst|absolvent|absolwent|jeunes? dipl[oô]m|d[ée]butant|reci[ée]n (?:titulad|graduad)|"
-    r"neolaureat",
+    r"neolaureat|"
+    # a range from no experience in the title: "Data Scientist (0-2 years)", "0–3 yrs"
+    r"\b0\s*[-–]\s*[1-3]\s*(?:\+\s*)?(?:years?|yrs?|jaar|ans|años|jahre)\b",
     re.I)
 
 

@@ -861,3 +861,22 @@ def test_dutch_postings_that_ask_for_english():
         assert (lang, dutch, english) == ("nl", True, True), line
     for line in ("Je spreekt vloeiend Nederlands.", "Kennis van Engels is een pré."):
         assert language_fields("Test Engineer", intro + line)[3] is False, line
+
+
+def test_digit_ladders_and_no_experience_ranges_in_titles():
+    from radar.extract.rules import detect_seniority, entry_level_title
+
+    assert detect_seniority("Data Scientist 1") == "junior" and entry_level_title("Data Scientist 1")
+    assert detect_seniority("Software Engineer 2 - Payments") == "medior"
+    assert detect_seniority("Data Engineer 3") == "senior"
+    for title in ("Python 3 Developer", "Windows 11 Support Engineer", "Developer 5+ years"):
+        assert not entry_level_title(title), title
+    for title in ("Data Scientist (0-2 years)", "Data Analyst 0–3 yrs"):
+        assert entry_level_title(title), title
+
+
+def test_student_words_in_a_title_count_for_enrolment():
+    from radar.extract.rules import _STUDENT_TITLE
+
+    for title in ("Stage Data Science", "Student Assistant AI", "Intern Software Engineering"):
+        assert _STUDENT_TITLE.search(title), title

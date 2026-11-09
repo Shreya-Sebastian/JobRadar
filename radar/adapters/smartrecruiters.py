@@ -42,9 +42,13 @@ class SmartRecruitersAdapter(Adapter):
         out: list[RawPosting] = []
         details_left = self.MAX_DETAILS
         abroad_left = self.MAX_ABROAD_DETAILS
+        from radar.classify import is_tech
         from radar.extract.rules import entry_level_title
 
         abroad_on, abroad = self.abroad_countries()
+        if abroad_on:
+            # tech titles first, so graduate roles in finance or sales do not use up the texts read abroad
+            listings.sort(key=lambda j: not is_tech(j.get("name") or ""))
         for job in listings:
             loc = job.get("location") or {}
             country = (loc.get("country") or "").upper() or None

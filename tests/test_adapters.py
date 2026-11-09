@@ -229,3 +229,30 @@ def test_workday_location_facet_fallback_selects_dutch_sites():
                       {"id": "v1", "descriptor": "Veldhoven"}, {"id": "s1", "descriptor": "Shanghai, China"},
                       {"id": "d1", "descriptor": "Delft"}, {"id": "w1", "descriptor": "Wilton, CT"}]}]}]
     assert _find_nl_locations(facets) == ("locations", ["v1", "d1"])
+
+
+@respx.mock
+def test_workday_graduate_pass_searches_data_roles_and_reads_tech_titles_first(monkeypatch):
+    import json
+
+    from radar.adapters.workday import WorkdayAdapter
+
+    api = "https://acme.wd3.myworkdayjobs.com/wday/cxs/acme/careers"
+    by_search = {
+        "intern": [{"title": "Finance Intern", "externalPath": "/job/London/fin_1", "locationsText": "London"}],
+        "data scientist": [{"title": "Data Scientist Intern", "externalPath": "/job/Berlin/ds_2",
+                            "locationsText": "Berlin, Germany"}],
+    }
+
+    def answer(request):
+        word = json.loads(request.content)["searchText"]
+        jobs = by_search.get(word, [])
+        return httpx.Response(200, json={"total": len(jobs), "jobPostings": jobs})
+
+    respx.post(f"{api}/jobs").mock(side_effect=answer)
+    respx.get(f"{api}/job/Berlin/ds_2").mock(return_value=httpx.Response(200, json={"jobPostingInfo": {
+        "jobDescription": "<p>Python</p>", "country": {"descriptor": "Germany"}}}))
+    adapter = get_adapter("workday")
+    monkeypatch.setattr(WorkdayAdapter, "MAX_ABROAD_DETAILS", 1)  # room for one text: the tech role gets it
+    jobs = adapter._graduates_abroad("https://acme.wd3.myworkdayjobs.com", api, "acme.wd3/careers", set(), None)
+    assert [j.title for j in jobs] == ["Data Scientist Intern"] and jobs[0].country == "DE"

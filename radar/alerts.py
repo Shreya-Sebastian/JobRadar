@@ -42,7 +42,7 @@ def profile_filters(profile: dict, since: datetime) -> stats.Filters:
     return stats.Filters(
         role=csv("roles"), seniority=csv("levels"), experience=csv("exp"), degree=csv("degrees"),
         employees=csv("emps"), org_size=csv("sizes"), remote=csv("remote"), city=csv("cities"),
-        sector=csv("sectors"), position=csv("positions"),
+        country=csv("countries"), sector=csv("sectors"), position=csv("positions"),
         exclude_companies=csv("exclude"), language=profile.get("language") or None,
         sponsorship=True if profile.get("visa") else None, exclude_agencies=bool(profile.get("agencies")),
         enrollment="open" if profile.get("noenrol") else None, since=since.isoformat(),
@@ -51,7 +51,7 @@ def profile_filters(profile: dict, since: datetime) -> stats.Filters:
 
 # the Discover filters a saved search may carry (the rest of its query, such as sort or page, is ignored)
 _SEARCH_KEYS = {"role", "seniority", "city", "company", "remote", "q", "skill", "exclude_companies", "language",
-                "experience", "enrollment", "degree", "employees", "sector", "position"}
+                "experience", "enrollment", "degree", "employees", "sector", "position", "country"}
 _SEARCH_FLAGS = {"sponsorship", "exclude_agencies"}
 
 

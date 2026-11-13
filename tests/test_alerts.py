@@ -94,3 +94,13 @@ def test_alert_setting_via_the_api(fresh_db):
         with session_scope() as s:
             u = s.query(User).one()
             assert u.lang == "nl" and u.alerts_sent_at is not None  # starts from now, not the backlog
+
+
+def test_alerts_and_saved_searches_keep_the_country_filter():
+    from datetime import UTC, datetime
+
+    from radar.alerts import profile_filters, search_filters
+
+    since = datetime(2026, 11, 1, tzinfo=UTC)
+    assert profile_filters({"countries": ["DE", "GB"]}, since).country == "DE,GB"
+    assert search_filters("role=data&country=NL,IE", since).country == "NL,IE"

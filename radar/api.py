@@ -447,6 +447,7 @@ class GapRequest(BaseModel):
     role: str | None = None
     seniority: str | None = None
     city: str | None = None
+    country: str | None = Field(default=None, max_length=400)
     english_only: bool | None = None
     language: str | None = None
     exclude_agencies: bool = False
@@ -458,7 +459,8 @@ def gap(req: GapRequest, session: Session = Depends(db)):
     if not (req.cv_text and len(req.cv_text.strip()) >= 20) and not req.skills:
         raise HTTPException(422, "provide cv_text (20+ characters) or a skills list")
     f = stats.Filters(role=req.role, seniority=req.seniority, city=req.city, english_only=req.english_only,
-                      days=req.days, exclude_agencies=req.exclude_agencies, language=req.language)
+                      days=req.days, exclude_agencies=req.exclude_agencies, language=req.language,
+                      country=req.country)
     rows = _rows(session, f)
     return stats.gap_analysis(rows, req.cv_text, req.skills)
 

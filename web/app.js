@@ -447,7 +447,7 @@
   }
 
   // ---------- state ----------
-  const emptyProfile = () => ({ roles: [], positions: [], levels: [], exp: [], degrees: [], emps: [], sectors: [], remote: [], cities: [], exclude: [], skills: [],
+  const emptyProfile = () => ({ roles: [], positions: [], levels: [], exp: [], degrees: [], emps: [], sectors: [], remote: [], cities: [], countries: [], exclude: [], skills: [],
     language: "", visa: false, agencies: false, noenrol: false });
   const state = {
     tab: "jobs", page: 1, size: 40, sort: "newest", skill: null,  // the newest jobs first, so each visit starts with what came in since the last
@@ -462,6 +462,7 @@
   if (!Array.isArray(state.profile.exp)) state.profile.exp = [];
   if (!Array.isArray(state.profile.degrees)) state.profile.degrees = [];
   if (!Array.isArray(state.profile.emps)) state.profile.emps = [];
+  if (!Array.isArray(state.profile.countries)) state.profile.countries = [];
   let jobFilters = null;
 
   // ---------- helpers ----------
@@ -484,6 +485,7 @@
     if (p.positions && p.positions.length) q.set("position", p.positions.join(","));
     if (p.remote.length) q.set("remote", p.remote.join(","));
     if (p.cities.length) q.set("city", p.cities.join(","));
+    if (ENTRY && p.countries && p.countries.length) q.set("country", p.countries.join(","));
     if (p.exclude.length) q.set("exclude_companies", p.exclude.join(","));
     if (p.language) q.set("language", p.language);
     if (p.visa) q.set("sponsorship", "true");
@@ -768,7 +770,7 @@
   // ---------- JOBS ----------
   function profileJobFilters() {
     const p = state.profile;
-    return { roles: [...p.roles], positions: [...(p.positions || [])], levels: [...p.levels], exp: [...p.exp], degrees: [...p.degrees], emps: [...p.emps], sectors: [...(p.sectors || [])], remote: [...p.remote], cities: [...p.cities], language: p.language, visa: p.visa, agencies: p.agencies, noenrol: !!p.noenrol, confirmed: false, q: "", days: "", savedOnly: false, exclude: [...p.exclude] };
+    return { roles: [...p.roles], positions: [...(p.positions || [])], levels: [...p.levels], exp: [...p.exp], degrees: [...p.degrees], emps: [...p.emps], sectors: [...(p.sectors || [])], remote: [...p.remote], cities: [...p.cities], countries: ENTRY ? [...(p.countries || [])] : [], language: p.language, visa: p.visa, agencies: p.agencies, noenrol: !!p.noenrol, confirmed: false, q: "", days: "", savedOnly: false, exclude: [...p.exclude] };
   }
   // opened jobs: shown quieter in the list, and hidden with "Hide jobs I've opened"
   function markSeen(id) {
@@ -1224,6 +1226,9 @@
     toggles($("#p-emp"), EMPS, p.emps, empLabel);
     toggles($("#p-remote"), REMOTE, p.remote, remoteLabel);
     chipInput($("#p-cities"), p.cities, [...state.options.cities, "Remote"], null, t("ph.city"), null, cityLabel);
+    if (!p.countries) p.countries = [];
+    $("#p-countries").closest(".field").hidden = !ENTRY;  // only the entry-level site lists jobs from many countries
+    if (ENTRY) chipInput($("#p-countries"), p.countries, state.options.countries || [], null, t("ph.country"), null, countryLabel);
     chipInput($("#p-exclude"), p.exclude, [], null, t("ph.employer"));
     chipInput($("#p-skills"), p.skills, state.options.skills, null, t("ph.skill"), skillTransform);
     langToggles($("#p-language"), p); $("#p-visa").checked = p.visa; $("#p-agencies").checked = p.agencies; $("#p-noenrol").checked = !!p.noenrol;
@@ -1270,7 +1275,7 @@
       if (!p.skills.length) { $("#p-gap-status").textContent = t("p.add.skills"); return; }
       $("#p-gap-status").textContent = t("p.analysing");
       const body = { skills: p.skills, role: p.roles.join(",") || null, seniority: p.levels.join(",") || null, city: p.cities.join(",") || null,
-        language: p.language || null, exclude_agencies: p.agencies, days: null };
+        country: (ENTRY && p.countries.length && p.countries.join(",")) || null, language: p.language || null, exclude_agencies: p.agencies, days: null };
       const r = await fetch("/api/gap", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const g = await r.json();
       $("#p-gap-status").textContent = t("p.considered", { n: fmt(g.postings_considered) });
